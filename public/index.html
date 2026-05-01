@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>BombRogue</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- LOBBY SCREEN -->
+  <div id="screen-lobby" class="screen active">
+    <div class="lobby-container">
+      <h1 class="title">BombRogue</h1>
+      <p class="subtitle">Jeu tactique de bombes</p>
+
+      <div class="form-group">
+        <label for="player-name">Ton nom</label>
+        <input type="text" id="player-name" maxlength="16" placeholder="Pseudo..." autocomplete="off">
+      </div>
+
+      <div class="lobby-buttons">
+        <button id="btn-create" class="btn btn-primary">Créer une partie</button>
+        <div class="separator">ou</div>
+        <div class="join-row">
+          <input type="text" id="room-code" maxlength="4" placeholder="CODE" autocomplete="off" class="code-input">
+          <button id="btn-join" class="btn btn-secondary">Rejoindre</button>
+        </div>
+      </div>
+
+      <div id="error-msg" class="error-msg"></div>
+    </div>
+  </div>
+
+  <!-- ROOM SCREEN -->
+  <div id="screen-room" class="screen">
+    <div class="room-container">
+      <div class="room-header">
+        <h2>Room : <span id="room-code-display"></span></h2>
+      </div>
+
+      <div id="players-list" class="players-list"></div>
+
+      <div class="distribution-section">
+        <h3>Répartis tes 12 points</h3>
+        <div class="dist-row">
+          <label>PA (Actions)</label>
+          <div class="dist-controls">
+            <button class="btn-small" id="pa-minus">-</button>
+            <span id="pa-value">10</span>
+            <button class="btn-small" id="pa-plus">+</button>
+          </div>
+        </div>
+        <div class="dist-row">
+          <label>PM (Mouvement)</label>
+          <div class="dist-controls">
+            <button class="btn-small" id="pm-minus">-</button>
+            <span id="pm-value">2</span>
+            <button class="btn-small" id="pm-plus">+</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-start" class="btn btn-primary" style="display:none">Lancer la partie</button>
+      <p id="waiting-msg" class="waiting-msg">En attente du lancement...</p>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="screen-game" class="screen">
+    <div id="hud-top">
+      <div id="hp-bars"></div>
+      <div id="turn-info">
+        <span id="turn-player"></span>
+        <span id="turn-timer"></span>
+      </div>
+    </div>
+
+    <canvas id="game-canvas"></canvas>
+
+    <div id="hud-bottom">
+      <div id="resources">
+        <span id="pa-dots"></span>
+        <span id="pm-dots"></span>
+      </div>
+      <div id="spell-bar"></div>
+    </div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div id="screen-gameover" class="screen">
+    <div class="gameover-container">
+      <h2 id="winner-text"></h2>
+      <div id="final-stats"></div>
+      <button id="btn-replay" class="btn btn-primary">Rejouer</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/constants.js"></script>
+  <script src="/js/socket.js"></script>
+  <script src="/js/camera.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/renderer.js"></script>
+  <script src="/js/input.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/gameClient.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>
