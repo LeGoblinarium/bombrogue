@@ -98,9 +98,11 @@ const Input = (() => {
 
     let valid = false;
     let aoe = null;
+    let movePath = null;
 
     if (mode === 'move') {
       valid = isReachable(cell, me);
+      if (valid) movePath = computeMovePath(cell, me);
     } else if (mode === 'place-bomb') {
       valid = canPlaceBomb(cell, me, state);
     } else if (mode === 'repulseur') {
@@ -112,15 +114,44 @@ const Input = (() => {
       valid = canCastStratageme(cell, me, state);
     } else if (mode === 'aimant') {
       valid = canCastAimant(cell, me, state);
-      aoe = computeAimantAoe(cell); // always show cross preview around target
+      aoe = computeAimantAoe(cell);
     }
 
     highlights = [];
     addRangeHighlights();
+    if (movePath) {
+      for (const c of movePath) highlights.push({ x: c.x, y: c.y, type: 'path-preview' });
+    }
     if (aoe) {
       for (const c of aoe) highlights.push({ x: c.x, y: c.y, type: 'aoe-preview' });
     }
     highlights.push({ x: cell.x, y: cell.y, type: valid ? 'select-green' : 'select-red' });
+  }
+
+  function computeMovePath(cell, me) {
+    const state = GameClient.getState();
+    const visited = new Map();
+    const queue = [{ x: me.x, y: me.y, dist: 0, path: [] }];
+    visited.set(`${me.x},${me.y}`, true);
+
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      if (cur.x === cell.x && cur.y === cell.y) return cur.path;
+      if (cur.dist >= me.pmLeft) continue;
+
+      for (const [dx, dy] of [[0,-1],[0,1],[-1,0],[1,0]]) {
+        const nx = cur.x + dx, ny = cur.y + dy;
+        if (nx < 0 || nx >= GRID_W || ny < 0 || ny >= GRID_H) continue;
+        const key = `${nx},${ny}`;
+        if (visited.has(key)) continue;
+        if (state.obstacles.some(o => o.x === nx && o.y === ny)) continue;
+        if (state.bombs.some(b => b.x === nx && b.y === ny)) continue;
+        if (state.players.some(p => p.alive && p.id !== me.id && p.x === nx && p.y === ny)) continue;
+        visited.set(key, true);
+        queue.push({ x: nx, y: ny, dist: cur.dist + 1, path: [...cur.path, { x: nx, y: ny }] });
+      }
+    }
+    return null;
   }
 
   function confirmAction(cell) {

@@ -1,6 +1,9 @@
 const Animations = (() => {
-  const queue = [];
   let active = [];
+
+  // Entity sliding animations: id -> animation data
+  const entityMovements = new Map();
+  const MS_PER_CELL = 90;
 
   function add(type, params) {
     active.push({
@@ -45,13 +48,33 @@ const Animations = (() => {
     });
   }
 
-  function addMovement(fromX, fromY, toX, toY, entityType) {
-    add('move', {
-      fromX, fromY, toX, toY,
-      entityType,
-      delay: 0,
-      duration: 200,
+  function addEntityMovement(id, type, path) {
+    if (!path || path.length < 2) return;
+    entityMovements.set(id, {
+      id, type, path,
+      startTime: performance.now(),
+      duration: (path.length - 1) * MS_PER_CELL,
     });
+  }
+
+  // Returns fractional grid position {x, y} during animation, or null when done
+  function getEntityAnimPos(id, now) {
+    const anim = entityMovements.get(id);
+    if (!anim) return null;
+    const elapsed = now - anim.startTime;
+    if (elapsed >= anim.duration) {
+      entityMovements.delete(id);
+      return null;
+    }
+    const progress = elapsed / MS_PER_CELL;
+    const cellIdx = Math.min(Math.floor(progress), anim.path.length - 2);
+    const fraction = progress - cellIdx;
+    const from = anim.path[cellIdx];
+    const to = anim.path[cellIdx + 1];
+    return {
+      x: from.x + (to.x - from.x) * fraction,
+      y: from.y + (to.y - from.y) * fraction,
+    };
   }
 
   function update(now) {
@@ -59,6 +82,9 @@ const Animations = (() => {
       const elapsed = now - a.startTime - (a.delay || 0);
       return elapsed < a.duration;
     });
+    for (const [id, anim] of entityMovements) {
+      if (now - anim.startTime >= anim.duration) entityMovements.delete(id);
+    }
   }
 
   function draw(ctx, cam) {
@@ -111,8 +137,8 @@ const Animations = (() => {
   }
 
   function hasActive() {
-    return active.length > 0;
+    return active.length > 0 || entityMovements.size > 0;
   }
 
-  return { add, addExplosionSequence, addDamageNumber, addMovement, update, draw, hasActive };
+  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, update, draw, hasActive };
 })();

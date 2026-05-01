@@ -17,6 +17,9 @@ class Game {
     this.turnTimer = null;
     this.gameOver = false;
     this.actedThisTurn = false;
+    // Tracks wall cells where each player already took spell-induced damage this turn
+    // Resets each turn. Voluntary movement (doMove) bypasses this tracker.
+    this.spellWallDamageTaken = new Map();
   }
 
   start() {
@@ -40,7 +43,19 @@ class Game {
       paLeft: player ? player.paLeft : 0,
       pmLeft: player ? player.pmLeft : 0,
       timeLeft: C.TURN_TIME_MS,
+      zoneDepth: this.getZoneDepth(),
     };
+  }
+
+  getZoneDepth() {
+    // Zone appears at ZONE_START_TURN (depth 1 = outer border), then grows 1 cell inward every 2 turns
+    return Math.max(0, Math.ceil((this.turnNumber - C.ZONE_START_TURN + 1) / 2));
+  }
+
+  isInZone(x, y) {
+    const depth = this.getZoneDepth();
+    if (depth === 0) return false;
+    return Math.min(x, C.GRID_W - 1 - x, y, C.GRID_H - 1 - y) < depth;
   }
 
   beginTurn() {
@@ -60,6 +75,12 @@ class Game {
     if (!currentPlayer) return;
 
     currentPlayer.startTurn();
+    this.spellWallDamageTaken.clear();
+
+    // Zone damage: applied before wall damage
+    if (this.isInZone(currentPlayer.x, currentPlayer.y)) {
+      currentPlayer.takeDamage(C.ZONE_DAMAGE);
+    }
 
     // Apply wall damage if standing on a wall (turn start)
     this.checkWallDamageAt(currentPlayer, currentPlayer.x, currentPlayer.y);
@@ -180,26 +201,46 @@ class Game {
 
     this.actedThisTurn = true;
 
-    // Recompute walls after any action that might affect bombs/positions
-    this.state.recomputeWalls();
+    // Apply wall damage for players moved by spells along their path.
+    // Uses spell tracker: a given wall cell only damages a player once per turn
+    // from spell-induced movement (regardless of how many times they're pushed through it).
+    // Voluntary movement (doMove) bypasses this tracker and always applies damage.
+    if (result.movements && action.type !== 'move') {
+      for (const m of result.movements) {
+        if (m.type !== 'player') continue;
+        const p = this.state.players.find(pp => pp.id === m.id);
+        if (!p || !p.alive) continue;
+        for (let i = 1; i < m.path.length; i++) {
+          this.checkSpellWallDamageAt(p, m.path[i].x, m.path[i].y);
+          if (!p.alive) break;
+        }
+      }
+    }
 
-    // Check death (in case wall damage from movement etc.)
+    const wallsBefore = this.state.walls.length;
+    this.state.recomputeWalls();
+    const wallsCreated = this.state.walls.length > wallsBefore;
+
     if (this.checkGameOver()) return;
 
-    // Broadcast state update
-    this.io.to(this.room.code).emit('state-update', this.state.serializeDelta(this.buildCurrentTurn()));
+    this.io.to(this.room.code).emit('state-update', {
+      ...this.state.serializeDelta(this.buildCurrentTurn()),
+      movements: result.movements || [],
+      actionType: action.type,
+      wallsCreated,
+    });
   }
 
   doMove(player, x, y) {
-    const path = this.state.gridMap.shortestPath(
+    const fromX = player.x, fromY = player.y;
+    const pathData = this.state.gridMap.shortestPath(
       player.x, player.y, x, y, player.pmLeft,
       this.state.bombs, this.state.players, player.id
     );
-    if (!path) return { ok: false };
+    if (!pathData) return { ok: false };
 
-    // Walk along path, applying wall damage on each cell entered
     const seenWallCells = new Set();
-    for (const step of path.path) {
+    for (const step of pathData.path) {
       player.x = step.x;
       player.y = step.y;
       const key = `${step.x},${step.y}`;
@@ -209,8 +250,10 @@ class Game {
         if (!player.alive) break;
       }
     }
-    player.pmLeft -= path.dist;
-    return { ok: true };
+    player.pmLeft -= pathData.dist;
+
+    const fullPath = [{ x: fromX, y: fromY }, ...pathData.path];
+    return { ok: true, movements: [{ id: player.id, type: 'player', path: fullPath }] };
   }
 
   doPlaceBomb(player, x, y) {
@@ -259,12 +302,23 @@ class Game {
   }
 
   checkWallDamageAt(player, x, y) {
-    const key = `${x},${y}`;
-    const wall = this.state.wallCellMap.get(key);
+    const wall = this.state.wallCellMap.get(`${x},${y}`);
     if (!wall) return;
-    if (wall.ownerId === player.id) {
-      // Own wall still damages (configurable - here we make it damage everyone for tactical depth)
+    player.takeDamage(wall.damage);
+  }
+
+  // Spell-induced wall damage: each wall cell only damages a player once per turn.
+  // Subsequent pushes/pulls through the same cell are ignored.
+  checkSpellWallDamageAt(player, x, y) {
+    const wall = this.state.wallCellMap.get(`${x},${y}`);
+    if (!wall) return;
+    if (!this.spellWallDamageTaken.has(player.id)) {
+      this.spellWallDamageTaken.set(player.id, new Set());
     }
+    const taken = this.spellWallDamageTaken.get(player.id);
+    const key = `${x},${y}`;
+    if (taken.has(key)) return;
+    taken.add(key);
     player.takeDamage(wall.damage);
   }
 

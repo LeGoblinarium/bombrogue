@@ -471,3 +471,164 @@ input[type="text"]:focus {
 .pborder-1 { border-color: #FF6B6B; }
 .pborder-2 { border-color: #FFE66D; }
 .pborder-3 { border-color: #A78BFA; }
+
+/* HELP BUTTON */
+#btn-help {
+  position: fixed;
+  z-index: 200;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ff6b35;
+  background: #1a1a2e;
+  color: #ff6b35;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+#btn-help.dragging {
+  cursor: grabbing;
+  box-shadow: 0 4px 16px rgba(255,107,53,0.4);
+  background: #2d1810;
+}
+
+/* HELP MODAL */
+.help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+.help-overlay.hidden {
+  display: none;
+}
+
+.help-modal {
+  position: relative;
+  background: #16213e;
+  border: 2px solid #2d4059;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.help-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  z-index: 1;
+}
+.help-close:active { color: #fff; }
+
+.help-content {
+  overflow-y: auto;
+  padding: 20px 18px 24px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+.help-content::-webkit-scrollbar { width: 4px; }
+.help-content::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+.help-title {
+  font-size: 1.2rem;
+  color: #ff6b35;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2d4059;
+}
+
+.help-section {
+  margin-bottom: 16px;
+}
+.help-section h3 {
+  font-size: 0.85rem;
+  color: #4ECDC4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+.help-section ul {
+  padding-left: 16px;
+}
+.help-section li {
+  font-size: 0.82rem;
+  color: #ccc;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.help-section li b {
+  color: #e0e0e0;
+}
+
+/* SPELL LIST */
+.spell-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.spell-entry {
+  background: #0f1a30;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid #ff6b35;
+}
+.spell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+  gap: 8px;
+}
+.spell-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+}
+.spell-meta {
+  font-size: 0.7rem;
+  color: #ff6b35;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.spell-entry p {
+  font-size: 0.8rem;
+  color: #bbb;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.spell-entry ul {
+  padding-left: 14px;
+  margin-top: 4px;
+}
+.spell-entry li {
+  font-size: 0.78rem;
+  color: #aaa;
+  line-height: 1.5;
+}
+.spell-entry li b {
+  color: #ddd;
+}

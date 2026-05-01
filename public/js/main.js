@@ -6,6 +6,7 @@
   let pa = 10, pm = 2;
   let renderLoopStarted = false;
 
+  Audio.init();
   Socket.connect();
 
   function setupLobbyHandlers() {
@@ -51,6 +52,78 @@
   function setupReplayHandler() {
     document.getElementById('btn-replay').addEventListener('click', () => {
       window.location.reload();
+    });
+  }
+
+  function setupHelpHandler() {
+    const btn = document.getElementById('btn-help');
+    const overlay = document.getElementById('help-overlay');
+
+    // Restore saved position or default to bottom-right
+    const saved = JSON.parse(localStorage.getItem('helpBtnPos') || 'null');
+    if (saved) {
+      btn.style.left = saved.x + 'px';
+      btn.style.top  = saved.y + 'px';
+    } else {
+      btn.style.right  = '12px';
+      btn.style.bottom = '80px';
+    }
+
+    let startX, startY, startLeft, startTop, dragged;
+    const DRAG_THRESHOLD = 6;
+
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      btn.setPointerCapture(e.pointerId);
+      dragged = false;
+
+      const rect = btn.getBoundingClientRect();
+      startX    = e.clientX;
+      startY    = e.clientY;
+      startLeft = rect.left;
+      startTop  = rect.top;
+
+      // Switch from right/bottom anchoring to left/top for dragging
+      btn.style.right  = 'auto';
+      btn.style.bottom = 'auto';
+      btn.style.left   = startLeft + 'px';
+      btn.style.top    = startTop  + 'px';
+    });
+
+    btn.addEventListener('pointermove', (e) => {
+      if (!btn.hasPointerCapture(e.pointerId)) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (!dragged && Math.sqrt(dx*dx + dy*dy) > DRAG_THRESHOLD) {
+        dragged = true;
+        btn.classList.add('dragging');
+      }
+      if (!dragged) return;
+
+      const W = window.innerWidth, H = window.innerHeight;
+      const x = Math.max(0, Math.min(W - btn.offsetWidth,  startLeft + dx));
+      const y = Math.max(0, Math.min(H - btn.offsetHeight, startTop  + dy));
+      btn.style.left = x + 'px';
+      btn.style.top  = y + 'px';
+    });
+
+    btn.addEventListener('pointerup', (e) => {
+      btn.classList.remove('dragging');
+      if (!dragged) {
+        overlay.classList.remove('hidden');
+      } else {
+        localStorage.setItem('helpBtnPos', JSON.stringify({
+          x: parseFloat(btn.style.left),
+          y: parseFloat(btn.style.top),
+        }));
+      }
+    });
+
+    document.getElementById('btn-help-close').addEventListener('click', () => {
+      overlay.classList.add('hidden');
+    });
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.add('hidden');
     });
   }
 
@@ -158,9 +231,18 @@
     Input.setMode('move');
     UI.updateSpellSelection(null);
     Input.refreshHighlights();
+    if (isMine) Audio.play('Turn_start');
   });
 
   Socket.on('onStateUpdate', (delta) => {
+    if (delta.movements) {
+      for (const m of delta.movements) {
+        if (m.path && m.path.length >= 2) {
+          Animations.addEntityMovement(m.id, m.type, m.path);
+        }
+      }
+    }
+    if (delta.actionType) Audio.playForAction(delta.actionType, delta.wallsCreated);
     GameClient.patchState(delta);
     const state = GameClient.getState();
     UI.renderHpBars(state);
@@ -172,6 +254,7 @@
 
   Socket.on('onDetonationResult', (data) => {
     Animations.addExplosionSequence(data.sequence);
+    Audio.play('Explosion');
   });
 
   Socket.on('onGameOver', (data) => {
@@ -182,4 +265,5 @@
   setupLobbyHandlers();
   setupRoomHandlers();
   setupReplayHandler();
+  setupHelpHandler();
 })();

@@ -8,7 +8,6 @@ const Renderer = (() => {
     // Double RAF: ensures CSS layout (flex) is fully computed before we measure
     requestAnimationFrame(() => requestAnimationFrame(() => {
       resize();
-      // ResizeObserver: re-calibrate if canvas changes size (orientation, resize)
       if (typeof ResizeObserver !== 'undefined') {
         new ResizeObserver(() => resize()).observe(canvas);
       }
@@ -34,6 +33,9 @@ const Renderer = (() => {
   function drawGrid(state) {
     const { cellSize, zoom } = Camera.getTransform();
     const cs = cellSize * zoom;
+    const zoneDepth = state.currentTurn ? (state.currentTurn.zoneDepth || 0) : 0;
+    const time = performance.now() / 400;
+    const zonePulse = 0.25 + 0.12 * Math.sin(time);
 
     for (let gy = 0; gy < GRID_H; gy++) {
       for (let gx = 0; gx < GRID_W; gx++) {
@@ -41,7 +43,12 @@ const Renderer = (() => {
         if (s.x + cs < 0 || s.y + cs < 0) continue;
 
         const isObstacle = state.obstacles.some(o => o.x === gx && o.y === gy);
-        if (isObstacle) {
+        const distFromEdge = Math.min(gx, GRID_W - 1 - gx, gy, GRID_H - 1 - gy);
+        const inZone = zoneDepth > 0 && distFromEdge < zoneDepth;
+
+        if (inZone) {
+          ctx.fillStyle = '#2a0a0a';
+        } else if (isObstacle) {
           ctx.fillStyle = '#1a1a2e';
         } else {
           ctx.fillStyle = (gx + gy) % 2 === 0 ? '#16213e' : '#1c2545';
@@ -52,9 +59,20 @@ const Renderer = (() => {
         ctx.lineWidth = 1;
         ctx.strokeRect(s.x, s.y, cs, cs);
 
-        if (isObstacle) {
+        if (isObstacle && !inZone) {
           ctx.fillStyle = '#0a0a14';
           ctx.fillRect(s.x + 4, s.y + 4, cs - 8, cs - 8);
+        }
+
+        if (inZone) {
+          ctx.fillStyle = `rgba(220, 40, 40, ${zonePulse})`;
+          ctx.fillRect(s.x, s.y, cs, cs);
+          // Brighter edge for the innermost ring of the zone
+          if (distFromEdge === zoneDepth - 1) {
+            ctx.strokeStyle = `rgba(255, 80, 80, 0.7)`;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(s.x + 1, s.y + 1, cs - 2, cs - 2);
+          }
         }
       }
     }
@@ -85,9 +103,14 @@ const Renderer = (() => {
     if (!state.bombs) return;
     const { cellSize, zoom } = Camera.getTransform();
     const cs = cellSize * zoom;
+    const now = performance.now();
 
     for (const bomb of state.bombs) {
-      const s = Camera.gridToScreen(bomb.x, bomb.y);
+      let gx = bomb.x, gy = bomb.y;
+      const animPos = Animations.getEntityAnimPos(bomb.id, now);
+      if (animPos) { gx = animPos.x; gy = animPos.y; }
+
+      const s = Camera.gridToScreen(gx, gy);
       const cx = s.x + cs / 2;
       const cy = s.y + cs / 2;
       const r = cs * 0.35;
@@ -116,10 +139,16 @@ const Renderer = (() => {
     if (!state.players) return;
     const { cellSize, zoom } = Camera.getTransform();
     const cs = cellSize * zoom;
+    const now = performance.now();
 
     for (const p of state.players) {
       if (!p.alive) continue;
-      const s = Camera.gridToScreen(p.x, p.y);
+
+      let gx = p.x, gy = p.y;
+      const animPos = Animations.getEntityAnimPos(p.id, now);
+      if (animPos) { gx = animPos.x; gy = animPos.y; }
+
+      const s = Camera.gridToScreen(gx, gy);
       const color = COLORS[p.colorIndex];
 
       ctx.fillStyle = color;
@@ -148,6 +177,7 @@ const Renderer = (() => {
       const s = Camera.gridToScreen(h.x, h.y);
       let color;
       if (h.type === 'reachable') color = 'rgba(78, 205, 196, 0.2)';
+      else if (h.type === 'path-preview') color = 'rgba(78, 205, 196, 0.45)';
       else if (h.type === 'range') color = 'rgba(255, 230, 109, 0.15)';
       else if (h.type === 'select-green') color = 'rgba(80, 220, 100, 0.5)';
       else if (h.type === 'select-red') color = 'rgba(220, 60, 60, 0.5)';
@@ -160,6 +190,10 @@ const Renderer = (() => {
       if (h.type === 'select-green' || h.type === 'select-red') {
         ctx.strokeStyle = h.type === 'select-green' ? '#4adc60' : '#dc4040';
         ctx.lineWidth = 3;
+        ctx.strokeRect(s.x + 1, s.y + 1, cs - 2, cs - 2);
+      } else if (h.type === 'path-preview') {
+        ctx.strokeStyle = 'rgba(78, 205, 196, 0.7)';
+        ctx.lineWidth = 2;
         ctx.strokeRect(s.x + 1, s.y + 1, cs - 2, cs - 2);
       }
     }
