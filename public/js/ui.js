@@ -2,11 +2,26 @@ const UI = (() => {
   let activeSpell = null;
 
   // ── Spell tooltip ────────────────────────────────────────────────────────────
-  const LONG_PRESS_MS = 500;
+  const LONG_PRESS_MS  = 500;
   const HOVER_DELAY_MS = 600;
   let _ttLongTimer = null;
   let _ttHoverTimer = null;
   let _ttLongFired  = false;  // true while tooltip shown via long-press
+
+  // Global release: hide tooltip wherever the finger/mouse lifts.
+  // Necessary because mobile often fires pointercancel or routes pointerup
+  // to document instead of the originating element after a long press.
+  function _onGlobalRelease() {
+    if (!_ttLongFired) return;
+    // Small delay so the button's own click handler can read _ttLongFired first
+    setTimeout(() => {
+      _hideTooltip();
+      _ttLongFired = false;
+    }, 40);
+  }
+  document.addEventListener('pointerup',     _onGlobalRelease);
+  document.addEventListener('pointercancel', _onGlobalRelease);
+  document.addEventListener('touchend',      _onGlobalRelease, { passive: true });
 
   function _showTooltip(btn, spell) {
     const tt = document.getElementById('spell-tooltip');
@@ -45,30 +60,21 @@ const UI = (() => {
   }
 
   function _attachTooltip(btn, spell) {
-    // Long-press (mobile + desktop)
+    // Long-press: start timer on pointerdown, cancel on move
     btn.addEventListener('pointerdown', () => {
+      clearTimeout(_ttLongTimer);
       _ttLongFired = false;
       _ttLongTimer = setTimeout(() => {
         _ttLongFired = true;
         _showTooltip(btn, spell);
       }, LONG_PRESS_MS);
     });
-    btn.addEventListener('pointerup', () => {
-      clearTimeout(_ttLongTimer);
-      if (_ttLongFired) { _hideTooltip(); _ttLongFired = false; }
-    });
-    btn.addEventListener('pointercancel', () => {
-      clearTimeout(_ttLongTimer);
-      _hideTooltip();
-      _ttLongFired = false;
-    });
     btn.addEventListener('pointermove', () => {
-      // Cancel if finger drifts
+      // Drift → abort the pending timer (release hides via global listener)
       clearTimeout(_ttLongTimer);
-      if (_ttLongFired) { _hideTooltip(); _ttLongFired = false; }
     });
 
-    // Hover (desktop only — pointer: fine)
+    // Hover (desktop only)
     btn.addEventListener('mouseenter', () => {
       _ttHoverTimer = setTimeout(() => _showTooltip(btn, spell), HOVER_DELAY_MS);
     });
