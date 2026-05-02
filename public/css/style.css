@@ -473,6 +473,11 @@ input[type="text"]:focus {
   height: 100%;
   object-fit: contain;
   image-rendering: pixelated;
+  pointer-events: none;           /* clicks/touches pass to parent button */
+  -webkit-touch-callout: none;    /* iOS: no "save image" callout */
+  -webkit-user-select: none;
+  user-select: none;
+  draggable: false;
 }
 
 /* Cooldown overlay: big number centered over the icon */

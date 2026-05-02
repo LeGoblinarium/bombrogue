@@ -12,27 +12,31 @@ const UI = (() => {
     const tt = document.getElementById('spell-tooltip');
     tt.querySelector('.tt-title').textContent = spell.name;
     tt.querySelector('.tt-desc').textContent  = spell.desc || '';
+
+    // Position off-screen first, then show — forces browser reflow so
+    // offsetWidth/offsetHeight return real values (getBoundingClientRect
+    // would return 0 if called immediately after display:none→block)
     tt.style.visibility = 'hidden';
+    tt.style.left       = '0px';
+    tt.style.top        = '0px';
     tt.style.display    = 'block';
 
-    const bRect  = btn.getBoundingClientRect();
-    const ttRect = tt.getBoundingClientRect();
-    const GAP    = 10; // px above the button
+    const ttW = tt.offsetWidth;   // forces reflow
+    const ttH = tt.offsetHeight;
 
-    // Center horizontally on button, clamp to viewport
-    let left = bRect.left + bRect.width / 2 - ttRect.width / 2;
-    left = Math.max(6, Math.min(window.innerWidth - ttRect.width - 6, left));
+    const bRect = btn.getBoundingClientRect();
+    const GAP   = 10;
 
-    // Place above the button; if it would go off-screen, place below instead
-    let top = bRect.top - ttRect.height - GAP;
+    let left = bRect.left + bRect.width / 2 - ttW / 2;
+    left = Math.max(6, Math.min(window.innerWidth - ttW - 6, left));
+
+    let top = bRect.top - ttH - GAP;
     if (top < 6) top = bRect.bottom + GAP;
 
-    // Arrow side (data attribute drives CSS)
     tt.dataset.arrowSide = top < bRect.top ? 'bottom' : 'top';
-
-    tt.style.left       = left + 'px';
-    tt.style.top        = top  + 'px';
-    tt.style.visibility = 'visible';
+    tt.style.left        = left + 'px';
+    tt.style.top         = top  + 'px';
+    tt.style.visibility  = 'visible';
   }
 
   function _hideTooltip() {
@@ -181,6 +185,7 @@ const UI = (() => {
       btn.innerHTML = `
         <div class="spell-icon-wrap">
           <img class="spell-icon" src="/images/icon-${spell.id}.png" alt="${spell.name}"
+               draggable="false"
                onerror="this.style.display='none';this.nextElementSibling.style.display=''">
           <span class="spell-name-text" style="display:none">${spell.name}</span>
           ${cdDisplay > 0 ? `<div class="spell-cd-overlay">${cdDisplay}</div>` : ''}
@@ -191,6 +196,9 @@ const UI = (() => {
       if (disabled) btn.classList.add('disabled');
       if (onCooldown) btn.classList.add('on-cooldown');
       if (activeSpell === spell.id) btn.classList.add('active');
+
+        // Prevent native mobile context menu (image save dialog, etc.)
+      btn.addEventListener('contextmenu', (e) => e.preventDefault());
 
       _attachTooltip(btn, spell);
 
