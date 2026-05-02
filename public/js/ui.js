@@ -12,8 +12,12 @@ const UI = (() => {
   // Necessary because mobile often fires pointercancel or routes pointerup
   // to document instead of the originating element after a long press.
   function _onGlobalRelease() {
+    // Always cancel the pending long-press timer on release — without this,
+    // a quick tap lets the timer fire 500ms later on a potentially stale
+    // button reference, placing the tooltip at 0,0 with no one to hide it.
+    clearTimeout(_ttLongTimer);
+    _ttLongTimer = null;
     if (!_ttLongFired) return;
-    // Small delay so the button's own click handler can read _ttLongFired first
     setTimeout(() => {
       _hideTooltip();
       _ttLongFired = false;
@@ -38,6 +42,9 @@ const UI = (() => {
 
     const ttW = tt.offsetWidth;   // forces reflow
     const ttH = tt.offsetHeight;
+
+    // Safety: button may have been removed from DOM by a renderSpellBar refresh
+    if (!document.body.contains(btn)) { _hideTooltip(); _ttLongFired = false; return; }
 
     const bRect = btn.getBoundingClientRect();
     const GAP   = 10;
