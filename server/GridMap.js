@@ -1,31 +1,87 @@
 const C = require('./constants');
 
-const OBSTACLES = [
-  // Symmetric pattern on 20x20 grid
-  // Pillars in 4-fold symmetry
-  { x: 5, y: 5 }, { x: 14, y: 5 }, { x: 5, y: 14 }, { x: 14, y: 14 },
-  { x: 5, y: 9 }, { x: 14, y: 9 }, { x: 5, y: 10 }, { x: 14, y: 10 },
-  { x: 9, y: 5 }, { x: 10, y: 5 }, { x: 9, y: 14 }, { x: 10, y: 14 },
-  { x: 8, y: 8 }, { x: 11, y: 8 }, { x: 8, y: 11 }, { x: 11, y: 11 },
-  { x: 2, y: 7 }, { x: 17, y: 7 }, { x: 2, y: 12 }, { x: 17, y: 12 },
-  { x: 7, y: 2 }, { x: 12, y: 2 }, { x: 7, y: 17 }, { x: 12, y: 17 },
-];
-
-const SPAWNS = [
-  { x: 1, y: 1 },
-  { x: 18, y: 18 },
-  { x: 18, y: 1 },
-  { x: 1, y: 18 },
-];
+// Number of random obstacles to generate per game
+const OBSTACLE_COUNT = 22;
 
 class GridMap {
   constructor() {
-    this.width = C.GRID_W;
+    this.width  = C.GRID_W;
     this.height = C.GRID_H;
-    // Mutable copy — obstacles can be destroyed during the game
-    this.obstacleSet = new Set(OBSTACLES.map(o => `${o.x},${o.y}`));
+
+    // 1. Generate 4 random spawn points, each at least 12 Manhattan distance apart
+    this._spawns = this._generateSpawns(4, 12);
+
+    // 2. Generate obstacles, none within 3 cells (Manhattan) of any spawn
+    const obstacleList = this._generateObstacles(OBSTACLE_COUNT, 3);
+    this.obstacleSet = new Set(obstacleList.map(o => `${o.x},${o.y}`));
   }
 
+  // ── Spawn generation ─────────────────────────────────────────────────────────
+  _generateSpawns(count, minDist) {
+    const spawns = [];
+    const MARGIN = 1; // keep spawns off the very edge
+    const MAX_ATTEMPTS = 20000;
+
+    for (let i = 0; i < count; i++) {
+      let placed = false;
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        const x = MARGIN + Math.floor(Math.random() * (this.width  - MARGIN * 2));
+        const y = MARGIN + Math.floor(Math.random() * (this.height - MARGIN * 2));
+
+        // Must be at least minDist Manhattan distance from every already-placed spawn
+        const tooClose = spawns.some(
+          s => Math.abs(s.x - x) + Math.abs(s.y - y) < minDist
+        );
+        if (!tooClose) {
+          spawns.push({ x, y });
+          placed = true;
+          break;
+        }
+      }
+
+      if (!placed) {
+        // Fallback: corners (should only happen if minDist is too large for the grid)
+        const fallbacks = [
+          { x: 1, y: 1 }, { x: 18, y: 18 },
+          { x: 18, y: 1 }, { x: 1,  y: 18 },
+        ];
+        spawns.push(fallbacks[i] || { x: 1, y: 1 });
+      }
+    }
+    return spawns;
+  }
+
+  // ── Obstacle generation ───────────────────────────────────────────────────────
+  _generateObstacles(count, minDistFromSpawn) {
+    const obstacles = [];
+    const obstacleKeys = new Set();
+    const spawnKeys    = new Set(this._spawns.map(s => `${s.x},${s.y}`));
+    const MAX_ATTEMPTS = 10000;
+
+    let placed = 0;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS && placed < count; attempt++) {
+      // Keep obstacles off the border row/col so they don't hug walls
+      const x = 1 + Math.floor(Math.random() * (this.width  - 2));
+      const y = 1 + Math.floor(Math.random() * (this.height - 2));
+      const key = `${x},${y}`;
+
+      if (obstacleKeys.has(key)) continue; // already an obstacle here
+      if (spawnKeys.has(key))    continue; // would overlap a spawn
+
+      // Must be at least minDistFromSpawn Manhattan distance from every spawn
+      const tooClose = this._spawns.some(
+        s => Math.abs(s.x - x) + Math.abs(s.y - y) < minDistFromSpawn
+      );
+      if (tooClose) continue;
+
+      obstacles.push({ x, y });
+      obstacleKeys.add(key);
+      placed++;
+    }
+    return obstacles;
+  }
+
+  // ── Public API ────────────────────────────────────────────────────────────────
   getObstacles() {
     return Array.from(this.obstacleSet).map(key => {
       const [x, y] = key.split(',').map(Number);
@@ -33,12 +89,12 @@ class GridMap {
     });
   }
 
-  removeObstacle(x, y) {
-    this.obstacleSet.delete(`${x},${y}`);
+  getSpawn(index) {
+    return this._spawns[index] || { x: 1, y: 1 };
   }
 
-  getSpawn(index) {
-    return SPAWNS[index] || { x: 1, y: 1 };
+  removeObstacle(x, y) {
+    this.obstacleSet.delete(`${x},${y}`);
   }
 
   isObstacle(x, y) {
