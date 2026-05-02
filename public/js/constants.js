@@ -6,12 +6,36 @@ const MIN_PM = 2;
 const MAX_PM = 6;
 
 const SPELLS = [
-  { id: 'place-bomb',  name: 'Bombe',    cost: 4, type: 'pa',   cd: 0  },
-  { id: 'repulseur',   name: 'Répuls.',  cost: 2, type: 'pa',   cd: 1  },
-  { id: 'aimant',      name: 'Aimant',   cost: 2, type: 'pa',   cd: 0  },
-  { id: 'entourloupe', name: 'Entour.',  cost: 3, type: 'pa',   cd: 5  },
-  { id: 'stratageme',  name: 'Strata.',  cost: 1, type: 'pa',   cd: 3  },
-  { id: 'liberation',  name: 'Libér.',   cost: 3, type: 'pa',   cd: 10 },
-  { id: 'detonate',    name: 'Détoner',  cost: 2, type: 'pa',   cd: 0  },
-  { id: 'end-turn',    name: 'Fin tour', cost: 0, type: 'none', cd: 0  },
+  {
+    id: 'place-bomb', name: 'Bombe', cost: 4, type: 'pa', cd: 0,
+    desc: 'Place une bombe à portée 1–3 cases. Maximum 3 bombes actives. Explose en losange (×multiplicateur d\'âge).',
+  },
+  {
+    id: 'repulseur', name: 'Répuls.', cost: 2, type: 'pa', cd: 1,
+    desc: 'Repousse bombes et joueurs autour de la case ciblée (rayon 3). À 1 case → 3 poussées, 2 → 2, 3 → 1. Utilisable 1×/tour.',
+  },
+  {
+    id: 'aimant', name: 'Aimant', cost: 2, type: 'pa', cd: 0,
+    desc: 'Attire tout ce qui se trouve sur les axes cardinaux (jusqu\'à 8 cases) vers la case ciblée, de 3 cases max.',
+  },
+  {
+    id: 'entourloupe', name: 'Entour.', cost: 3, type: 'pa', cd: 5,
+    desc: 'Échange ta position avec une de tes propres bombes. Portée 1–8 cases. CD 5 tours.',
+  },
+  {
+    id: 'stratageme', name: 'Strata.', cost: 1, type: 'pa', cd: 3,
+    desc: 'Téléporte une bombe (alliée ou ennemie) à sa position précédente. La bombe doit avoir bougé au moins une fois. CD 3 tours.',
+  },
+  {
+    id: 'liberation', name: 'Libér.', cost: 3, type: 'pa', cd: 10,
+    desc: 'Repousse toutes les bombes et joueurs adjacents de 3 cases dans leur direction. Idéal pour se dégager. CD 10 tours.',
+  },
+  {
+    id: 'detonate', name: 'Détoner', cost: 2, type: 'pa', cd: 0,
+    desc: 'Fait exploser toutes tes bombes simultanément. Les explosions peuvent déclencher des réactions en chaîne.',
+  },
+  {
+    id: 'end-turn', name: 'Fin tour', cost: 0, type: 'none', cd: 0,
+    desc: 'Termine ton tour immédiatement sans utiliser tes PA ou PM restants.',
+  },
 ];

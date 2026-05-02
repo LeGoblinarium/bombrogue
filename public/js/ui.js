@@ -1,6 +1,79 @@
 const UI = (() => {
   let activeSpell = null;
 
+  // ── Spell tooltip ────────────────────────────────────────────────────────────
+  const LONG_PRESS_MS = 500;
+  const HOVER_DELAY_MS = 600;
+  let _ttLongTimer = null;
+  let _ttHoverTimer = null;
+  let _ttLongFired  = false;  // true while tooltip shown via long-press
+
+  function _showTooltip(btn, spell) {
+    const tt = document.getElementById('spell-tooltip');
+    tt.querySelector('.tt-title').textContent = spell.name;
+    tt.querySelector('.tt-desc').textContent  = spell.desc || '';
+    tt.style.visibility = 'hidden';
+    tt.style.display    = 'block';
+
+    const bRect  = btn.getBoundingClientRect();
+    const ttRect = tt.getBoundingClientRect();
+    const GAP    = 10; // px above the button
+
+    // Center horizontally on button, clamp to viewport
+    let left = bRect.left + bRect.width / 2 - ttRect.width / 2;
+    left = Math.max(6, Math.min(window.innerWidth - ttRect.width - 6, left));
+
+    // Place above the button; if it would go off-screen, place below instead
+    let top = bRect.top - ttRect.height - GAP;
+    if (top < 6) top = bRect.bottom + GAP;
+
+    // Arrow side (data attribute drives CSS)
+    tt.dataset.arrowSide = top < bRect.top ? 'bottom' : 'top';
+
+    tt.style.left       = left + 'px';
+    tt.style.top        = top  + 'px';
+    tt.style.visibility = 'visible';
+  }
+
+  function _hideTooltip() {
+    const tt = document.getElementById('spell-tooltip');
+    if (tt) tt.style.display = 'none';
+  }
+
+  function _attachTooltip(btn, spell) {
+    // Long-press (mobile + desktop)
+    btn.addEventListener('pointerdown', () => {
+      _ttLongFired = false;
+      _ttLongTimer = setTimeout(() => {
+        _ttLongFired = true;
+        _showTooltip(btn, spell);
+      }, LONG_PRESS_MS);
+    });
+    btn.addEventListener('pointerup', () => {
+      clearTimeout(_ttLongTimer);
+      if (_ttLongFired) { _hideTooltip(); _ttLongFired = false; }
+    });
+    btn.addEventListener('pointercancel', () => {
+      clearTimeout(_ttLongTimer);
+      _hideTooltip();
+      _ttLongFired = false;
+    });
+    btn.addEventListener('pointermove', () => {
+      // Cancel if finger drifts
+      clearTimeout(_ttLongTimer);
+      if (_ttLongFired) { _hideTooltip(); _ttLongFired = false; }
+    });
+
+    // Hover (desktop only — pointer: fine)
+    btn.addEventListener('mouseenter', () => {
+      _ttHoverTimer = setTimeout(() => _showTooltip(btn, spell), HOVER_DELAY_MS);
+    });
+    btn.addEventListener('mouseleave', () => {
+      clearTimeout(_ttHoverTimer);
+      if (!_ttLongFired) _hideTooltip();
+    });
+  }
+
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -119,7 +192,11 @@ const UI = (() => {
       if (onCooldown) btn.classList.add('on-cooldown');
       if (activeSpell === spell.id) btn.classList.add('active');
 
+      _attachTooltip(btn, spell);
+
       btn.addEventListener('click', () => {
+        // Never fire click if a long-press tooltip was just shown
+        if (_ttLongFired) return;
         if (disabled) return;
         if (spell.id === 'detonate') {
           Input.triggerSimpleAction('detonate');
