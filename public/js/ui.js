@@ -98,21 +98,25 @@ const UI = (() => {
       const cd = me.cooldowns ? (me.cooldowns[spell.id] || 0) : 0;
       const usedThisTurn = me.usedThisTurn ? me.usedThisTurn[spell.id] : false;
 
-      let disabled = !isMyTurn || !me.alive;
+      const onCooldown = cd > 0 || (spell.id === 'repulseur' && usedThisTurn);
+      let disabled = !isMyTurn || !me.alive || onCooldown;
       if (spell.cost > 0 && me.paLeft < spell.cost) disabled = true;
-      if (cd > 0) disabled = true;
-      if (spell.id === 'repulseur' && usedThisTurn) disabled = true;
       if (spell.id === 'place-bomb' && state.bombs.filter(b => b.ownerId === me.id).length >= 3) disabled = true;
 
+      const cdDisplay = onCooldown ? (cd > 0 ? cd : 1) : 0;
+
       btn.innerHTML = `
-        <img class="spell-icon" src="/images/icon-${spell.id}.png" alt="${spell.name}"
-             onerror="this.style.display='none';this.nextElementSibling.style.display=''">
-        <span class="spell-name-text" style="display:none">${spell.name}</span>
+        <div class="spell-icon-wrap">
+          <img class="spell-icon" src="/images/icon-${spell.id}.png" alt="${spell.name}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+          <span class="spell-name-text" style="display:none">${spell.name}</span>
+          ${cdDisplay > 0 ? `<div class="spell-cd-overlay">${cdDisplay}</div>` : ''}
+        </div>
         <span class="spell-cost">${spell.cost > 0 ? spell.cost + ' PA' : ''}</span>
-        ${cd > 0 ? `<span class="spell-cd">CD ${cd}</span>` : ''}
       `;
 
       if (disabled) btn.classList.add('disabled');
+      if (onCooldown) btn.classList.add('on-cooldown');
       if (activeSpell === spell.id) btn.classList.add('active');
 
       btn.addEventListener('click', () => {
