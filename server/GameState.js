@@ -45,6 +45,7 @@ class GameState {
     return {
       players: this.players.map(p => p.serialize()),
       bombs: this.bombs.map(b => b.serialize()),
+      obstacles: this.gridMap.getObstacles(),
       walls: this.walls.map(w => ({
         cells: w.cells,
         ownerId: w.ownerId,

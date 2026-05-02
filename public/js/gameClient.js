@@ -18,6 +18,7 @@ const GameClient = (() => {
     if (!state) return;
     if (delta.players) state.players = delta.players;
     if (delta.bombs) state.bombs = delta.bombs;
+    if (delta.obstacles) state.obstacles = delta.obstacles;
     if (delta.walls) state.walls = delta.walls;
     if (delta.currentTurn) state.currentTurn = delta.currentTurn;
   }

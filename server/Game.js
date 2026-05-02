@@ -107,6 +107,7 @@ class Game {
       currentTurn: this.buildCurrentTurn(),
       players: this.state.players.map(p => p.serialize()),
       bombs: this.state.bombs.map(b => b.serialize()),
+      obstacles: this.state.gridMap.getObstacles(),
       walls: this.state.walls.map(w => ({
         cells: w.cells, ownerId: w.ownerId, damage: w.damage, compSize: w.compSize,
       })),
@@ -284,6 +285,11 @@ class Game {
 
     // Remove detonated bombs
     this.state.bombs = this.state.bombs.filter(b => !result.detonatedIds.includes(b.id));
+
+    // Remove obstacles destroyed by the explosion
+    for (const obs of result.destroyedObstacles) {
+      this.state.gridMap.removeObstacle(obs.x, obs.y);
+    }
 
     // Send detonation animation
     // Group sequence by step for client animation

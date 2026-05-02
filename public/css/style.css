@@ -32,6 +32,36 @@ html, body {
   justify-content: center;
 }
 
+/* BACKGROUND IMAGE — lobby, room, gameover */
+#screen-lobby,
+#screen-room,
+#screen-gameover {
+  background-image: url('/images/bg-menu.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Dark overlay for readability */
+#screen-lobby::before,
+#screen-room::before,
+#screen-gameover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 26, 0.62);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Content must sit above the overlay */
+.lobby-container,
+.room-container,
+.gameover-container {
+  position: relative;
+  z-index: 1;
+}
+
 /* LOBBY */
 .lobby-container {
   width: 90%;

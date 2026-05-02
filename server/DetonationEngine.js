@@ -1,20 +1,17 @@
 const C = require('./constants');
 
-function getAoeCells(centerX, centerY, gridMap) {
-  // AoE circulaire : portée 2 en ligne droite, 1 en diagonale
-  // Pattern : losange/diamant sans le centre (le centre = bombe elle-même)
+/**
+ * Compute explosion AoE cells for a bomb.
+ *
+ * destroyedInChain: Set of "x,y" keys for obstacles already destroyed by earlier
+ * steps in this same chain — rays pass through them freely.
+ *
+ * When a ray hits an intact obstacle it is added to destroyedInChain, the obstacle
+ * cell is included in the returned cells (for visual), and the ray stops there.
+ */
+function getAoeCells(centerX, centerY, gridMap, destroyedInChain) {
   const cells = [{ x: centerX, y: centerY }];
-  const offsets = [
-    // Cardinal directions, range 2 (blocked by obstacles)
-    [0, -1], [0, -2],
-    [0, 1], [0, 2],
-    [-1, 0], [-2, 0],
-    [1, 0], [2, 0],
-    // Diagonals, range 1
-    [-1, -1], [1, -1], [-1, 1], [1, 1],
-  ];
 
-  // Cardinal: must walk through cells, blocked by obstacles
   const directions = [
     { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
     { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
@@ -25,16 +22,31 @@ function getAoeCells(centerX, centerY, gridMap) {
       const x = centerX + dir.dx * dist;
       const y = centerY + dir.dy * dist;
       if (!gridMap.inBounds(x, y)) break;
-      if (gridMap.isObstacle(x, y)) break;
+
+      const key = `${x},${y}`;
+      const isIntactObstacle = gridMap.isObstacle(x, y) && !destroyedInChain.has(key);
+
+      if (isIntactObstacle) {
+        // Explosion hits the obstacle: destroy it, include cell for visual, stop ray
+        destroyedInChain.add(key);
+        cells.push({ x, y, destroyedObstacle: true });
+        break;
+      }
       cells.push({ x, y });
     }
   }
 
-  // Diagonals, range 1 (blocked individually)
+  // Diagonals, range 1
   for (const [dx, dy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) {
     const x = centerX + dx, y = centerY + dy;
     if (!gridMap.inBounds(x, y)) continue;
-    if (gridMap.isObstacle(x, y)) continue;
+    const key = `${x},${y}`;
+    const isIntactObstacle = gridMap.isObstacle(x, y) && !destroyedInChain.has(key);
+    if (isIntactObstacle) {
+      destroyedInChain.add(key);
+      cells.push({ x, y, destroyedObstacle: true });
+      continue;
+    }
     cells.push({ x, y });
   }
 
@@ -45,6 +57,9 @@ function resolveDetonation(triggerPlayerId, bombs, players, gridMap) {
   const detonated = new Set();
   const queue = [];
   const sequence = [];
+
+  // Obstacles destroyed across the whole chain (passed through by later steps)
+  const destroyedInChain = new Set();
 
   // Seed with triggering player's bombs
   for (const b of bombs) {
@@ -63,13 +78,15 @@ function resolveDetonation(triggerPlayerId, bombs, players, gridMap) {
     }
 
     for (const { bomb, step } of batch) {
-      const aoe = getAoeCells(bomb.x, bomb.y, gridMap);
+      const aoe = getAoeCells(bomb.x, bomb.y, gridMap, destroyedInChain);
       const damage = Math.round(C.DMG_EXPLOSION * bomb.getMultiplier());
 
       const hits = [];
       const chained = [];
 
       for (const cell of aoe) {
+        if (cell.destroyedObstacle) continue; // no player damage on obstacle cells
+
         // Players hit
         for (const p of players) {
           if (p.alive && p.x === cell.x && p.y === cell.y) {
@@ -114,10 +131,17 @@ function resolveDetonation(triggerPlayerId, bombs, players, gridMap) {
     if (p) p.takeDamage(dmg);
   }
 
+  // Convert destroyed obstacle keys to {x, y} objects
+  const destroyedObstacles = Array.from(destroyedInChain).map(key => {
+    const [x, y] = key.split(',').map(Number);
+    return { x, y };
+  });
+
   return {
     sequence,
     detonatedIds: Array.from(detonated),
     damageByPlayer,
+    destroyedObstacles,
   };
 }
 

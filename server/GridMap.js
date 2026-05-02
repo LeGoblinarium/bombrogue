@@ -22,11 +22,19 @@ class GridMap {
   constructor() {
     this.width = C.GRID_W;
     this.height = C.GRID_H;
+    // Mutable copy — obstacles can be destroyed during the game
     this.obstacleSet = new Set(OBSTACLES.map(o => `${o.x},${o.y}`));
   }
 
   getObstacles() {
-    return OBSTACLES.map(o => ({ x: o.x, y: o.y }));
+    return Array.from(this.obstacleSet).map(key => {
+      const [x, y] = key.split(',').map(Number);
+      return { x, y };
+    });
+  }
+
+  removeObstacle(x, y) {
+    this.obstacleSet.delete(`${x},${y}`);
   }
 
   getSpawn(index) {

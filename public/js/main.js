@@ -219,7 +219,7 @@
   });
 
   Socket.on('onTurnStart', (data) => {
-    GameClient.patchState({ currentTurn: data.currentTurn, players: data.players, bombs: data.bombs, walls: data.walls });
+    GameClient.patchState({ currentTurn: data.currentTurn, players: data.players, bombs: data.bombs, obstacles: data.obstacles, walls: data.walls });
     const state = GameClient.getState();
     UI.renderHpBars(state);
     UI.updateTurnInfo(state);
