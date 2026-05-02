@@ -437,6 +437,22 @@ input[type="text"]:focus {
   transition: border-color 0.2s, opacity 0.2s;
 }
 
+/* 2-row grid on narrow screens (phones) */
+@media (max-width: 500px) {
+  #spell-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    overflow-x: hidden;
+    gap: 3px;
+  }
+  .spell-btn {
+    flex-shrink: unset;
+    min-width: 0;
+    padding: 5px 4px;
+    font-size: 0.65rem;
+  }
+}
+
 .spell-btn.active {
   border-color: #ff6b35;
   background: #2d1810;
@@ -447,11 +463,25 @@ input[type="text"]:focus {
   pointer-events: none;
 }
 
+.spell-icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 2px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.spell-btn .spell-name-text {
+  display: block;
+  font-size: 0.7rem;
+}
+
 .spell-btn .spell-cost {
   display: block;
   font-size: 0.65rem;
   color: #888;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .spell-btn .spell-cd {

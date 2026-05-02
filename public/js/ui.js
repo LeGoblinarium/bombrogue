@@ -105,7 +105,9 @@ const UI = (() => {
       if (spell.id === 'place-bomb' && state.bombs.filter(b => b.ownerId === me.id).length >= 3) disabled = true;
 
       btn.innerHTML = `
-        ${spell.name}
+        <img class="spell-icon" src="/images/icon-${spell.id}.png" alt="${spell.name}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display=''">
+        <span class="spell-name-text" style="display:none">${spell.name}</span>
         <span class="spell-cost">${spell.cost > 0 ? spell.cost + ' PA' : ''}</span>
         ${cd > 0 ? `<span class="spell-cd">CD ${cd}</span>` : ''}
       `;
