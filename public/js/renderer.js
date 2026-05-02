@@ -216,24 +216,32 @@ const Renderer = (() => {
       const isActive = state.currentTurn && state.currentTurn.playerId === p.id;
 
       if (spritesReady) {
+        const cx = s.x + cs * 0.5;
+        const cy = s.y + cs * 0.5;
+        const angle = Animations.getPlayerFacing(p.id);
+        const bw = Math.max(2, Math.round(cs * 0.07));
+
         // Ground shadow
         ctx.beginPath();
-        ctx.ellipse(s.x + cs * 0.5, s.y + cs * 0.92, cs * 0.38, cs * 0.09, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, s.y + cs * 0.92, cs * 0.38, cs * 0.09, 0, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
         ctx.fill();
 
-        // Active-turn glow (drawn behind the sprite)
+        // Active-turn glow
         if (isActive) {
           ctx.shadowColor = '#fff';
           ctx.shadowBlur = cs * 0.3;
         }
 
-        // Player sprite
-        ctx.drawImage(sprites['player'], s.x + 1, s.y + 1, cs - 2, cs - 2);
+        // Player sprite with rotation
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angle);
+        ctx.drawImage(sprites['player'], -cs / 2 + 1, -cs / 2 + 1, cs - 2, cs - 2);
+        ctx.restore();
         ctx.shadowBlur = 0;
 
         // Colored border showing ownership
-        const bw = Math.max(2, Math.round(cs * 0.07));
         ctx.strokeStyle = color;
         ctx.lineWidth = bw;
         ctx.strokeRect(s.x + bw / 2, s.y + bw / 2, cs - bw, cs - bw);
@@ -245,7 +253,7 @@ const Renderer = (() => {
           ctx.strokeRect(s.x + bw + 1, s.y + bw + 1, cs - bw * 2 - 2, cs - bw * 2 - 2);
         }
 
-        // Name initial — top-right corner badge
+        // Name initial — top-right corner badge (drawn in screen space, not rotated)
         const fontSize = Math.max(7, Math.round(cs * 0.24));
         const bx = s.x + cs - fontSize * 0.75;
         const by = s.y + fontSize * 0.75;
@@ -282,26 +290,43 @@ const Renderer = (() => {
 
     for (const h of highlights) {
       const s = Camera.gridToScreen(h.x, h.y);
-      let color;
-      if (h.type === 'reachable') color = 'rgba(78, 205, 196, 0.2)';
-      else if (h.type === 'path-preview') color = 'rgba(78, 205, 196, 0.45)';
-      else if (h.type === 'range') color = 'rgba(255, 230, 109, 0.15)';
-      else if (h.type === 'select-green') color = 'rgba(80, 220, 100, 0.5)';
-      else if (h.type === 'select-red') color = 'rgba(220, 60, 60, 0.5)';
-      else if (h.type === 'aoe-preview') color = 'rgba(255, 107, 53, 0.3)';
-      else continue;
+      let fillColor, strokeColor = null, strokeWidth = 2;
 
-      ctx.fillStyle = color;
+      if (h.type === 'reachable') {
+        fillColor = 'rgba(78, 205, 196, 0.45)';
+        strokeColor = 'rgba(78, 205, 196, 0.6)';
+        strokeWidth = 1;
+      } else if (h.type === 'path-preview') {
+        fillColor = 'rgba(78, 205, 196, 0.65)';
+        strokeColor = 'rgba(120, 240, 230, 0.9)';
+        strokeWidth = 2;
+      } else if (h.type === 'range') {
+        fillColor = 'rgba(255, 230, 109, 0.35)';
+        strokeColor = 'rgba(255, 220, 80, 0.5)';
+        strokeWidth = 1;
+      } else if (h.type === 'select-green') {
+        fillColor = 'rgba(80, 220, 100, 0.55)';
+        strokeColor = '#4adc60';
+        strokeWidth = 3;
+      } else if (h.type === 'select-red') {
+        fillColor = 'rgba(220, 60, 60, 0.55)';
+        strokeColor = '#dc4040';
+        strokeWidth = 3;
+      } else if (h.type === 'aoe-preview') {
+        fillColor = 'rgba(255, 107, 53, 0.4)';
+        strokeColor = 'rgba(255, 130, 60, 0.6)';
+        strokeWidth = 1;
+      } else {
+        continue;
+      }
+
+      ctx.fillStyle = fillColor;
       ctx.fillRect(s.x, s.y, cs, cs);
 
-      if (h.type === 'select-green' || h.type === 'select-red') {
-        ctx.strokeStyle = h.type === 'select-green' ? '#4adc60' : '#dc4040';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(s.x + 1, s.y + 1, cs - 2, cs - 2);
-      } else if (h.type === 'path-preview') {
-        ctx.strokeStyle = 'rgba(78, 205, 196, 0.7)';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(s.x + 1, s.y + 1, cs - 2, cs - 2);
+      if (strokeColor) {
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = strokeWidth;
+        ctx.strokeRect(s.x + strokeWidth / 2, s.y + strokeWidth / 2, cs - strokeWidth, cs - strokeWidth);
       }
     }
   }

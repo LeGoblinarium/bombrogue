@@ -35,12 +35,16 @@ const Input = (() => {
 
   function onTouchMove(e) {
     e.preventDefault();
-    if (e.touches.length === 1 && !Camera.isZoomed()) {
+    if (e.touches.length === 1) {
       const dx = e.touches[0].clientX - touchStartX;
       const dy = e.touches[0].clientY - touchStartY;
+      // Always check the drag threshold so taps are detected even when zoomed
       if (Math.sqrt(dx * dx + dy * dy) > TAP_THRESHOLD_PX) moved = true;
+      // Pan camera only when zoomed
+      if (Camera.isZoomed()) Camera.handleTouchMove(e.touches);
       return;
     }
+    // Two-finger pinch
     Camera.handleTouchMove(e.touches);
     moved = true;
   }

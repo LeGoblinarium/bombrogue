@@ -5,6 +5,10 @@ const Animations = (() => {
   const entityMovements = new Map();
   const MS_PER_CELL = 90;
 
+  // Persistent facing angles per player (survives after animation ends)
+  // Angle in radians: 0 = south (default sprite), π/2 = east, π = north, -π/2 = west
+  const playerFacing = new Map();
+
   function add(type, params) {
     active.push({
       type,
@@ -55,6 +59,29 @@ const Animations = (() => {
       startTime: performance.now(),
       duration: (path.length - 1) * MS_PER_CELL,
     });
+    // Store facing direction from last step of the path (persistent after anim)
+    if (type === 'player') {
+      const last = path[path.length - 1];
+      const prev = path[path.length - 2];
+      const dx = last.x - prev.x;
+      const dy = last.y - prev.y;
+      // Sprite default = facing south (down). Angles clockwise from south.
+      let angle = 0;
+      if      (dy > 0 && dx === 0) angle = 0;          // south
+      else if (dy < 0 && dx === 0) angle = Math.PI;    // north
+      else if (dx > 0 && dy === 0) angle = Math.PI / 2; // east
+      else if (dx < 0 && dy === 0) angle = -Math.PI / 2; // west
+      else if (dx > 0 && dy > 0)   angle = Math.PI / 4;  // SE
+      else if (dx < 0 && dy > 0)   angle = -Math.PI / 4; // SW
+      else if (dx > 0 && dy < 0)   angle = 3 * Math.PI / 4; // NE
+      else if (dx < 0 && dy < 0)   angle = -3 * Math.PI / 4; // NW
+      playerFacing.set(id, angle);
+    }
+  }
+
+  // Returns the last facing angle for a player (radians), defaulting to 0 (south)
+  function getPlayerFacing(id) {
+    return playerFacing.has(id) ? playerFacing.get(id) : 0;
   }
 
   // Returns fractional grid position {x, y} during animation, or null when done
@@ -140,5 +167,5 @@ const Animations = (() => {
     return active.length > 0 || entityMovements.size > 0;
   }
 
-  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, update, draw, hasActive };
+  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, update, draw, hasActive };
 })();
