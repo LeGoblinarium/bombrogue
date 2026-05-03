@@ -9,6 +9,10 @@ const Animations = (() => {
   // Angle in radians: 0 = south (default sprite), π/2 = east, π = north, -π/2 = west
   const playerFacing = new Map();
 
+  // Hit reactions: id -> startTime
+  const hitReactions = new Map();
+  const HIT_DURATION = 300; // ms
+
   function add(type, params) {
     active.push({
       type,
@@ -188,9 +192,26 @@ const Animations = (() => {
     ctx.restore();
   }
 
-  function hasActive() {
-    return active.length > 0 || entityMovements.size > 0;
+  // Trigger a single hit-reaction deformation on a player
+  function addHitReaction(id) {
+    hitReactions.set(id, performance.now());
   }
 
-  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, update, draw, hasActive };
+  // Returns intensity 0..1 (sin arc) while the hit is playing, 0 when done
+  function getHitScale(id, now) {
+    const start = hitReactions.get(id);
+    if (start === undefined) return 0;
+    const elapsed = now - start;
+    if (elapsed >= HIT_DURATION) {
+      hitReactions.delete(id);
+      return 0;
+    }
+    return Math.sin((elapsed / HIT_DURATION) * Math.PI);
+  }
+
+  function hasActive() {
+    return active.length > 0 || entityMovements.size > 0 || hitReactions.size > 0;
+  }
+
+  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, addHitReaction, getHitScale, update, draw, hasActive };
 })();

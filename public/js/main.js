@@ -239,6 +239,14 @@
   });
 
   Socket.on('onTurnStart', (data) => {
+    // Detect zone/wall damage applied at turn start
+    const prevStateTurn = GameClient.getState();
+    if (prevStateTurn && data.players) {
+      for (const np of data.players) {
+        const op = prevStateTurn.players.find(p => p.id === np.id);
+        if (op && np.hp < op.hp) Animations.addHitReaction(np.id);
+      }
+    }
     GameClient.patchState({ currentTurn: data.currentTurn, players: data.players, bombs: data.bombs, bonuses: data.bonuses, obstacles: data.obstacles, walls: data.walls });
     const state = GameClient.getState();
     UI.renderHpBars(state);
@@ -255,6 +263,16 @@
   });
 
   Socket.on('onStateUpdate', (delta) => {
+    // Detect damage from spells/explosions/wall crossings
+    if (delta.players) {
+      const prevStateUpd = GameClient.getState();
+      if (prevStateUpd) {
+        for (const np of delta.players) {
+          const op = prevStateUpd.players.find(p => p.id === np.id);
+          if (op && np.hp < op.hp) Animations.addHitReaction(np.id);
+        }
+      }
+    }
     if (delta.movements) {
       for (const m of delta.movements) {
         if (m.path && m.path.length >= 2) {

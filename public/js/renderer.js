@@ -300,6 +300,15 @@ const Renderer = (() => {
           // horizontal scale when facing left/right, making the effect look vertical.
           bobOffset = 0;
         }
+
+        // Hit reaction: single strong stretch-then-return along the spine,
+        // triggered each time the player loses HP. Overrides walk/breathe scale.
+        const hitIntensity = Animations.getHitScale(p.id, now);
+        if (hitIntensity > 0) {
+          scaleY = 1 + hitIntensity * 0.5;   // strong stretch along spine
+          scaleX = 1 - hitIntensity * 0.38;  // strong squash across
+          bobOffset = 0;
+        }
         // ─────────────────────────────────────────────────────────────────────
 
         // Ground shadow (always at floor level, unaffected by bob)
