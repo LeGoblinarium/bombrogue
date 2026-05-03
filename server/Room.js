@@ -38,6 +38,7 @@ class Room {
       pm,
       ready: false,
       colorIndex: this.players.size,
+      character: 'player',
     });
 
     if (!this.hostId) this.hostId = socketId;
@@ -49,6 +50,13 @@ class Room {
     if (this.hostId === socketId && this.players.size > 0) {
       this.hostId = this.players.keys().next().value;
     }
+  }
+
+  setCharacter(socketId, character) {
+    const player = this.players.get(socketId);
+    if (!player) return false;
+    player.character = character;
+    return true;
   }
 
   setDistribution(socketId, pa, pm) {
@@ -68,6 +76,7 @@ class Room {
       pa: p.pa,
       pm: p.pm,
       colorIndex: p.colorIndex,
+      character: p.character || 'player',
     }));
   }
 

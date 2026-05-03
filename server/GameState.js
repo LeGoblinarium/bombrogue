@@ -15,7 +15,7 @@ class GameState {
     let i = 0;
     for (const p of roomPlayers) {
       const spawn = this.gridMap.getSpawn(i);
-      this.players.push(new Player(p.id, p.name, p.colorIndex, p.pa, p.pm, spawn.x, spawn.y));
+      this.players.push(new Player(p.id, p.name, p.colorIndex, p.pa, p.pm, spawn.x, spawn.y, p.character || 'player'));
       i++;
     }
   }

@@ -80,6 +80,18 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('set-character', ({ character }) => {
+    const VALID_CHARS = ['player', 'merlin', 'kael', 'borin', 'alaric', 'mordek'];
+    if (!VALID_CHARS.includes(character)) return;
+    const room = getRoomBySocket(socket.id);
+    if (!room || room.status !== 'waiting') return;
+    if (room.setCharacter(socket.id, character)) {
+      io.to(room.code).emit('distribution-updated', {
+        players: room.getPlayerList(),
+      });
+    }
+  });
+
   socket.on('set-distribution', ({ pa, pm }) => {
     const room = getRoomBySocket(socket.id);
     if (!room) return;

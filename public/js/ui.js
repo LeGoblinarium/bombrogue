@@ -110,10 +110,14 @@ const UI = (() => {
     players.forEach(p => {
       const card = document.createElement('div');
       card.className = `player-card pborder-${p.colorIndex}`;
+      const charNames = { player: 'Bob', merlin: 'Merlin', kael: 'Kael', borin: 'Borin', alaric: 'Alaric', mordek: 'Mordek' };
+      const charName = charNames[p.character] || 'Bob';
       card.innerHTML = `
-        <div class="player-color pbg-${p.colorIndex}"></div>
-        <div class="player-name">${escapeHtml(p.name)}${p.id === myId ? ' (toi)' : ''}</div>
-        <div class="player-stats">PA:${p.pa} PM:${p.pm}</div>
+        <img class="player-char-icon" src="/images/${escapeHtml(p.character || 'player')}.png" alt="${charName}">
+        <div class="player-info">
+          <div class="player-name">${escapeHtml(p.name)}${p.id === myId ? ' (toi)' : ''}</div>
+          <div class="player-stats">${charName} · PA:${p.pa} PM:${p.pm}</div>
+        </div>
         ${p.id === hostId ? '<span class="host-badge">HOST</span>' : ''}
       `;
       container.appendChild(card);

@@ -1,10 +1,11 @@
 const C = require('./constants');
 
 class Player {
-  constructor(id, name, colorIndex, pa, pm, spawnX, spawnY) {
+  constructor(id, name, colorIndex, pa, pm, spawnX, spawnY, character = 'player') {
     this.id = id;
     this.name = name;
     this.colorIndex = colorIndex;
+    this.character = character;
     this.pa = pa;
     this.pm = pm;
     this.paLeft = pa;
@@ -86,6 +87,7 @@ class Player {
       id: this.id,
       name: this.name,
       colorIndex: this.colorIndex,
+      character: this.character,
       pa: this.pa,
       pm: this.pm,
       paLeft: this.paLeft,

@@ -4,6 +4,7 @@
   let hostId = null;
   let myId = null;
   let pa = 10, pm = 2;
+  let myCharacter = 'player';
   let renderLoopStarted = false;
   let gameInitialized = false;
 
@@ -47,6 +48,28 @@
     });
     document.getElementById('btn-start').addEventListener('click', () => {
       Socket.emit('start-game');
+    });
+  }
+
+  function setupCharacterHandler() {
+    document.getElementById('char-grid').addEventListener('click', (e) => {
+      const card = e.target.closest('.char-card');
+      if (!card) return;
+      const char = card.dataset.char;
+      if (!char || char === myCharacter) return;
+      myCharacter = char;
+      // Update selected state visually
+      document.querySelectorAll('.char-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.char === myCharacter);
+      });
+      Socket.emit('set-character', { character: myCharacter });
+    });
+  }
+
+  function syncCharacterUI(character) {
+    myCharacter = character || 'player';
+    document.querySelectorAll('.char-card').forEach(c => {
+      c.classList.toggle('selected', c.dataset.char === myCharacter);
     });
   }
 
@@ -179,7 +202,7 @@
     UI.renderPlayersList(players, hostId, myId);
     updateStartButton(players);
     const me = players.find(p => p.id === myId);
-    if (me) { pa = me.pa; pm = me.pm; UI.updateDistribution(pa, pm); }
+    if (me) { pa = me.pa; pm = me.pm; UI.updateDistribution(pa, pm); syncCharacterUI(me.character); }
   });
 
   Socket.on('onPlayerJoined', ({ players }) => {
@@ -317,7 +340,7 @@
     resetGameOverOverlay();
     hostId = data.hostId;
     const me = data.players.find(p => p.id === myId);
-    if (me) { pa = me.pa; pm = me.pm; UI.updateDistribution(pa, pm); }
+    if (me) { pa = me.pa; pm = me.pm; UI.updateDistribution(pa, pm); syncCharacterUI(me.character); }
     UI.renderPlayersList(data.players, data.hostId, myId);
     updateStartButton(data.players);
     UI.showScreen('screen-room');
@@ -325,6 +348,7 @@
 
   setupLobbyHandlers();
   setupRoomHandlers();
+  setupCharacterHandler();
   setupReplayHandler();
   setupHelpHandler();
 })();

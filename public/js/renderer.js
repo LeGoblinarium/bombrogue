@@ -6,7 +6,8 @@ const Renderer = (() => {
 
   function loadSprites() {
     const FILES = [
-      'tile-light', 'tile-dark', 'obstacle', 'bomb', 'player',
+      'tile-light', 'tile-dark', 'obstacle', 'bomb',
+      'player', 'merlin', 'kael', 'borin', 'alaric', 'mordek',
       'bomb-bonus', 'range-bonus', 'explosion-bonus', 'move-bonus', 'action-bonus',
     ];
     let loaded = 0;
@@ -340,7 +341,8 @@ const Renderer = (() => {
         ctx.translate(0, halfH);           // move origin to feet in local space
         ctx.scale(scaleX, scaleY);         // squash/stretch around feet
         // Image bottom at local y=0 (feet), top at -(cs-2), centred horizontally
-        ctx.drawImage(sprites['player'], -halfH, -(cs - 2), cs - 2, cs - 2);
+        const charSprite = sprites[p.character] || sprites['player'];
+        ctx.drawImage(charSprite, -halfH, -(cs - 2), cs - 2, cs - 2);
         ctx.restore();
 
         // Name initial badge — bobs with the sprite
