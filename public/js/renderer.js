@@ -308,27 +308,31 @@ const Renderer = (() => {
         ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
         ctx.fill();
 
-        // Player sprite: rotate first, then scale in LOCAL (body) space
-        // Both walk squash/stretch and idle breathing follow the sprite's orientation
-        ctx.save();
-        if (isActive) { ctx.shadowColor = '#fff'; ctx.shadowBlur = cs * 0.3; }
-        ctx.translate(cx, cy + bobOffset);
-        ctx.rotate(angle);
-        ctx.scale(scaleX, scaleY);
-        ctx.drawImage(sprites['player'], -cs / 2 + 1, -cs / 2 + 1, cs - 2, cs - 2);
-        ctx.restore();
-
-        // Colored border (stays on ground tile, not affected by bob)
+        // Colored border FIRST so sprite draws on top of it
         ctx.strokeStyle = color;
         ctx.lineWidth = bw;
         ctx.strokeRect(s.x + bw / 2, s.y + bw / 2, cs - bw, cs - bw);
 
-        // Extra white border for active turn
+        // Extra white border for active turn (also under sprite)
         if (isActive) {
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = Math.max(1, bw - 1);
           ctx.strokeRect(s.x + bw + 1, s.y + bw + 1, cs - bw * 2 - 2, cs - bw * 2 - 2);
         }
+
+        // Player sprite: deformation anchored at feet (local bottom of sprite)
+        // so feet stay fixed and the head absorbs squash/stretch/breathing.
+        // bobOffset lifts the whole character off the ground in screen space (hop arc).
+        const halfH = cs / 2 - 1;
+        ctx.save();
+        if (isActive) { ctx.shadowColor = '#fff'; ctx.shadowBlur = cs * 0.3; }
+        ctx.translate(cx, cy + bobOffset); // screen-space position + hop
+        ctx.rotate(angle);                 // face direction
+        ctx.translate(0, halfH);           // move origin to feet in local space
+        ctx.scale(scaleX, scaleY);         // squash/stretch around feet
+        // Image bottom at local y=0 (feet), top at -(cs-2), centred horizontally
+        ctx.drawImage(sprites['player'], -halfH, -(cs - 2), cs - 2, cs - 2);
+        ctx.restore();
 
         // Name initial badge — bobs with the sprite
         const fontSize = Math.max(7, Math.round(cs * 0.24));
