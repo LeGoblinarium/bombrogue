@@ -277,6 +277,20 @@ input[type="text"]:focus {
   object-fit: contain;
   image-rendering: pixelated;
   border-radius: 4px;
+  transform-origin: bottom center;
+  animation: char-breathe 2.2s ease-in-out infinite;
+}
+/* Stagger each portrait so they don't all breathe in sync */
+.char-card:nth-child(1) img { animation-delay:  0.0s; }
+.char-card:nth-child(2) img { animation-delay: -0.7s; }
+.char-card:nth-child(3) img { animation-delay: -1.4s; }
+.char-card:nth-child(4) img { animation-delay: -1.9s; }
+.char-card:nth-child(5) img { animation-delay: -0.4s; }
+.char-card:nth-child(6) img { animation-delay: -1.1s; }
+
+@keyframes char-breathe {
+  0%, 100% { transform: scaleX(1)     scaleY(1);    }
+  50%       { transform: scaleX(0.976) scaleY(1.04); }
 }
 .char-card span {
   font-size: 0.72rem;
