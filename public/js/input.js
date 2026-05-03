@@ -119,6 +119,8 @@ const Input = (() => {
     } else if (mode === 'aimant') {
       valid = canCastAimant(cell, me, state);
       aoe = computeAimantAoe(cell);
+    } else if (mode === 'detonate') {
+      valid = canCastDetonate(cell, me, state);
     }
 
     highlights = [];
@@ -184,6 +186,9 @@ const Input = (() => {
     } else if (mode === 'aimant') {
       valid = canCastAimant(cell, me, state);
       if (valid) action = { type: 'aimant', x: cell.x, y: cell.y };
+    } else if (mode === 'detonate') {
+      valid = canCastDetonate(cell, me, state);
+      if (valid) action = { type: 'detonate', x: cell.x, y: cell.y };
     }
 
     if (valid && action) {
@@ -229,6 +234,13 @@ const Input = (() => {
             highlights.push({ x, y, type: 'range' });
           }
         }
+      }
+    } else if (mode === 'detonate') {
+      // Highlight own bombs within range 10 — those are the valid targets
+      for (const bomb of state.bombs) {
+        if (bomb.ownerId !== me.id) continue;
+        const md = Math.abs(bomb.x - me.x) + Math.abs(bomb.y - me.y);
+        if (md >= 1 && md <= 10) highlights.push({ x: bomb.x, y: bomb.y, type: 'range' });
       }
     } else if (['repulseur', 'entourloupe', 'stratageme', 'aimant'].includes(mode)) {
       // repulseur: cross only from caster; others: any direction
@@ -323,6 +335,13 @@ const Input = (() => {
     if (state.bombs.some(b => b.x === prev.x && b.y === prev.y && b.id !== bomb.id)) return false;
     if (state.players.some(p => p.alive && p.x === prev.x && p.y === prev.y)) return false;
     return true;
+  }
+
+  function canCastDetonate(cell, me, state) {
+    if (me.paLeft < 2) return false;
+    const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
+    if (md < 1 || md > 10) return false;
+    return state.bombs.some(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
   }
 
   function canCastAimant(cell, me, state) {

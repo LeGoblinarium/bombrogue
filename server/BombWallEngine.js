@@ -128,4 +128,26 @@ function findConnectedComponents(bombs, edges) {
   return compByBomb;
 }
 
-module.exports = { computeWalls };
+/**
+ * Returns the IDs of all bombs connected to targetBombId via the wall network.
+ * If the target bomb has no connections, returns [targetBombId] alone.
+ */
+function getConnectedBombIds(targetBombId, ownerBombs, gridMap) {
+  if (ownerBombs.length < 2) {
+    return ownerBombs.some(b => b.id === targetBombId) ? [targetBombId] : [];
+  }
+
+  const edges = [];
+  for (let i = 0; i < ownerBombs.length; i++) {
+    for (let j = i + 1; j < ownerBombs.length; j++) {
+      const a = ownerBombs[i], b = ownerBombs[j];
+      if (checkWallPair(a, b, gridMap, ownerBombs)) edges.push({ a, b });
+    }
+  }
+
+  const compByBomb = findConnectedComponents(ownerBombs, edges);
+  const component  = compByBomb.get(targetBombId);
+  return component ? component.map(b => b.id) : [targetBombId];
+}
+
+module.exports = { computeWalls, getConnectedBombIds };

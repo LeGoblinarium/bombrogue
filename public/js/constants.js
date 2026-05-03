@@ -32,7 +32,7 @@ const SPELLS = [
   },
   {
     id: 'detonate', name: 'Détoner', cost: 2, type: 'pa', cd: 0,
-    desc: 'Fait exploser toutes tes bombes simultanément. Les explosions peuvent déclencher des réactions en chaîne.',
+    desc: 'Cible une de tes bombes (portée 1–10). Fait exploser cette bombe et toutes celles qui lui sont connectées par un mur. Les bombes non connectées ne sont pas affectées.',
   },
   {
     id: 'end-turn', name: 'Fin tour', cost: 0, type: 'none', cd: 0,

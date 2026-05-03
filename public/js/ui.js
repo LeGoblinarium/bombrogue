@@ -219,10 +219,6 @@ const UI = (() => {
         // Never fire click if a long-press tooltip was just shown
         if (_ttLongFired) return;
         if (disabled) return;
-        if (spell.id === 'detonate') {
-          Input.triggerSimpleAction('detonate');
-          return;
-        }
         if (spell.id === 'end-turn') {
           Input.triggerSimpleAction('end-turn');
           return;

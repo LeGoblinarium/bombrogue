@@ -3,6 +3,7 @@ const GameState = require('./GameState');
 const Bomb = require('./Bomb');
 const Spells = require('./SpellEngine');
 const { resolveDetonation } = require('./DetonationEngine');
+const { getConnectedBombIds } = require('./BombWallEngine');
 
 class Game {
   constructor(room, io) {
@@ -182,7 +183,7 @@ class Game {
     } else if (action.type === 'place-bomb') {
       result = this.doPlaceBomb(player, action.x, action.y);
     } else if (action.type === 'detonate') {
-      result = this.doDetonate(player);
+      result = this.doDetonate(player, action.x, action.y);
     } else if (action.type === 'repulseur') {
       result = Spells.castRepulseur(player, action.x, action.y, this.state.bombs, this.state.players, this.state.gridMap);
     } else if (action.type === 'entourloupe') {
@@ -274,14 +275,26 @@ class Game {
     return { ok: true };
   }
 
-  doDetonate(player) {
+  doDetonate(player, x, y) {
     if (player.paLeft < C.COST_DETONATE) return { ok: false };
-    const myBombs = this.state.bombs.filter(b => b.ownerId === player.id);
-    if (myBombs.length === 0) return { ok: false };
+
+    // Target must be one of the player's own bombs
+    const targetBomb = this.state.bombs.find(
+      b => b.ownerId === player.id && b.x === x && b.y === y
+    );
+    if (!targetBomb) return { ok: false };
+
+    // Range check (Manhattan distance 1–DETONATE_RANGE)
+    const md = Math.abs(x - player.x) + Math.abs(y - player.y);
+    if (md < 1 || md > C.DETONATE_RANGE) return { ok: false };
 
     player.paLeft -= C.COST_DETONATE;
 
-    const result = resolveDetonation(player.id, this.state.bombs, this.state.players, this.state.gridMap);
+    // Only detonate the target bomb + bombs connected to it via walls
+    const ownerBombs  = this.state.bombs.filter(b => b.ownerId === player.id);
+    const seedIds     = getConnectedBombIds(targetBomb.id, ownerBombs, this.state.gridMap);
+
+    const result = resolveDetonation(seedIds, this.state.bombs, this.state.players, this.state.gridMap);
 
     // Remove detonated bombs
     this.state.bombs = this.state.bombs.filter(b => !result.detonatedIds.includes(b.id));

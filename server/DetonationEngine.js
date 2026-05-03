@@ -53,7 +53,11 @@ function getAoeCells(centerX, centerY, gridMap, destroyedInChain) {
   return cells;
 }
 
-function resolveDetonation(triggerPlayerId, bombs, players, gridMap) {
+/**
+ * seedBombIds: array of bomb IDs to start the chain with.
+ * These are the explicitly triggered bombs; chain reactions can add others.
+ */
+function resolveDetonation(seedBombIds, bombs, players, gridMap) {
   const detonated = new Set();
   const queue = [];
   const sequence = [];
@@ -61,9 +65,10 @@ function resolveDetonation(triggerPlayerId, bombs, players, gridMap) {
   // Obstacles destroyed across the whole chain (passed through by later steps)
   const destroyedInChain = new Set();
 
-  // Seed with triggering player's bombs
+  // Seed with the specified bombs
+  const seedSet = new Set(seedBombIds);
   for (const b of bombs) {
-    if (b.ownerId === triggerPlayerId) {
+    if (seedSet.has(b.id)) {
       queue.push({ bomb: b, step: 0 });
       detonated.add(b.id);
     }
