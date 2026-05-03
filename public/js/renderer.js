@@ -144,15 +144,25 @@ const Renderer = (() => {
       const ownerColor = COLORS[getOwnerColorIndex(state, bomb.ownerId)];
 
       if (spritesReady) {
-        // Shadow under bomb
+        // Idle pulse animation — each bomb has its own phase based on position
+        const bombPhaseOffset = bomb.x * 0.31 + bomb.y * 0.19;
+        const bombPulse = Math.sin((now / 1600) * Math.PI * 2 + bombPhaseOffset) * 0.5 + 0.5; // 0→1
+        const bombBob   = -bombPulse * cs * 0.025;
+        const bombScale =  1 + bombPulse * 0.04;
+
+        const bcx = s.x + cs * 0.5;
+        const bcy = s.y + cs * 0.5;
+
+        // Shadow under bomb (shrinks when bomb floats up)
         ctx.beginPath();
-        ctx.ellipse(s.x + cs * 0.5, s.y + cs * 0.88, cs * 0.3, cs * 0.08, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.ellipse(bcx, s.y + cs * 0.88, cs * (0.3 - bombPulse * 0.06), cs * 0.08, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,0,0,${0.4 - bombPulse * 0.15})`;
         ctx.fill();
 
-        // Bomb sprite (slightly padded)
+        // Bomb sprite with pulse
         const pad = cs * 0.06;
-        ctx.drawImage(sprites['bomb'], s.x + pad, s.y + pad, cs - pad * 2, cs - pad * 2);
+        const bSize = (cs - pad * 2) * bombScale;
+        ctx.drawImage(sprites['bomb'], bcx - bSize / 2, bcy - bSize / 2 + bombBob, bSize, bSize);
 
         // Owner color dot — bottom-left
         const dotR = Math.max(3, cs * 0.13);
@@ -297,12 +307,13 @@ const Renderer = (() => {
         ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
         ctx.fill();
 
-        // Player sprite: rotation + squash/stretch + bob
+        // Player sprite: bob + squash/stretch in screen space, then rotate
+        // Scale BEFORE rotate so stretch is always vertical on screen (not along body axis)
         ctx.save();
         if (isActive) { ctx.shadowColor = '#fff'; ctx.shadowBlur = cs * 0.3; }
         ctx.translate(cx, cy + bobOffset);
-        ctx.rotate(angle);
         ctx.scale(scaleX, scaleY);
+        ctx.rotate(angle);
         ctx.drawImage(sprites['player'], -cs / 2 + 1, -cs / 2 + 1, cs - 2, cs - 2);
         ctx.restore();
 

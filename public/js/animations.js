@@ -69,8 +69,8 @@ const Animations = (() => {
       let angle = 0;
       if      (dy > 0 && dx === 0) angle = 0;          // south
       else if (dy < 0 && dx === 0) angle = Math.PI;    // north
-      else if (dx > 0 && dy === 0) angle = Math.PI / 2; // east
-      else if (dx < 0 && dy === 0) angle = -Math.PI / 2; // west
+      else if (dx > 0 && dy === 0) angle = -Math.PI / 2; // east
+      else if (dx < 0 && dy === 0) angle =  Math.PI / 2; // west
       else if (dx > 0 && dy > 0)   angle = Math.PI / 4;  // SE
       else if (dx < 0 && dy > 0)   angle = -Math.PI / 4; // SW
       else if (dx > 0 && dy < 0)   angle = 3 * Math.PI / 4; // NE
@@ -103,8 +103,8 @@ const Animations = (() => {
     let currentAngle = 0;
     if      (dy > 0 && dx === 0) currentAngle = 0;
     else if (dy < 0 && dx === 0) currentAngle = Math.PI;
-    else if (dx > 0 && dy === 0) currentAngle = Math.PI / 2;
-    else if (dx < 0 && dy === 0) currentAngle = -Math.PI / 2;
+    else if (dx > 0 && dy === 0) currentAngle = -Math.PI / 2; // east
+    else if (dx < 0 && dy === 0) currentAngle =  Math.PI / 2; // west
 
     return { cellPhase, currentAngle };
   }
