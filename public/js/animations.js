@@ -84,6 +84,31 @@ const Animations = (() => {
     return playerFacing.has(id) ? playerFacing.get(id) : 0;
   }
 
+  // Returns walk state for procedural character animation, or null when not moving.
+  // cellPhase: 0→1 within the current cell hop (drives bob/squash).
+  // currentAngle: facing direction right now (may differ from final facing during multi-step path).
+  function getPlayerAnimState(id, now) {
+    const anim = entityMovements.get(id);
+    if (!anim || anim.type !== 'player') return null;
+    const elapsed = now - anim.startTime;
+    if (elapsed >= anim.duration) return null;
+
+    const cellProgress = elapsed / MS_PER_CELL;
+    const cellIdx = Math.min(Math.floor(cellProgress), anim.path.length - 2);
+    const cellPhase = cellProgress - cellIdx; // 0..1 within current cell
+
+    const from = anim.path[cellIdx];
+    const to   = anim.path[cellIdx + 1];
+    const dx = to.x - from.x, dy = to.y - from.y;
+    let currentAngle = 0;
+    if      (dy > 0 && dx === 0) currentAngle = 0;
+    else if (dy < 0 && dx === 0) currentAngle = Math.PI;
+    else if (dx > 0 && dy === 0) currentAngle = Math.PI / 2;
+    else if (dx < 0 && dy === 0) currentAngle = -Math.PI / 2;
+
+    return { cellPhase, currentAngle };
+  }
+
   // Returns fractional grid position {x, y} during animation, or null when done
   function getEntityAnimPos(id, now) {
     const anim = entityMovements.get(id);
@@ -167,5 +192,5 @@ const Animations = (() => {
     return active.length > 0 || entityMovements.size > 0;
   }
 
-  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, update, draw, hasActive };
+  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, update, draw, hasActive };
 })();

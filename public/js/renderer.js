@@ -255,30 +255,49 @@ const Renderer = (() => {
       if (spritesReady) {
         const cx = s.x + cs * 0.5;
         const cy = s.y + cs * 0.5;
-        const angle = Animations.getPlayerFacing(p.id);
         const bw = Math.max(2, Math.round(cs * 0.07));
 
-        // Ground shadow
+        // ── Procedural walk animation ─────────────────────────────────────────
+        const walkState = Animations.getPlayerAnimState(p.id, now);
+        const angle = walkState ? walkState.currentAngle : Animations.getPlayerFacing(p.id);
+
+        let bobOffset = 0, scaleX = 1, scaleY = 1;
+        let shadowRx = 0.38, shadowAlpha = 0.40;
+
+        if (walkState) {
+          // air: 0 at landing, 1 at peak of hop (smooth arc per cell)
+          const air = Math.sin(walkState.cellPhase * Math.PI);
+          const gnd = 1 - air;
+
+          // Bob: move sprite upward at peak
+          bobOffset = -air * cs * 0.20;
+
+          // Squash at landing, stretch at peak
+          scaleX = 1 + gnd * 0.12 - air * 0.07;  // wide at landing, narrow at peak
+          scaleY = 1 - gnd * 0.09 + air * 0.14;  // short at landing, tall at peak
+
+          // Shadow: spread wider and fade when character is airborne
+          shadowRx    = 0.38 + air * 0.12;
+          shadowAlpha = 0.40 - air * 0.22;
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
+        // Ground shadow (always at floor level, unaffected by bob)
         ctx.beginPath();
-        ctx.ellipse(cx, s.y + cs * 0.92, cs * 0.38, cs * 0.09, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.ellipse(cx, s.y + cs * 0.92, cs * shadowRx, cs * 0.09, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
         ctx.fill();
 
-        // Active-turn glow
-        if (isActive) {
-          ctx.shadowColor = '#fff';
-          ctx.shadowBlur = cs * 0.3;
-        }
-
-        // Player sprite with rotation
+        // Player sprite: rotation + squash/stretch + bob
         ctx.save();
-        ctx.translate(cx, cy);
+        if (isActive) { ctx.shadowColor = '#fff'; ctx.shadowBlur = cs * 0.3; }
+        ctx.translate(cx, cy + bobOffset);
         ctx.rotate(angle);
+        ctx.scale(scaleX, scaleY);
         ctx.drawImage(sprites['player'], -cs / 2 + 1, -cs / 2 + 1, cs - 2, cs - 2);
         ctx.restore();
-        ctx.shadowBlur = 0;
 
-        // Colored border showing ownership
+        // Colored border (stays on ground tile, not affected by bob)
         ctx.strokeStyle = color;
         ctx.lineWidth = bw;
         ctx.strokeRect(s.x + bw / 2, s.y + bw / 2, cs - bw, cs - bw);
@@ -290,10 +309,10 @@ const Renderer = (() => {
           ctx.strokeRect(s.x + bw + 1, s.y + bw + 1, cs - bw * 2 - 2, cs - bw * 2 - 2);
         }
 
-        // Name initial — top-right corner badge (drawn in screen space, not rotated)
+        // Name initial badge — bobs with the sprite
         const fontSize = Math.max(7, Math.round(cs * 0.24));
         const bx = s.x + cs - fontSize * 0.75;
-        const by = s.y + fontSize * 0.75;
+        const by = s.y + fontSize * 0.75 + bobOffset * 0.6;
         ctx.font = `bold ${fontSize}px sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
