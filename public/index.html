@@ -118,25 +118,35 @@
             <li>Grille <b>20×20</b>, 2–4 joueurs, <b>100 PV</b> chacun.</li>
             <li>Dans le lobby, répartis <b>12 points</b> entre <b>PA</b> (6–10) et <b>PM</b> (2–6). Les PM servent au déplacement, les PA aux sorts.</li>
             <li>Tour par tour. Le dernier en vie gagne.</li>
-            <li>Chaque bombe affiche son <b>âge</b> (0→4). L'âge monte d'un cran à chaque cycle complet (tous les joueurs ont joué). Multiplicateur de dégâts : ×1.0 → ×1.8.</li>
+            <li>Chaque bombe affiche son <b>âge</b> (0→4). L'âge monte d'un cran à chaque cycle complet. Multiplicateur de dégâts : ×1.0 → ×1.8.</li>
+          </ul>
+        </section>
+
+        <section class="help-section">
+          <h3>Obstacles</h3>
+          <ul>
+            <li>Les obstacles <b>bloquent les déplacements et les explosions</b>.</li>
+            <li>Une explosion peut <b>détruire un obstacle</b> qu'elle touche — le rayon s'arrête sur lui mais le détruit.</li>
+            <li>Quand un obstacle est détruit, il y a <b>25 % de chance</b> qu'un bonus apparaisse à sa place (voir section Bonus).</li>
           </ul>
         </section>
 
         <section class="help-section">
           <h3>Bombes &amp; Murs</h3>
           <ul>
-            <li>Max <b>3 bombes actives</b> par joueur.</li>
-            <li><b>Mur de bombes</b> : 2 bombes alignées (horizontal ou vertical, écart 1–6 sans obstacle) créent un mur sur les cases entre elles. Les cases du mur infligent des dégâts à chaque traversée volontaire.</li>
-            <li>Mur avec <b>2 bombes</b> = <b>15 dégâts</b> × multiplicateur d'âge moyen.</li>
-            <li>Mur avec <b>3+ bombes connectées</b> = <b>25 dégâts</b> × multiplicateur d'âge moyen.</li>
-            <li>Dégâts de mur par <b>sort</b> : 1 seule fois par case traversée par tour (pas de cumul sur plusieurs poussées).</li>
+            <li>Max <b>3 bombes actives</b> par joueur (peut être augmenté par un bonus).</li>
+            <li><b>Mur de bombes</b> : 2 bombes du même joueur alignées (H ou V, écart 1–6 sans obstacle) créent un mur entre elles. Traverser un mur inflige des dégâts.</li>
+            <li>Mur avec <b>2 bombes</b> = <b>15 dégâts</b> × âge moyen du réseau.</li>
+            <li>Mur avec <b>3+ bombes connectées</b> = <b>25 dégâts</b> × âge moyen du réseau.</li>
+            <li>Dégâts de mur par <b>sort</b> : 1 seule fois par case traversée par tour.</li>
           </ul>
         </section>
 
         <section class="help-section">
           <h3>Explosions</h3>
           <ul>
-            <li>AoE en <b>losange</b> : portée 2 en ligne droite, portée 1 en diagonale. Bloquée par les obstacles.</li>
+            <li>AoE en <b>losange</b> : portée 2 en ligne droite, portée 1 en diagonale.</li>
+            <li>Les obstacles bloquent le rayon <b>et sont détruits</b> par l'explosion.</li>
             <li><b>20 dégâts</b> × multiplicateur d'âge individuel de la bombe.</li>
             <li><b>Réaction en chaîne</b> : une explosion qui touche une autre bombe la fait exploser aussi (ennemi ou allié).</li>
           </ul>
@@ -145,18 +155,19 @@
         <section class="help-section">
           <h3>Zone de danger</h3>
           <ul>
-            <li>À partir du <b>tour 40</b>, le contour de la map devient rouge et inflige <b>10 dégâts</b> à chaque début de tour passé dedans.</li>
-            <li>La zone avance d'<b>1 case vers l'intérieur tous les 2 tours</b>, réduisant progressivement l'espace sûr.</li>
+            <li>À partir du <b>tour 40</b>, les bords de la map deviennent rouges et infligent <b>10 dégâts</b> à chaque début de tour passé dedans.</li>
+            <li>La zone avance d'<b>1 case vers l'intérieur tous les 2 tours</b>.</li>
           </ul>
         </section>
 
         <section class="help-section">
           <h3>Contrôles</h3>
           <ul>
-            <li><b>1er tap</b> sur une case : prévisualisation (vert = valide, rouge = invalide). En mode déplacement, le chemin s'affiche.</li>
+            <li><b>1er tap</b> sur une case : prévisualisation (vert = valide, rouge = invalide).</li>
             <li><b>2e tap</b> sur la même case : confirme l'action.</li>
-            <li><b>Tap ailleurs</b> : annule.</li>
-            <li><b>Pinch</b> : zoom. <b>Glisser</b> (zoomé) : déplacer la vue.</li>
+            <li><b>Tap ailleurs</b> : annule la sélection.</li>
+            <li><b>Pinch</b> : zoom/dézoom. <b>Glisser</b> (zoomé) : déplacer la vue.</li>
+            <li><b>Maintenir appuyé</b> un sort : affiche sa description détaillée.</li>
           </ul>
         </section>
 
@@ -166,18 +177,24 @@
 
           <div class="spell-entry">
             <div class="spell-header">
-              <span class="spell-name">Bombe</span>
+              <div class="spell-header-left">
+                <img class="help-spell-icon" src="/images/icon-place-bomb.png" alt="">
+                <span class="spell-name">Bombe</span>
+              </div>
               <span class="spell-meta">4 PA · portée 1–3</span>
             </div>
-            <p>Place une bombe sur une case libre. Maximum 3 bombes actives simultanément.</p>
+            <p>Place une bombe sur une case libre à portée. Maximum 3 bombes actives simultanément. Les bombes vieillissent et font plus de dégâts avec le temps.</p>
           </div>
 
           <div class="spell-entry">
             <div class="spell-header">
-              <span class="spell-name">Répulseur</span>
+              <div class="spell-header-left">
+                <img class="help-spell-icon" src="/images/icon-repulseur.png" alt="">
+                <span class="spell-name">Répulseur</span>
+              </div>
               <span class="spell-meta">2 PA · 1×/tour · ligne droite 0–6</span>
             </div>
-            <p>Cible une case en ligne droite. Repousse toutes les bombes et entités dans un rayon de 3 cases autour de cette case :</p>
+            <p>Cible une case en ligne droite depuis toi. Repousse tout ce qui se trouve dans un rayon de 3 cases autour de cette case :</p>
             <ul>
               <li>À <b>1 case</b> du centre → poussé de <b>3 cases</b></li>
               <li>À <b>2 cases</b> du centre → poussé de <b>2 cases</b></li>
@@ -187,45 +204,108 @@
 
           <div class="spell-entry">
             <div class="spell-header">
-              <span class="spell-name">Entourloupe</span>
-              <span class="spell-meta">3 PA · CD 5 · portée 1–8</span>
-            </div>
-            <p>Échange ta position avec l'une de <b>tes</b> bombes. Utile pour se repositionner ou piéger un adversaire.</p>
-          </div>
-
-          <div class="spell-entry">
-            <div class="spell-header">
-              <span class="spell-name">Stratagème</span>
-              <span class="spell-meta">1 PA · CD 3 · portée 1–6</span>
-            </div>
-            <p>Téléporte <b>n'importe quelle bombe</b> (alliée ou ennemie) à sa position précédente (avant son dernier déplacement). La bombe doit avoir été déplacée au moins une fois. Échoue si la position précédente est occupée.</p>
-          </div>
-
-          <div class="spell-entry">
-            <div class="spell-header">
-              <span class="spell-name">Libération</span>
-              <span class="spell-meta">3 PA · CD 10 · sur soi</span>
-            </div>
-            <p>Repousse toutes les bombes et entités <b>adjacentes</b> (cases au corps à corps) de <b>3 cases</b> dans leur direction respective. Permet de se dégager quand on est encerclé.</p>
-          </div>
-
-          <div class="spell-entry">
-            <div class="spell-header">
-              <span class="spell-name">Aimant</span>
+              <div class="spell-header-left">
+                <img class="help-spell-icon" src="/images/icon-aimant.png" alt="">
+                <span class="spell-name">Aimant</span>
+              </div>
               <span class="spell-meta">2 PA · portée 0–6</span>
             </div>
-            <p>Cible une case occupée par une bombe ou un joueur. Attire tout ce qui se trouve sur ses axes cardinaux (jusqu'à 8 cases) <b>vers la cible</b>, de 3 cases maximum (sans jamais dépasser la cible).</p>
+            <p>Cible une case occupée par une bombe ou un joueur. Attire tout ce qui se trouve sur ses <b>axes cardinaux</b> (jusqu'à 8 cases) vers la cible, de 3 cases max, sans dépasser la cible.</p>
           </div>
 
           <div class="spell-entry">
             <div class="spell-header">
-              <span class="spell-name">Détonateur</span>
-              <span class="spell-meta">2 PA</span>
+              <div class="spell-header-left">
+                <img class="help-spell-icon" src="/images/icon-entourloupe.png" alt="">
+                <span class="spell-name">Entourloupe</span>
+              </div>
+              <span class="spell-meta">3 PA · CD 5 · portée 1–8</span>
             </div>
-            <p>Fait exploser <b>toutes tes bombes</b> simultanément. Les explosions peuvent déclencher des réactions en chaîne sur les bombes ennemies.</p>
+            <p>Échange ta position avec l'une de <b>tes propres bombes</b>. Idéal pour se repositionner rapidement ou piéger un adversaire qui ne s'y attend pas.</p>
+          </div>
+
+          <div class="spell-entry">
+            <div class="spell-header">
+              <div class="spell-header-left">
+                <img class="help-spell-icon" src="/images/icon-stratageme.png" alt="">
+                <span class="spell-name">Stratagème</span>
+              </div>
+              <span class="spell-meta">1 PA · CD 3 · portée 1–6</span>
+            </div>
+            <p>Téléporte <b>n'importe quelle bombe</b> (alliée ou ennemie) à sa position précédente. La bombe doit avoir été déplacée au moins une fois. Échoue si la position précédente est occupée.</p>
+          </div>
+
+          <div class="spell-entry">
+            <div class="spell-header">
+              <div class="spell-header-left">
+                <img class="help-spell-icon" src="/images/icon-liberation.png" alt="">
+                <span class="spell-name">Libération</span>
+              </div>
+              <span class="spell-meta">3 PA · CD 10 · sur soi</span>
+            </div>
+            <p>Repousse toutes les bombes et entités <b>adjacentes</b> de <b>3 cases</b> dans leur direction. Permet de se dégager quand on est encerclé. Portée non affectée par les bonus de portée.</p>
+          </div>
+
+          <div class="spell-entry">
+            <div class="spell-header">
+              <div class="spell-header-left">
+                <img class="help-spell-icon" src="/images/icon-detonate.png" alt="">
+                <span class="spell-name">Détoner</span>
+              </div>
+              <span class="spell-meta">2 PA · portée 1–10</span>
+            </div>
+            <p>Cible une de <b>tes propres bombes</b>. Fait exploser cette bombe et toutes celles qui lui sont <b>connectées par un mur</b> (réseau du même joueur). Les bombes non connectées ne sont pas déclenchées.</p>
           </div>
 
         </div>
+
+        <h2 class="help-title" style="margin-top:24px">Bonus</h2>
+        <p style="font-size:0.8rem;color:#aaa;margin-bottom:12px;">Quand une explosion détruit un obstacle, il y a <b style="color:#ffd700">25 %</b> de chance qu'un bonus apparaisse à sa place. Marche dessus pour le ramasser.</p>
+
+        <div class="bonus-list">
+
+          <div class="bonus-entry">
+            <img class="help-bonus-icon" src="/images/bomb-bonus.png" alt="Bombe +1">
+            <div class="bonus-entry-body">
+              <div class="bonus-name">+1 Bombe maximum</div>
+              <p>Augmente de 1 ton nombre maximum de bombes actives simultanément.</p>
+            </div>
+          </div>
+
+          <div class="bonus-entry">
+            <img class="help-bonus-icon" src="/images/range-bonus.png" alt="Portée +1">
+            <div class="bonus-entry-body">
+              <div class="bonus-name">+1 Portée (tous les sorts sauf Libération)</div>
+              <p>Augmente de 1 la portée de tous tes sorts : placement de bombe, Répulseur, Aimant, Entourloupe, Stratagème et Détoner.</p>
+            </div>
+          </div>
+
+          <div class="bonus-entry">
+            <img class="help-bonus-icon" src="/images/explosion-bonus.png" alt="Explosion +1">
+            <div class="bonus-entry-body">
+              <div class="bonus-name">+1 Rayon d'explosion</div>
+              <p>Augmente de 1 le rayon en ligne droite de toutes tes explosions (les diagonales restent à portée 1).</p>
+            </div>
+          </div>
+
+          <div class="bonus-entry">
+            <img class="help-bonus-icon" src="/images/move-bonus.png" alt="PM +1">
+            <div class="bonus-entry-body">
+              <div class="bonus-name">+1 PM permanent</div>
+              <p>Ajoute 1 PM à ta réserve permanente. Tu commences chaque tour suivant avec 1 PM de plus.</p>
+            </div>
+          </div>
+
+          <div class="bonus-entry">
+            <img class="help-bonus-icon" src="/images/action-bonus.png" alt="PA +1">
+            <div class="bonus-entry-body">
+              <div class="bonus-name">+1 PA permanent</div>
+              <p>Ajoute 1 PA à ta réserve permanente. Tu commences chaque tour suivant avec 1 PA de plus.</p>
+            </div>
+          </div>
+
+        </div>
+
       </div>
     </div>
   </div>

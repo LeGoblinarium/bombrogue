@@ -797,3 +797,59 @@ input[type="text"]:focus {
 .spell-entry li b {
   color: #ddd;
 }
+
+/* Help spell icon */
+.spell-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.help-spell-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #1a1a2e;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* BONUS LIST */
+.bonus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bonus-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #0f1a30;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid #ffd700;
+}
+.help-bonus-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 6px;
+  background: #1a1a2e;
+}
+.bonus-entry-body {
+  min-width: 0;
+}
+.bonus-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffd700;
+  margin-bottom: 3px;
+}
+.bonus-entry p {
+  font-size: 0.78rem;
+  color: #bbb;
+  line-height: 1.45;
+  margin: 0;
+}
