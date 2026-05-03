@@ -307,13 +307,21 @@ const Renderer = (() => {
         ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
         ctx.fill();
 
-        // Player sprite: rotate first, then scale in LOCAL (body) space
-        // bobOffset stays in screen space (gravity always pulls down on screen)
+        // Player sprite draw:
+        // - Walk squash/stretch: LOCAL body space → rotate THEN scale
+        // - Idle breathing: SCREEN space (always vertical) → scale THEN rotate
         ctx.save();
         if (isActive) { ctx.shadowColor = '#fff'; ctx.shadowBlur = cs * 0.3; }
         ctx.translate(cx, cy + bobOffset);
-        ctx.rotate(angle);
-        ctx.scale(scaleX, scaleY);
+        if (walkState) {
+          // Walk: squash/stretch along the direction of movement (local axes)
+          ctx.rotate(angle);
+          ctx.scale(scaleX, scaleY);
+        } else {
+          // Idle breathing: always stretch vertically on screen, then rotate sprite
+          ctx.scale(scaleX, scaleY);
+          ctx.rotate(angle);
+        }
         ctx.drawImage(sprites['player'], -cs / 2 + 1, -cs / 2 + 1, cs - 2, cs - 2);
         ctx.restore();
 
