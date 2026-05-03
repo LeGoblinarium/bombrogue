@@ -32,10 +32,9 @@ html, body {
   justify-content: center;
 }
 
-/* BACKGROUND IMAGE — lobby, room, gameover */
+/* BACKGROUND IMAGE — lobby, room */
 #screen-lobby,
-#screen-room,
-#screen-gameover {
+#screen-room {
   background-image: url('/images/bg-menu.jpg');
   background-size: cover;
   background-position: center;
@@ -44,8 +43,7 @@ html, body {
 
 /* Dark overlay for readability */
 #screen-lobby::before,
-#screen-room::before,
-#screen-gameover::before {
+#screen-room::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -56,8 +54,7 @@ html, body {
 
 /* Content must sit above the overlay */
 .lobby-container,
-.room-container,
-.gameover-container {
+.room-container {
   position: relative;
   z-index: 1;
 }
@@ -595,14 +592,41 @@ input[type="text"]:focus {
   line-height: 1.5;
 }
 
-/* GAME OVER */
-.gameover-container {
+/* GAME OVER OVERLAY */
+#gameover-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: background 2s ease;
+}
+#gameover-overlay.visible {
+  background: rgba(0, 0, 0, 0.82);
+  pointer-events: auto;
+}
+
+.gameover-panel {
+  background: rgba(16, 26, 48, 0.96);
+  border: 2px solid #2d4059;
+  border-radius: 16px;
+  padding: 32px 40px;
   text-align: center;
   width: 90%;
   max-width: 360px;
+  opacity: 0;
+  transform: scale(0.88) translateY(16px);
+  transition: opacity 0.8s ease 1.2s, transform 0.8s ease 1.2s;
+}
+#gameover-overlay.visible .gameover-panel {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 
-.gameover-container h2 {
+.gameover-panel h2 {
   font-size: 1.8rem;
   color: #ff6b35;
   margin-bottom: 20px;
@@ -616,7 +640,7 @@ input[type="text"]:focus {
   display: flex;
   justify-content: space-between;
   padding: 8px 12px;
-  background: #16213e;
+  background: rgba(22, 33, 62, 0.85);
   border-radius: 6px;
   margin-bottom: 6px;
 }

@@ -260,7 +260,10 @@
 
   Socket.on('onGameOver', (data) => {
     UI.renderGameOver(data);
-    setTimeout(() => UI.showScreen('screen-gameover'), 1500);
+    // Wait 2 s so players can see the final state, then fade in the overlay
+    setTimeout(() => {
+      document.getElementById('gameover-overlay').classList.add('visible');
+    }, 2000);
   });
 
   setupLobbyHandlers();
