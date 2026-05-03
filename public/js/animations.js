@@ -3,7 +3,7 @@ const Animations = (() => {
 
   // Entity sliding animations: id -> animation data
   const entityMovements = new Map();
-  const MS_PER_CELL = 90;
+  const MS_PER_CELL = 180;
 
   // Persistent facing angles per player (survives after animation ends)
   // Angle in radians: 0 = south (default sprite), π/2 = east, π = north, -π/2 = west
