@@ -307,13 +307,13 @@ const Renderer = (() => {
         ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
         ctx.fill();
 
-        // Player sprite: bob + squash/stretch in screen space, then rotate
-        // Scale BEFORE rotate so stretch is always vertical on screen (not along body axis)
+        // Player sprite: rotate first, then scale in LOCAL (body) space
+        // bobOffset stays in screen space (gravity always pulls down on screen)
         ctx.save();
         if (isActive) { ctx.shadowColor = '#fff'; ctx.shadowBlur = cs * 0.3; }
         ctx.translate(cx, cy + bobOffset);
-        ctx.scale(scaleX, scaleY);
         ctx.rotate(angle);
+        ctx.scale(scaleX, scaleY);
         ctx.drawImage(sprites['player'], -cs / 2 + 1, -cs / 2 + 1, cs - 2, cs - 2);
         ctx.restore();
 
