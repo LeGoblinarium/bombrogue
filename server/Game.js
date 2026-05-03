@@ -11,7 +11,12 @@ class Game {
     this.room = room;
     this.io = io;
     this.state = new GameState(Array.from(room.players.values()));
+    // Randomise turn order so the host doesn't always go first
     this.turnOrder = this.state.players.map(p => p.id);
+    for (let i = this.turnOrder.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [this.turnOrder[i], this.turnOrder[j]] = [this.turnOrder[j], this.turnOrder[i]];
+    }
     this.currentTurnIndex = 0;
     this.turnNumber = 1;
     this.cycleNumber = 1; // Increments when full cycle complete (for bomb aging)

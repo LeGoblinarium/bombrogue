@@ -212,7 +212,10 @@ function castAimant(caster, targetX, targetY, bombs, players, gridMap) {
   for (const c of candidates) {
     const dirX = Math.sign(c.dx);
     const dirY = Math.sign(c.dy);
-    const pullDist = Math.min(C.AIMANT_PULL, c.dist - 1);
+    // Players are attracted by 1 cell max; bombs by AIMANT_PULL (3) cells max
+    const isPlayer = c.entity.hp !== undefined;
+    const maxPull = isPlayer ? 1 : C.AIMANT_PULL;
+    const pullDist = Math.min(maxPull, c.dist - 1);
     if (pullDist <= 0) continue;
     const result = pushEntityInDirection(c.entity, dirX, dirY, pullDist, bombs, players, gridMap);
     if (result.moved) {

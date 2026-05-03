@@ -20,6 +20,7 @@ class Room {
     this.hostId = null;
     this.status = 'waiting';
     this.game = null;
+    this.replayVotes = new Set();
     this.createdAt = Date.now();
   }
 
@@ -68,6 +69,16 @@ class Room {
       pm: p.pm,
       colorIndex: p.colorIndex,
     }));
+  }
+
+  resetForReplay() {
+    this.status = 'waiting';
+    this.game = null;
+    this.replayVotes = new Set();
+    for (const player of this.players.values()) {
+      player.pa = C.TOTAL_POINTS - C.MIN_PM;
+      player.pm = C.MIN_PM;
+    }
   }
 
   isEmpty() {

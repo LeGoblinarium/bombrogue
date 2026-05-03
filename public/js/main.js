@@ -5,6 +5,7 @@
   let myId = null;
   let pa = 10, pm = 2;
   let renderLoopStarted = false;
+  let gameInitialized = false;
 
   Audio.init();
   Socket.connect();
@@ -51,7 +52,10 @@
 
   function setupReplayHandler() {
     document.getElementById('btn-replay').addEventListener('click', () => {
-      window.location.reload();
+      const btn = document.getElementById('btn-replay');
+      btn.disabled = true;
+      btn.textContent = 'En attente...';
+      Socket.emit('propose-replay');
     });
   }
 
@@ -145,6 +149,15 @@
     loop();
   }
 
+  function resetGameOverOverlay() {
+    const overlay = document.getElementById('gameover-overlay');
+    overlay.classList.remove('visible');
+    const btn = document.getElementById('btn-replay');
+    btn.disabled = false;
+    btn.textContent = 'Rejouer';
+    document.getElementById('replay-votes-msg').textContent = '';
+  }
+
   // --- Socket handlers ---
   Socket.on('onError', (msg) => UI.showError(msg));
 
@@ -199,23 +212,30 @@
   }
 
   Socket.on('onGameStart', (data) => {
+    resetGameOverOverlay();
     GameClient.init(data.state, myId);
     UI.showScreen('screen-game');
 
     const canvas = document.getElementById('game-canvas');
-    Renderer.init(canvas);
-    Input.init(canvas);
-    Input.setMode('move');
+    if (!gameInitialized) {
+      Renderer.init(canvas);
+      Input.init(canvas);
+      gameInitialized = true;
+      startRenderLoop();
+    } else {
+      // Canvas was hidden during room screen — recompute its size
+      requestAnimationFrame(() => Renderer.resize());
+    }
 
+    Input.setMode('move');
     UI.renderHpBars(data.state);
     UI.updateTurnInfo(data.state);
     UI.renderResources(data.state.players.find(p => p.id === myId));
     const isMine = data.state.currentTurn.playerId === myId;
-    GameClient.setMyTurn(isMine, data.state.currentTurn.timeLeft || 60000);
+    GameClient.setMyTurn(isMine, data.state.currentTurn.timeLeft);
     UI.renderSpellBar(data.state, isMine);
-    UI.updateTimer(data.state.currentTurn.timeLeft || 60000);
+    UI.updateTimer(data.state.currentTurn.timeLeft);
     Input.refreshHighlights();
-    startRenderLoop();
   });
 
   Socket.on('onTurnStart', (data) => {
@@ -225,9 +245,9 @@
     UI.updateTurnInfo(state);
     UI.renderResources(state.players.find(p => p.id === myId));
     const isMine = data.currentTurn.playerId === myId;
-    GameClient.setMyTurn(isMine, 60000);
+    GameClient.setMyTurn(isMine, data.currentTurn.timeLeft);
     UI.renderSpellBar(state, isMine);
-    UI.updateTimer(60000);
+    UI.updateTimer(data.currentTurn.timeLeft);
     Input.setMode('move');
     UI.updateSpellSelection(null);
     Input.refreshHighlights();
@@ -264,6 +284,25 @@
     setTimeout(() => {
       document.getElementById('gameover-overlay').classList.add('visible');
     }, 2000);
+  });
+
+  Socket.on('onReplayProposed', ({ voterNames, total }) => {
+    const msg = document.getElementById('replay-votes-msg');
+    if (!msg) return;
+    const waiting = total - voterNames.length;
+    if (waiting > 0) {
+      msg.textContent = `${voterNames.join(', ')} ${voterNames.length > 1 ? 'proposent' : 'propose'} de rejouer — en attente de ${waiting} joueur${waiting > 1 ? 's' : ''}`;
+    }
+  });
+
+  Socket.on('onReplayReady', (data) => {
+    resetGameOverOverlay();
+    hostId = data.hostId;
+    const me = data.players.find(p => p.id === myId);
+    if (me) { pa = me.pa; pm = me.pm; UI.updateDistribution(pa, pm); }
+    UI.renderPlayersList(data.players, data.hostId, myId);
+    updateStartButton(data.players);
+    UI.showScreen('screen-room');
   });
 
   setupLobbyHandlers();

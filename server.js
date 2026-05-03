@@ -110,6 +110,32 @@ io.on('connection', (socket) => {
     room.game.handleAction(socket.id, data);
   });
 
+  socket.on('propose-replay', () => {
+    const room = getRoomBySocket(socket.id);
+    if (!room || room.status !== 'playing') return;
+    if (!room.game || !room.game.gameOver) return;
+
+    room.replayVotes.add(socket.id);
+
+    const voterNames = Array.from(room.replayVotes)
+      .map(id => { const p = room.players.get(id); return p ? p.name : null; })
+      .filter(Boolean);
+
+    io.to(room.code).emit('replay-proposed', {
+      voterNames,
+      total: room.players.size,
+    });
+
+    // All players voted → reset to distribution phase
+    if (room.replayVotes.size >= room.players.size) {
+      room.resetForReplay();
+      io.to(room.code).emit('replay-ready', {
+        players: room.getPlayerList(),
+        hostId: room.hostId,
+      });
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`Disconnected: ${socket.id}`);
     const room = getRoomBySocket(socket.id);
@@ -119,7 +145,9 @@ io.on('connection', (socket) => {
       room.game.handleDisconnect(socket.id);
     }
 
+    room.replayVotes.delete(socket.id);
     room.removePlayer(socket.id);
+
     socket.to(room.code).emit('player-left', {
       playerId: socket.id,
       players: room.getPlayerList(),
@@ -129,6 +157,17 @@ io.on('connection', (socket) => {
     if (room.isEmpty()) {
       if (room.game) room.game.cleanup();
       rooms.delete(room.code);
+      return;
+    }
+
+    // If all remaining players already voted for replay, trigger it
+    if (room.status === 'playing' && room.replayVotes.size > 0 &&
+        room.replayVotes.size >= room.players.size) {
+      room.resetForReplay();
+      io.to(room.code).emit('replay-ready', {
+        players: room.getPlayerList(),
+        hostId: room.hostId,
+      });
     }
   });
 });

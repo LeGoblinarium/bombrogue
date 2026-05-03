@@ -121,6 +121,8 @@ const Input = (() => {
       aoe = computeAimantAoe(cell);
     } else if (mode === 'detonate') {
       valid = canCastDetonate(cell, me, state);
+    } else if (mode === 'liberation') {
+      valid = canCastLiberation(cell, me);
     }
 
     highlights = [];
@@ -189,6 +191,9 @@ const Input = (() => {
     } else if (mode === 'detonate') {
       valid = canCastDetonate(cell, me, state);
       if (valid) action = { type: 'detonate', x: cell.x, y: cell.y };
+    } else if (mode === 'liberation') {
+      valid = canCastLiberation(cell, me);
+      if (valid) action = { type: 'liberation' };
     }
 
     if (valid && action) {
@@ -244,6 +249,9 @@ const Input = (() => {
         const md = Math.abs(bomb.x - me.x) + Math.abs(bomb.y - me.y);
         if (md >= 1 && md <= detRange) highlights.push({ x: bomb.x, y: bomb.y, type: 'range' });
       }
+    } else if (mode === 'liberation') {
+      // Highlight only the caster's own cell — tap yourself to confirm
+      highlights.push({ x: me.x, y: me.y, type: 'range' });
     } else if (['repulseur', 'entourloupe', 'stratageme', 'aimant'].includes(mode)) {
       // repulseur: cross only from caster; others: any direction
       const rb = me.rangeBonus || 0;
@@ -345,6 +353,11 @@ const Input = (() => {
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md < 1 || md > 10 + (me.rangeBonus || 0)) return false;
     return state.bombs.some(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
+  }
+
+  function canCastLiberation(cell, me) {
+    // Must tap on your own character to confirm
+    return cell.x === me.x && cell.y === me.y;
   }
 
   function canCastAimant(cell, me, state) {

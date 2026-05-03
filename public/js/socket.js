@@ -65,6 +65,14 @@ const Socket = (() => {
       if (handlers.onGameOver) handlers.onGameOver(data);
     });
 
+    socket.on('replay-proposed', (data) => {
+      if (handlers.onReplayProposed) handlers.onReplayProposed(data);
+    });
+
+    socket.on('replay-ready', (data) => {
+      if (handlers.onReplayReady) handlers.onReplayReady(data);
+    });
+
     socket.on('turn-tick', (data) => {
       if (handlers.onTurnTick) handlers.onTurnTick(data);
     });

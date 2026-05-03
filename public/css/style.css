@@ -626,6 +626,15 @@ input[type="text"]:focus {
   transform: scale(1) translateY(0);
 }
 
+.replay-votes-msg {
+  font-size: 0.78rem;
+  color: #aaa;
+  font-style: italic;
+  margin-bottom: 10px;
+  min-height: 1.1em;
+  line-height: 1.4;
+}
+
 .gameover-panel h2 {
   font-size: 1.8rem;
   color: #ff6b35;

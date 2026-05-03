@@ -16,7 +16,7 @@ const SPELLS = [
   },
   {
     id: 'aimant', name: 'Aimant', cost: 2, type: 'pa', cd: 0,
-    desc: 'Attire tout ce qui se trouve sur les axes cardinaux (jusqu\'à 8 cases) vers la case ciblée, de 3 cases max.',
+    desc: 'Attire les bombes de 3 cases et les joueurs de 1 case vers la case ciblée (axes cardinaux, jusqu\'à 8 cases de portée).',
   },
   {
     id: 'entourloupe', name: 'Entour.', cost: 3, type: 'pa', cd: 5,
@@ -28,7 +28,7 @@ const SPELLS = [
   },
   {
     id: 'liberation', name: 'Libér.', cost: 3, type: 'pa', cd: 10,
-    desc: 'Repousse toutes les bombes et joueurs adjacents de 3 cases dans leur direction. Idéal pour se dégager. CD 10 tours.',
+    desc: 'Repousse toutes les bombes et joueurs adjacents de 5 cases dans leur direction. Tape sur ton personnage pour confirmer. CD 10 tours.',
   },
   {
     id: 'detonate', name: 'Détoner', cost: 2, type: 'pa', cd: 0,

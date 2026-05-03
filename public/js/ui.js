@@ -223,10 +223,6 @@ const UI = (() => {
           Input.triggerSimpleAction('end-turn');
           return;
         }
-        if (spell.id === 'liberation') {
-          Input.triggerSimpleAction('liberation');
-          return;
-        }
         if (activeSpell === spell.id) {
           activeSpell = null;
           Input.setMode('move');
