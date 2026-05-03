@@ -280,6 +280,11 @@ input[type="text"]:focus {
   transform-origin: bottom center;
   animation: char-breathe 2.2s ease-in-out infinite;
 }
+/* Non-Bob characters are slightly smaller sprites — scale them up 20% */
+.char-card:not([data-char="player"]) img {
+  width: 62px;
+  height: 62px;
+}
 /* Stagger each portrait so they don't all breathe in sync */
 .char-card:nth-child(1) img { animation-delay:  0.0s; }
 .char-card:nth-child(2) img { animation-delay: -0.7s; }
