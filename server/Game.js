@@ -55,8 +55,9 @@ class Game {
   }
 
   getZoneDepth() {
-    // Zone appears at ZONE_START_TURN (depth 1 = outer border), then grows 1 cell inward every 2 turns
-    return Math.max(0, Math.ceil((this.turnNumber - C.ZONE_START_TURN + 1) / 2));
+    // Zone appears after ZONE_START_CYCLE complete cycles (depth 1 = outer border),
+    // then grows 1 cell inward every 2 additional complete cycles.
+    return Math.max(0, Math.ceil((this.cycleNumber - C.ZONE_START_CYCLE) / 2));
   }
 
   isInZone(x, y) {

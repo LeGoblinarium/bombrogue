@@ -45,7 +45,7 @@ const C = {
   STALL_TURNS: 3,
   STALL_DAMAGE: 10,
 
-  ZONE_START_TURN: 40,
+  ZONE_START_CYCLE: 20, // Zone appears after this many complete cycles (all players having played)
   ZONE_DAMAGE: 10,
 
   REPULSEUR_PUSH: { 1: 3, 2: 2, 3: 1 },

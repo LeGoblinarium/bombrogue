@@ -118,8 +118,10 @@
           <ul>
             <li>Grille <b>20×20</b>, 2–4 joueurs, <b>100 PV</b> chacun.</li>
             <li>Dans le lobby, répartis <b>12 points</b> entre <b>PA</b> (6–10) et <b>PM</b> (2–6). Les PM servent au déplacement, les PA aux sorts.</li>
-            <li>Tour par tour. Le dernier en vie gagne.</li>
+            <li>Tour par tour — <b>120 s</b> maximum par joueur. Le dernier en vie gagne.</li>
+            <li>Un <b>cycle complet</b> = chaque joueur a joué une fois. Les vieillissements de bombes et la zone de danger se calculent en cycles.</li>
             <li>Chaque bombe affiche son <b>âge</b> (0→4). L'âge monte d'un cran à chaque cycle complet. Multiplicateur de dégâts : ×1.0 → ×1.8.</li>
+            <li><b>Rejouer</b> : quand tous les joueurs votent, on retourne à l'écran de distribution sans repasser par le lobby. L'ordre des tours est aléatoire à chaque partie.</li>
           </ul>
         </section>
 
@@ -156,8 +158,8 @@
         <section class="help-section">
           <h3>Zone de danger</h3>
           <ul>
-            <li>À partir du <b>tour 40</b>, les bords de la map deviennent rouges et infligent <b>10 dégâts</b> à chaque début de tour passé dedans.</li>
-            <li>La zone avance d'<b>1 case vers l'intérieur tous les 2 tours</b>.</li>
+            <li>Après <b>20 cycles complets</b> (= tout le monde a joué 20 fois), les bords de la map s'embrasent et infligent <b>10 dégâts</b> à chaque début de tour passé dedans.</li>
+            <li>La zone avance d'<b>1 case vers l'intérieur tous les 2 cycles</b>, réduisant progressivement la surface sûre.</li>
           </ul>
         </section>
 
