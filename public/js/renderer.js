@@ -341,8 +341,11 @@ const Renderer = (() => {
         ctx.translate(0, halfH);           // move origin to feet in local space
         ctx.scale(scaleX, scaleY);         // squash/stretch around feet
         // Image bottom at local y=0 (feet), top at -(cs-2), centred horizontally
+        // Non-Bob characters are drawn 20% larger (sprite sheets are smaller)
         const charSprite = sprites[p.character] || sprites['player'];
-        ctx.drawImage(charSprite, -halfH, -(cs - 2), cs - 2, cs - 2);
+        const spriteScale = (p.character && p.character !== 'player') ? 1.2 : 1;
+        const sw = (cs - 2) * spriteScale;
+        ctx.drawImage(charSprite, -sw / 2, -sw, sw, sw);
         ctx.restore();
 
         // Name initial badge — bobs with the sprite
