@@ -293,11 +293,12 @@ const Renderer = (() => {
           // Idle breathing — each player has a different phase so they don't sync
           const phaseOffset = p.colorIndex * 1.3 + (p.x * 0.17 + p.y * 0.11);
           const breath = Math.sin((now / 2200) * Math.PI * 2 + phaseOffset);
-          // Gentle inhale/exhale: slightly taller and narrower on inhale
-          scaleY = 1 + breath * 0.025;
-          scaleX = 1 - breath * 0.012;
-          // Tiny vertical drift (0.5% of cell) to feel alive
-          bobOffset = breath * cs * 0.012;
+          // Gentle inhale/exhale: slightly taller and narrower along local spine
+          scaleY = 1 + breath * 0.04;
+          scaleX = 1 - breath * 0.02;
+          // No screen-space bobOffset during breathing: it would fight the local-space
+          // horizontal scale when facing left/right, making the effect look vertical.
+          bobOffset = 0;
         }
         // ─────────────────────────────────────────────────────────────────────
 
