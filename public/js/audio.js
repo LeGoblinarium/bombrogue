@@ -2,7 +2,7 @@ const Audio = (() => {
   const sounds = {};
   const FILES = [
     'Turn_start', 'Explosion', 'Repulsion', 'Aimant',
-    'Entourloupe', 'Stratageme', 'Liberation', 'Bombe', 'Mur_bombe',
+    'Entourloupe', 'Stratageme', 'Liberation', 'Bombe', 'Mur_bombe', 'Bonus',
   ];
 
   function init() {

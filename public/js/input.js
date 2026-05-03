@@ -225,10 +225,11 @@ const Input = (() => {
         highlights.push({ x: c.x, y: c.y, type: 'reachable' });
       }
     } else if (mode === 'place-bomb') {
-      for (let dx = -3; dx <= 3; dx++) {
-        for (let dy = -3; dy <= 3; dy++) {
+      const bombRange = 3 + (me.rangeBonus || 0);
+      for (let dx = -bombRange; dx <= bombRange; dx++) {
+        for (let dy = -bombRange; dy <= bombRange; dy++) {
           const md = Math.abs(dx) + Math.abs(dy);
-          if (md === 0 || md > 3) continue;
+          if (md === 0 || md > bombRange) continue;
           const x = me.x + dx, y = me.y + dy;
           if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H) {
             highlights.push({ x, y, type: 'range' });
@@ -236,15 +237,17 @@ const Input = (() => {
         }
       }
     } else if (mode === 'detonate') {
-      // Highlight own bombs within range 10 — those are the valid targets
+      // Highlight own bombs within range — those are the valid targets
+      const detRange = 10 + (me.rangeBonus || 0);
       for (const bomb of state.bombs) {
         if (bomb.ownerId !== me.id) continue;
         const md = Math.abs(bomb.x - me.x) + Math.abs(bomb.y - me.y);
-        if (md >= 1 && md <= 10) highlights.push({ x: bomb.x, y: bomb.y, type: 'range' });
+        if (md >= 1 && md <= detRange) highlights.push({ x: bomb.x, y: bomb.y, type: 'range' });
       }
     } else if (['repulseur', 'entourloupe', 'stratageme', 'aimant'].includes(mode)) {
       // repulseur: cross only from caster; others: any direction
-      const ranges = { repulseur: 6, entourloupe: 8, stratageme: 6, aimant: 6 };
+      const rb = me.rangeBonus || 0;
+      const ranges = { repulseur: 6 + rb, entourloupe: 8 + rb, stratageme: 6 + rb, aimant: 6 + rb };
       const r = ranges[mode];
       const casterCrossOnly = mode === 'repulseur';
       for (let dx = -r; dx <= r; dx++) {
@@ -295,12 +298,12 @@ const Input = (() => {
 
   function canPlaceBomb(cell, me, state) {
     if (me.paLeft < 4) return false;
-    if (state.bombs.filter(b => b.ownerId === me.id).length >= 3) return false;
+    if (state.bombs.filter(b => b.ownerId === me.id).length >= (me.maxBombs || 3)) return false;
     if (state.obstacles.some(o => o.x === cell.x && o.y === cell.y)) return false;
     if (state.bombs.some(b => b.x === cell.x && b.y === cell.y)) return false;
     if (state.players.some(p => p.alive && p.x === cell.x && p.y === cell.y)) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
-    if (md < 1 || md > 3) return false;
+    if (md < 1 || md > 3 + (me.rangeBonus || 0)) return false;
     return true;
   }
 
@@ -309,7 +312,7 @@ const Input = (() => {
     if (me.cooldowns && me.cooldowns.repulseur > 0) return false;
     if (cell.x !== me.x && cell.y !== me.y) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
-    if (md > 6) return false;
+    if (md > 6 + (me.rangeBonus || 0)) return false;
     return true;
   }
 
@@ -317,7 +320,7 @@ const Input = (() => {
     if (me.paLeft < 3) return false;
     if (me.cooldowns && me.cooldowns.entourloupe > 0) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
-    if (md < 1 || md > 8) return false;
+    if (md < 1 || md > 8 + (me.rangeBonus || 0)) return false;
     const bomb = state.bombs.find(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
     return !!bomb;
   }
@@ -326,7 +329,7 @@ const Input = (() => {
     if (me.paLeft < 1) return false;
     if (me.cooldowns && me.cooldowns.stratageme > 0) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
-    if (md < 1 || md > 6) return false;
+    if (md < 1 || md > 6 + (me.rangeBonus || 0)) return false;
     const bomb = state.bombs.find(b => b.x === cell.x && b.y === cell.y);
     if (!bomb) return false;
     if (!bomb.previousPosition) return false;
@@ -340,7 +343,7 @@ const Input = (() => {
   function canCastDetonate(cell, me, state) {
     if (me.paLeft < 2) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
-    if (md < 1 || md > 10) return false;
+    if (md < 1 || md > 10 + (me.rangeBonus || 0)) return false;
     return state.bombs.some(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
   }
 
@@ -348,7 +351,7 @@ const Input = (() => {
     if (me.paLeft < 2) return false;
     // Can target any cell within range (including caster's own cell)
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
-    if (md > 6) return false;
+    if (md > 6 + (me.rangeBonus || 0)) return false;
     // Target must have a bomb or a player on it (can be the caster's own cell)
     const hasBomb = state.bombs.some(b => b.x === cell.x && b.y === cell.y);
     const hasPlayer = state.players.some(p => p.alive && p.x === cell.x && p.y === cell.y);

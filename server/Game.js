@@ -1,6 +1,7 @@
 const C = require('./constants');
 const GameState = require('./GameState');
 const Bomb = require('./Bomb');
+const Bonus = require('./Bonus');
 const Spells = require('./SpellEngine');
 const { resolveDetonation } = require('./DetonationEngine');
 const { getConnectedBombIds } = require('./BombWallEngine');
@@ -108,6 +109,7 @@ class Game {
       currentTurn: this.buildCurrentTurn(),
       players: this.state.players.map(p => p.serialize()),
       bombs: this.state.bombs.map(b => b.serialize()),
+      bonuses: this.state.bonuses.map(b => b.serialize()),
       obstacles: this.state.gridMap.getObstacles(),
       walls: this.state.walls.map(w => ({
         cells: w.cells, ownerId: w.ownerId, damage: w.damage, compSize: w.compSize,
@@ -230,6 +232,7 @@ class Game {
       movements: result.movements || [],
       actionType: action.type,
       wallsCreated,
+      bonusPickedUp: result.bonusPickedUp || false,
     });
   }
 
@@ -242,6 +245,7 @@ class Game {
     if (!pathData) return { ok: false };
 
     const seenWallCells = new Set();
+    let bonusPickedUp = false;
     for (const step of pathData.path) {
       player.x = step.x;
       player.y = step.y;
@@ -251,23 +255,31 @@ class Game {
         this.checkWallDamageAt(player, step.x, step.y);
         if (!player.alive) break;
       }
+      // Bonus pickup: collect any bonus on this cell
+      const bonusIdx = this.state.bonuses.findIndex(b => b.x === step.x && b.y === step.y);
+      if (bonusIdx !== -1) {
+        const bonus = this.state.bonuses[bonusIdx];
+        player.applyBonus(bonus.type);
+        this.state.bonuses.splice(bonusIdx, 1);
+        bonusPickedUp = true;
+      }
     }
     player.pmLeft -= pathData.dist;
 
     const fullPath = [{ x: fromX, y: fromY }, ...pathData.path];
-    return { ok: true, movements: [{ id: player.id, type: 'player', path: fullPath }] };
+    return { ok: true, movements: [{ id: player.id, type: 'player', path: fullPath }], bonusPickedUp };
   }
 
   doPlaceBomb(player, x, y) {
     if (player.paLeft < C.COST_PLACE_BOMB) return { ok: false };
     const myBombs = this.state.bombs.filter(b => b.ownerId === player.id);
-    if (myBombs.length >= C.MAX_BOMBS_PER_PLAYER) return { ok: false };
+    if (myBombs.length >= player.maxBombs) return { ok: false };
     if (this.state.gridMap.isObstacle(x, y)) return { ok: false };
     if (!this.state.gridMap.inBounds(x, y)) return { ok: false };
     if (this.state.bombs.some(b => b.x === x && b.y === y)) return { ok: false };
     if (this.state.players.some(p => p.alive && p.x === x && p.y === y)) return { ok: false };
     const md = Math.abs(x - player.x) + Math.abs(y - player.y);
-    if (md < 1 || md > C.BOMB_PLACE_RANGE) return { ok: false };
+    if (md < 1 || md > C.BOMB_PLACE_RANGE + (player.rangeBonus || 0)) return { ok: false };
 
     const bomb = new Bomb(player.id, x, y);
     this.state.bombs.push(bomb);
@@ -284,9 +296,9 @@ class Game {
     );
     if (!targetBomb) return { ok: false };
 
-    // Range check (Manhattan distance 1–DETONATE_RANGE)
+    // Range check (Manhattan distance 1–DETONATE_RANGE, extended by rangeBonus)
     const md = Math.abs(x - player.x) + Math.abs(y - player.y);
-    if (md < 1 || md > C.DETONATE_RANGE) return { ok: false };
+    if (md < 1 || md > C.DETONATE_RANGE + (player.rangeBonus || 0)) return { ok: false };
 
     player.paLeft -= C.COST_DETONATE;
 
@@ -299,9 +311,13 @@ class Game {
     // Remove detonated bombs
     this.state.bombs = this.state.bombs.filter(b => !result.detonatedIds.includes(b.id));
 
-    // Remove obstacles destroyed by the explosion
+    // Remove obstacles destroyed by the explosion; 25% chance to spawn a bonus
     for (const obs of result.destroyedObstacles) {
       this.state.gridMap.removeObstacle(obs.x, obs.y);
+      if (Math.random() < C.BONUS_SPAWN_CHANCE) {
+        const type = C.BONUS_TYPES[Math.floor(Math.random() * C.BONUS_TYPES.length)];
+        this.state.bonuses.push(new Bonus(type, obs.x, obs.y));
+      }
     }
 
     // Send detonation animation

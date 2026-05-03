@@ -23,6 +23,9 @@ class Player {
       repulseur: false,
     };
     this.idleTurns = 0;
+    this.maxBombs = C.MAX_BOMBS_PER_PLAYER;
+    this.rangeBonus = 0;
+    this.explosionRange = C.EXPLOSION_RANGE;
   }
 
   takeDamage(amount) {
@@ -50,6 +53,28 @@ class Player {
     }
   }
 
+  applyBonus(type) {
+    switch (type) {
+      case 'bomb-bonus':
+        this.maxBombs++;
+        break;
+      case 'range-bonus':
+        this.rangeBonus++;
+        break;
+      case 'explosion-bonus':
+        this.explosionRange++;
+        break;
+      case 'move-bonus':
+        this.pm++;
+        this.pmLeft++;
+        break;
+      case 'action-bonus':
+        this.pa++;
+        this.paLeft++;
+        break;
+    }
+  }
+
   setCooldown(spellId) {
     if (spellId === 'entourloupe') this.cooldowns.entourloupe = C.CD_ENTOURLOUPE;
     else if (spellId === 'stratageme') this.cooldowns.stratageme = C.CD_STRATAGEME;
@@ -71,6 +96,9 @@ class Player {
       alive: this.alive,
       cooldowns: { ...this.cooldowns },
       usedThisTurn: { ...this.usedThisTurn },
+      maxBombs: this.maxBombs,
+      rangeBonus: this.rangeBonus,
+      explosionRange: this.explosionRange,
     };
   }
 }

@@ -219,7 +219,7 @@
   });
 
   Socket.on('onTurnStart', (data) => {
-    GameClient.patchState({ currentTurn: data.currentTurn, players: data.players, bombs: data.bombs, obstacles: data.obstacles, walls: data.walls });
+    GameClient.patchState({ currentTurn: data.currentTurn, players: data.players, bombs: data.bombs, bonuses: data.bonuses, obstacles: data.obstacles, walls: data.walls });
     const state = GameClient.getState();
     UI.renderHpBars(state);
     UI.updateTurnInfo(state);
@@ -243,6 +243,7 @@
       }
     }
     if (delta.actionType) Audio.playForAction(delta.actionType, delta.wallsCreated);
+    if (delta.bonusPickedUp) Audio.play('Bonus');
     GameClient.patchState(delta);
     const state = GameClient.getState();
     UI.renderHpBars(state);

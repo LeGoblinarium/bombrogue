@@ -191,7 +191,7 @@ const UI = (() => {
       const onCooldown = cd > 0 || (spell.id === 'repulseur' && usedThisTurn);
       let disabled = !isMyTurn || !me.alive || onCooldown;
       if (spell.cost > 0 && me.paLeft < spell.cost) disabled = true;
-      if (spell.id === 'place-bomb' && state.bombs.filter(b => b.ownerId === me.id).length >= 3) disabled = true;
+      if (spell.id === 'place-bomb' && state.bombs.filter(b => b.ownerId === me.id).length >= (me.maxBombs || 3)) disabled = true;
 
       const cdDisplay = onCooldown ? (cd > 0 ? cd : 1) : 0;
 

@@ -42,7 +42,7 @@ function pushEntityInDirection(entity, dirX, dirY, distance, bombs, players, gri
 function castRepulseur(caster, targetX, targetY, bombs, players, gridMap) {
   if (caster.x !== targetX && caster.y !== targetY) return { ok: false, error: 'Pas en ligne droite' };
   const md = Math.abs(targetX - caster.x) + Math.abs(targetY - caster.y);
-  if (md > C.REPULSEUR_RANGE) return { ok: false, error: 'Hors portée' };
+  if (md > C.REPULSEUR_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
   if (caster.paLeft < C.COST_REPULSEUR) return { ok: false, error: 'PA insuffisant' };
   if (caster.usedThisTurn.repulseur) return { ok: false, error: 'Déjà utilisé ce tour' };
 
@@ -96,7 +96,7 @@ function castEntourloupe(caster, targetX, targetY, bombs, players, gridMap) {
   if (caster.paLeft < C.COST_ENTOURLOUPE) return { ok: false, error: 'PA insuffisant' };
   if (caster.cooldowns.entourloupe > 0) return { ok: false, error: 'En cooldown' };
   const md = Math.abs(targetX - caster.x) + Math.abs(targetY - caster.y);
-  if (md < 1 || md > C.ENTOURLOUPE_RANGE) return { ok: false, error: 'Hors portée' };
+  if (md < 1 || md > C.ENTOURLOUPE_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
 
   const bomb = bombs.find(b => b.x === targetX && b.y === targetY && b.ownerId === caster.id);
   if (!bomb) return { ok: false, error: 'Pas de bombe à toi sur cette case' };
@@ -124,7 +124,7 @@ function castStratageme(caster, targetX, targetY, bombs, players, gridMap) {
   if (caster.paLeft < C.COST_STRATAGEME) return { ok: false, error: 'PA insuffisant' };
   if (caster.cooldowns.stratageme > 0) return { ok: false, error: 'En cooldown' };
   const md = Math.abs(targetX - caster.x) + Math.abs(targetY - caster.y);
-  if (md < 1 || md > C.STRATAGEME_RANGE) return { ok: false, error: 'Hors portée' };
+  if (md < 1 || md > C.STRATAGEME_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
 
   const bomb = bombs.find(b => b.x === targetX && b.y === targetY);
   if (!bomb) return { ok: false, error: 'Pas de bombe ici' };
@@ -180,7 +180,7 @@ function castLiberation(caster, bombs, players, gridMap) {
 function castAimant(caster, targetX, targetY, bombs, players, gridMap) {
   if (caster.paLeft < C.COST_AIMANT) return { ok: false, error: 'PA insuffisant' };
   const md = Math.abs(targetX - caster.x) + Math.abs(targetY - caster.y);
-  if (md > C.AIMANT_RANGE) return { ok: false, error: 'Hors portée' };
+  if (md > C.AIMANT_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
 
   const candidates = [];
 

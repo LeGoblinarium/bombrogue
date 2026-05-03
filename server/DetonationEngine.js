@@ -9,7 +9,7 @@ const C = require('./constants');
  * When a ray hits an intact obstacle it is added to destroyedInChain, the obstacle
  * cell is included in the returned cells (for visual), and the ray stops there.
  */
-function getAoeCells(centerX, centerY, gridMap, destroyedInChain) {
+function getAoeCells(centerX, centerY, gridMap, destroyedInChain, range = C.EXPLOSION_RANGE) {
   const cells = [{ x: centerX, y: centerY }];
 
   const directions = [
@@ -18,7 +18,7 @@ function getAoeCells(centerX, centerY, gridMap, destroyedInChain) {
   ];
 
   for (const dir of directions) {
-    for (let dist = 1; dist <= 2; dist++) {
+    for (let dist = 1; dist <= range; dist++) {
       const x = centerX + dir.dx * dist;
       const y = centerY + dir.dy * dist;
       if (!gridMap.inBounds(x, y)) break;
@@ -83,7 +83,9 @@ function resolveDetonation(seedBombIds, bombs, players, gridMap) {
     }
 
     for (const { bomb, step } of batch) {
-      const aoe = getAoeCells(bomb.x, bomb.y, gridMap, destroyedInChain);
+      const owner = players.find(p => p.id === bomb.ownerId);
+      const bombRange = owner ? owner.explosionRange : C.EXPLOSION_RANGE;
+      const aoe = getAoeCells(bomb.x, bomb.y, gridMap, destroyedInChain, bombRange);
       const damage = Math.round(C.DMG_EXPLOSION * bomb.getMultiplier());
 
       const hits = [];

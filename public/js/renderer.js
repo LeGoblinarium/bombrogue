@@ -5,7 +5,10 @@ const Renderer = (() => {
   let spritesReady = false;
 
   function loadSprites() {
-    const FILES = ['tile-light', 'tile-dark', 'obstacle', 'bomb', 'player'];
+    const FILES = [
+      'tile-light', 'tile-dark', 'obstacle', 'bomb', 'player',
+      'bomb-bonus', 'range-bonus', 'explosion-bonus', 'move-bonus', 'action-bonus',
+    ];
     let loaded = 0;
     for (const name of FILES) {
       const img = new Image();
@@ -198,6 +201,40 @@ const Renderer = (() => {
     }
   }
 
+  function drawBonuses(state) {
+    if (!state.bonuses || state.bonuses.length === 0) return;
+    const { cellSize, zoom } = Camera.getTransform();
+    const cs = cellSize * zoom;
+    const time = performance.now() / 600;
+    const pulse = 0.75 + 0.25 * Math.sin(time);
+
+    for (const bonus of state.bonuses) {
+      const s = Camera.gridToScreen(bonus.x, bonus.y);
+      const spriteKey = bonus.type; // 'bomb-bonus', 'range-bonus', etc.
+      const pad = cs * 0.15;
+      const size = (cs - pad * 2) * pulse;
+      const cx = s.x + cs / 2;
+      const cy = s.y + cs / 2;
+
+      // Glow halo
+      ctx.beginPath();
+      ctx.arc(cx, cy, cs * 0.4, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 220, 50, ${0.15 + 0.1 * Math.sin(time)})`;
+      ctx.fill();
+
+      if (spritesReady && sprites[spriteKey]) {
+        ctx.drawImage(sprites[spriteKey], cx - size / 2, cy - size / 2, size, size);
+      } else {
+        // Fallback: colored star shape
+        ctx.fillStyle = '#ffd700';
+        ctx.font = `bold ${Math.round(cs * 0.5)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('★', cx, cy);
+      }
+    }
+  }
+
   function drawPlayers(state) {
     if (!state.players) return;
     const { cellSize, zoom } = Camera.getTransform();
@@ -350,6 +387,7 @@ const Renderer = (() => {
     drawHighlights(highlights);
     drawWalls(state);
     drawBombs(state);
+    drawBonuses(state);
     drawPlayers(state);
     Animations.update(performance.now());
     Animations.draw(ctx, Camera);

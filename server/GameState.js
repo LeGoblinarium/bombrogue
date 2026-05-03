@@ -8,6 +8,7 @@ class GameState {
     this.gridMap = new GridMap();
     this.players = [];
     this.bombs = [];
+    this.bonuses = [];
     this.walls = [];
     this.wallCellMap = new Map();
 
@@ -31,6 +32,7 @@ class GameState {
       obstacles: this.gridMap.getObstacles(),
       players: this.players.map(p => p.serialize()),
       bombs: this.bombs.map(b => b.serialize()),
+      bonuses: this.bonuses.map(b => b.serialize()),
       walls: this.walls.map(w => ({
         cells: w.cells,
         ownerId: w.ownerId,
@@ -45,6 +47,7 @@ class GameState {
     return {
       players: this.players.map(p => p.serialize()),
       bombs: this.bombs.map(b => b.serialize()),
+      bonuses: this.bonuses.map(b => b.serialize()),
       obstacles: this.gridMap.getObstacles(),
       walls: this.walls.map(w => ({
         cells: w.cells,
