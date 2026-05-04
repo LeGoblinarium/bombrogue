@@ -252,8 +252,10 @@ const Renderer = (() => {
     const cs = cellSize * zoom;
     const now = performance.now();
 
+    const dyingIds = new Set(Animations.getDeathAnimIds());
     for (const p of state.players) {
       if (!p.alive) continue;
+      if (dyingIds.has(p.id)) continue; // death animation is playing — don't double-draw
 
       let gx = p.x, gy = p.y;
       const animPos = Animations.getEntityAnimPos(p.id, now);
