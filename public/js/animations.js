@@ -16,6 +16,8 @@ const Animations = (() => {
   // Death animations: id → { startTime, x, y, character, colorIndex, startAngle }
   const deathAnimations = new Map();
   const DEATH_DURATION = 1800;
+  // Persists after animation ends so the player is never re-drawn (reset on new game)
+  const permanentlyDeadIds = new Set();
 
   function add(type, params) {
     active.push({
@@ -214,11 +216,20 @@ const Animations = (() => {
   }
 
   function addDeathAnimation(id, x, y, character, colorIndex, facingAngle) {
+    permanentlyDeadIds.add(id);
     deathAnimations.set(id, {
       startTime: performance.now(),
       x, y, character, colorIndex,
       startAngle: facingAngle || 0,
     });
+  }
+
+  function isPermaDead(id) {
+    return permanentlyDeadIds.has(id);
+  }
+
+  function resetDeadIds() {
+    permanentlyDeadIds.clear();
   }
 
   function getDeathAnimState(id, now) {
@@ -259,5 +270,5 @@ const Animations = (() => {
     return active.length > 0 || entityMovements.size > 0 || hitReactions.size > 0 || deathAnimations.size > 0;
   }
 
-  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, addHitReaction, getHitScale, addDeathAnimation, getDeathAnimState, getDeathAnimIds, update, draw, hasActive };
+  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, addHitReaction, getHitScale, addDeathAnimation, getDeathAnimState, getDeathAnimIds, isPermaDead, resetDeadIds, update, draw, hasActive };
 })();

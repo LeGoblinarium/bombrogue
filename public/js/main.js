@@ -236,6 +236,7 @@
 
   Socket.on('onGameStart', (data) => {
     resetGameOverOverlay();
+    Animations.resetDeadIds();
     GameClient.init(data.state, myId);
     UI.showScreen('screen-game');
 
