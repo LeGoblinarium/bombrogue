@@ -107,6 +107,23 @@ class GridMap {
     return x >= 0 && x < this.width && y >= 0 && y < this.height;
   }
 
+  // Returns true if no obstacle, bomb, or other alive player blocks the path
+  // from (x1,y1) to (x2,y2). Only intermediate cells (not source/target) are checked.
+  hasLineOfSight(x1, y1, x2, y2, bombs, players, selfId) {
+    if (x1 === x2 && y1 === y2) return true;
+    const dx = x2 - x1, dy = y2 - y1;
+    const steps = Math.max(Math.abs(dx), Math.abs(dy));
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      const cx = Math.round(x1 + dx * t);
+      const cy = Math.round(y1 + dy * t);
+      if (this.isObstacle(cx, cy)) return false;
+      if (bombs.some(b => b.x === cx && b.y === cy)) return false;
+      if (players.some(p => p.alive && p.id !== selfId && p.x === cx && p.y === cy)) return false;
+    }
+    return true;
+  }
+
   computeReachable(startX, startY, pm, bombs, players, ignorePlayerId) {
     const visited = new Map();
     const queue = [{ x: startX, y: startY, dist: 0, path: [] }];

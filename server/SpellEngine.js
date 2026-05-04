@@ -45,6 +45,7 @@ function castRepulseur(caster, targetX, targetY, bombs, players, gridMap) {
   if (md > C.REPULSEUR_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
   if (caster.paLeft < C.COST_REPULSEUR) return { ok: false, error: 'PA insuffisant' };
   if (caster.usedThisTurn.repulseur) return { ok: false, error: 'Déjà utilisé ce tour' };
+  if (md > 0 && !gridMap.hasLineOfSight(caster.x, caster.y, targetX, targetY, bombs, players, caster.id)) return { ok: false, error: 'Ligne de vue bloquée' };
 
   const targets = [];
   for (const b of bombs) {
@@ -100,6 +101,9 @@ function castEntourloupe(caster, targetX, targetY, bombs, players, gridMap) {
 
   const bomb = bombs.find(b => b.x === targetX && b.y === targetY && b.ownerId === caster.id);
   if (!bomb) return { ok: false, error: 'Pas de bombe à toi sur cette case' };
+  // LoS: exclude the target bomb itself from blocking its own line of sight
+  const otherBombs = bombs.filter(b => b.id !== bomb.id);
+  if (!gridMap.hasLineOfSight(caster.x, caster.y, targetX, targetY, otherBombs, players, caster.id)) return { ok: false, error: 'Ligne de vue bloquée' };
 
   const casterFrom = { x: caster.x, y: caster.y };
   const bombFrom = { x: bomb.x, y: bomb.y };
@@ -129,6 +133,8 @@ function castStratageme(caster, targetX, targetY, bombs, players, gridMap) {
   const bomb = bombs.find(b => b.x === targetX && b.y === targetY);
   if (!bomb) return { ok: false, error: 'Pas de bombe ici' };
   if (!bomb.previousPosition) return { ok: false, error: 'Pas de position précédente' };
+  const otherBombsStrat = bombs.filter(b => b.id !== bomb.id);
+  if (!gridMap.hasLineOfSight(caster.x, caster.y, targetX, targetY, otherBombsStrat, players, caster.id)) return { ok: false, error: 'Ligne de vue bloquée' };
   const prev = bomb.previousPosition;
   if (isCellOccupied(prev.x, prev.y, bombs, players, bomb.id, gridMap)) {
     return { ok: false, error: 'Position précédente occupée' };
@@ -181,6 +187,7 @@ function castAimant(caster, targetX, targetY, bombs, players, gridMap) {
   if (caster.paLeft < C.COST_AIMANT) return { ok: false, error: 'PA insuffisant' };
   const md = Math.abs(targetX - caster.x) + Math.abs(targetY - caster.y);
   if (md > C.AIMANT_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
+  if (md > 0 && !gridMap.hasLineOfSight(caster.x, caster.y, targetX, targetY, bombs, players, caster.id)) return { ok: false, error: 'Ligne de vue bloquée' };
 
   const candidates = [];
 

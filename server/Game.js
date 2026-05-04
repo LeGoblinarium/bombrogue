@@ -90,8 +90,14 @@ class Game {
       currentPlayer.takeDamage(C.ZONE_DAMAGE);
     }
 
-    // Apply wall damage if standing on a wall (turn start)
-    this.checkWallDamageAt(currentPlayer, currentPlayer.x, currentPlayer.y);
+    // Apply wall damage at turn start — skip if the wall just formed under them
+    // (they already took instant damage when it appeared). Clear immunity after so
+    // that staying on the wall next turn deals damage again.
+    const wallStartKey = `${currentPlayer.x},${currentPlayer.y}`;
+    if (!currentPlayer.wallImmuneCells.has(wallStartKey)) {
+      this.checkWallDamageAt(currentPlayer, currentPlayer.x, currentPlayer.y);
+    }
+    currentPlayer.wallImmuneCells.clear();
 
     // Check if player died from wall damage
     if (!currentPlayer.alive) {
@@ -230,6 +236,7 @@ class Game {
     const wallsBefore = this.state.walls.length;
     this.state.recomputeWalls();
     const wallsCreated = this.state.walls.length > wallsBefore;
+    this.applyInstantWallDamage(); // damage any player now standing on a new wall cell
 
     if (this.checkGameOver()) return;
 
@@ -260,6 +267,8 @@ class Game {
         seenWallCells.add(key);
         this.checkWallDamageAt(player, step.x, step.y);
         if (!player.alive) break;
+        // Grant immunity so applyInstantWallDamage won't double-hit the final position
+        player.wallImmuneCells.add(key);
       }
       // Bonus pickup: collect any bonus on this cell
       const bonusIdx = this.state.bonuses.findIndex(b => b.x === step.x && b.y === step.y);
@@ -286,6 +295,7 @@ class Game {
     if (this.state.players.some(p => p.alive && p.x === x && p.y === y)) return { ok: false };
     const md = Math.abs(x - player.x) + Math.abs(y - player.y);
     if (md < 1 || md > C.BOMB_PLACE_RANGE + (player.rangeBonus || 0)) return { ok: false };
+    if (!this.state.gridMap.hasLineOfSight(player.x, player.y, x, y, this.state.bombs, this.state.players, player.id)) return { ok: false };
 
     const bomb = new Bomb(player.id, x, y);
     this.state.bombs.push(bomb);
@@ -305,6 +315,9 @@ class Game {
     // Range check (Manhattan distance 1–DETONATE_RANGE, extended by rangeBonus)
     const md = Math.abs(x - player.x) + Math.abs(y - player.y);
     if (md < 1 || md > C.DETONATE_RANGE + (player.rangeBonus || 0)) return { ok: false };
+    // LoS: exclude the target bomb itself from blockers so it doesn't block its own LoS
+    const otherBombs = this.state.bombs.filter(b => b.id !== targetBomb.id);
+    if (!this.state.gridMap.hasLineOfSight(player.x, player.y, x, y, otherBombs, this.state.players, player.id)) return { ok: false };
 
     player.paLeft -= C.COST_DETONATE;
 
@@ -349,7 +362,7 @@ class Game {
   }
 
   // Spell-induced wall damage: each wall cell only damages a player once per turn.
-  // Subsequent pushes/pulls through the same cell are ignored.
+  // Also grants wallImmuneCells so applyInstantWallDamage won't double-hit the same cell.
   checkSpellWallDamageAt(player, x, y) {
     const wall = this.state.wallCellMap.get(`${x},${y}`);
     if (!wall) return;
@@ -360,7 +373,22 @@ class Game {
     const key = `${x},${y}`;
     if (taken.has(key)) return;
     taken.add(key);
+    player.wallImmuneCells.add(key);
     player.takeDamage(wall.damage);
+  }
+
+  // Called after every recomputeWalls(): any player now standing on a wall cell
+  // that they haven't been immunised against takes immediate damage.
+  applyInstantWallDamage() {
+    for (const p of this.state.players) {
+      if (!p.alive) continue;
+      const key = `${p.x},${p.y}`;
+      const wall = this.state.wallCellMap.get(key);
+      if (!wall) continue;
+      if (p.wallImmuneCells.has(key)) continue;
+      p.takeDamage(wall.damage);
+      p.wallImmuneCells.add(key);
+    }
   }
 
   handleDisconnect(socketId) {

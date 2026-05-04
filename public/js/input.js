@@ -237,24 +237,26 @@ const Input = (() => {
           const md = Math.abs(dx) + Math.abs(dy);
           if (md === 0 || md > bombRange) continue;
           const x = me.x + dx, y = me.y + dy;
-          if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H) {
+          if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H
+              && clientHasLoS(me.x, me.y, x, y, state, me.id)) {
             highlights.push({ x, y, type: 'range' });
           }
         }
       }
     } else if (mode === 'detonate') {
-      // Highlight own bombs within range — those are the valid targets
       const detRange = 10 + (me.rangeBonus || 0);
       for (const bomb of state.bombs) {
         if (bomb.ownerId !== me.id) continue;
         const md = Math.abs(bomb.x - me.x) + Math.abs(bomb.y - me.y);
-        if (md >= 1 && md <= detRange) highlights.push({ x: bomb.x, y: bomb.y, type: 'range' });
+        const otherBombs = state.bombs.filter(b => b.id !== bomb.id);
+        const losState = { ...state, bombs: otherBombs };
+        if (md >= 1 && md <= detRange && clientHasLoS(me.x, me.y, bomb.x, bomb.y, losState, me.id)) {
+          highlights.push({ x: bomb.x, y: bomb.y, type: 'range' });
+        }
       }
     } else if (mode === 'liberation') {
-      // Highlight only the caster's own cell — tap yourself to confirm
       highlights.push({ x: me.x, y: me.y, type: 'range' });
     } else if (['repulseur', 'entourloupe', 'stratageme', 'aimant'].includes(mode)) {
-      // repulseur: cross only from caster; others: any direction
       const rb = me.rangeBonus || 0;
       const ranges = { repulseur: 6 + rb, entourloupe: 8 + rb, stratageme: 6 + rb, aimant: 6 + rb };
       const r = ranges[mode];
@@ -266,7 +268,8 @@ const Input = (() => {
           const md = Math.abs(dx) + Math.abs(dy);
           if (md > r) continue;
           const x = me.x + dx, y = me.y + dy;
-          if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H) {
+          if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H
+              && clientHasLoS(me.x, me.y, x, y, state, me.id)) {
             highlights.push({ x, y, type: 'range' });
           }
         }
@@ -313,6 +316,7 @@ const Input = (() => {
     if (state.players.some(p => p.alive && p.x === cell.x && p.y === cell.y)) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md < 1 || md > 3 + (me.rangeBonus || 0)) return false;
+    if (!clientHasLoS(me.x, me.y, cell.x, cell.y, state, me.id)) return false;
     return true;
   }
 
@@ -322,6 +326,7 @@ const Input = (() => {
     if (cell.x !== me.x && cell.y !== me.y) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md > 6 + (me.rangeBonus || 0)) return false;
+    if (md > 0 && !clientHasLoS(me.x, me.y, cell.x, cell.y, state, me.id)) return false;
     return true;
   }
 
@@ -331,7 +336,10 @@ const Input = (() => {
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md < 1 || md > 8 + (me.rangeBonus || 0)) return false;
     const bomb = state.bombs.find(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
-    return !!bomb;
+    if (!bomb) return false;
+    const otherBombs = state.bombs.filter(b => b.id !== bomb.id);
+    if (!clientHasLoS(me.x, me.y, cell.x, cell.y, { ...state, bombs: otherBombs }, me.id)) return false;
+    return true;
   }
 
   function canCastStratageme(cell, me, state) {
@@ -346,6 +354,8 @@ const Input = (() => {
     if (state.obstacles.some(o => o.x === prev.x && o.y === prev.y)) return false;
     if (state.bombs.some(b => b.x === prev.x && b.y === prev.y && b.id !== bomb.id)) return false;
     if (state.players.some(p => p.alive && p.x === prev.x && p.y === prev.y)) return false;
+    const otherBombsStrat = state.bombs.filter(b => b.id !== bomb.id);
+    if (!clientHasLoS(me.x, me.y, cell.x, cell.y, { ...state, bombs: otherBombsStrat }, me.id)) return false;
     return true;
   }
 
@@ -353,23 +363,26 @@ const Input = (() => {
     if (me.paLeft < 2) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md < 1 || md > 10 + (me.rangeBonus || 0)) return false;
-    return state.bombs.some(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
+    const bomb = state.bombs.find(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
+    if (!bomb) return false;
+    const otherBombs = state.bombs.filter(b => b.id !== bomb.id);
+    if (!clientHasLoS(me.x, me.y, cell.x, cell.y, { ...state, bombs: otherBombs }, me.id)) return false;
+    return true;
   }
 
   function canCastLiberation(cell, me) {
-    // Must tap on your own character to confirm
     return cell.x === me.x && cell.y === me.y;
   }
 
   function canCastAimant(cell, me, state) {
     if (me.paLeft < 2) return false;
-    // Can target any cell within range (including caster's own cell)
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md > 6 + (me.rangeBonus || 0)) return false;
-    // Target must have a bomb or a player on it (can be the caster's own cell)
     const hasBomb = state.bombs.some(b => b.x === cell.x && b.y === cell.y);
     const hasPlayer = state.players.some(p => p.alive && p.x === cell.x && p.y === cell.y);
-    return hasBomb || hasPlayer;
+    if (!hasBomb && !hasPlayer) return false;
+    if (md > 0 && !clientHasLoS(me.x, me.y, cell.x, cell.y, state, me.id)) return false;
+    return true;
   }
 
   function computeRepulseurAoe(cell) {
@@ -396,6 +409,22 @@ const Input = (() => {
       }
     }
     return cells;
+  }
+
+  // Replicates server GridMap.hasLineOfSight — checks intermediate cells only
+  function clientHasLoS(x1, y1, x2, y2, state, selfId) {
+    if (x1 === x2 && y1 === y2) return true;
+    const dx = x2 - x1, dy = y2 - y1;
+    const steps = Math.max(Math.abs(dx), Math.abs(dy));
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      const cx = Math.round(x1 + dx * t);
+      const cy = Math.round(y1 + dy * t);
+      if (state.obstacles.some(o => o.x === cx && o.y === cy)) return false;
+      if (state.bombs.some(b => b.x === cx && b.y === cy)) return false;
+      if (state.players.some(p => p.alive && p.id !== selfId && p.x === cx && p.y === cy)) return false;
+    }
+    return true;
   }
 
   function clientGetBombAoe(bx, by, expRange, obstacles) {

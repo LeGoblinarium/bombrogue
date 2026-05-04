@@ -27,6 +27,9 @@ class Player {
     this.maxBombs = C.MAX_BOMBS_PER_PLAYER;
     this.rangeBonus = 0;
     this.explosionRange = C.EXPLOSION_RANGE;
+    // Cells where this player already took instant wall-formation damage.
+    // Cleared at the start of their own turn so they take damage again if they stay.
+    this.wallImmuneCells = new Set();
   }
 
   takeDamage(amount) {
