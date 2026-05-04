@@ -261,6 +261,22 @@
     Input.refreshHighlights();
   });
 
+  function detectAndAnimateDeaths(newPlayers) {
+    const prevState = GameClient.getState();
+    if (!prevState || !newPlayers) return;
+    for (const np of newPlayers) {
+      const op = prevState.players.find(p => p.id === np.id);
+      if (op && op.alive && !np.alive) {
+        Animations.addDeathAnimation(
+          np.id, op.x, op.y,
+          op.character || 'player',
+          op.colorIndex,
+          Animations.getPlayerFacing(np.id)
+        );
+      }
+    }
+  }
+
   Socket.on('onTurnStart', (data) => {
     // Detect zone/wall damage applied at turn start
     const prevStateTurn = GameClient.getState();
@@ -270,6 +286,7 @@
         if (op && np.hp < op.hp) Animations.addHitReaction(np.id);
       }
     }
+    detectAndAnimateDeaths(data.players);
     GameClient.patchState({ currentTurn: data.currentTurn, players: data.players, bombs: data.bombs, bonuses: data.bonuses, obstacles: data.obstacles, walls: data.walls });
     const state = GameClient.getState();
     UI.renderHpBars(state);
@@ -296,6 +313,7 @@
         }
       }
     }
+    detectAndAnimateDeaths(delta.players);
     if (delta.movements) {
       for (const m of delta.movements) {
         if (m.path && m.path.length >= 2) {
@@ -320,8 +338,19 @@
   });
 
   Socket.on('onGameOver', (data) => {
+    // Trigger death animations for players who just died
+    const state = GameClient.getState();
+    if (state) {
+      for (const stat of data.stats) {
+        if (!stat.alive) {
+          const p = state.players.find(pp => pp.id === stat.id);
+          if (p && p.alive) {
+            Animations.addDeathAnimation(p.id, p.x, p.y, p.character || 'player', p.colorIndex, Animations.getPlayerFacing(p.id));
+          }
+        }
+      }
+    }
     UI.renderGameOver(data);
-    // Wait 2 s so players can see the final state, then fade in the overlay
     setTimeout(() => {
       document.getElementById('gameover-overlay').classList.add('visible');
     }, 2000);

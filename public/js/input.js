@@ -121,6 +121,7 @@ const Input = (() => {
       aoe = computeAimantAoe(cell);
     } else if (mode === 'detonate') {
       valid = canCastDetonate(cell, me, state);
+      if (valid) aoe = computeDetonationAoe(cell.x, cell.y, me, state);
     } else if (mode === 'liberation') {
       valid = canCastLiberation(cell, me);
     }
@@ -395,6 +396,81 @@ const Input = (() => {
       }
     }
     return cells;
+  }
+
+  function clientGetBombAoe(bx, by, expRange, obstacles) {
+    const cells = [];
+    for (const [ddx, ddy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      for (let d = 1; d <= expRange; d++) {
+        const x = bx + ddx * d, y = by + ddy * d;
+        if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) break;
+        cells.push({ x, y });
+        if (obstacles.some(o => o.x === x && o.y === y)) break;
+      }
+    }
+    for (const [ddx, ddy] of [[1,1],[-1,1],[1,-1],[-1,-1]]) {
+      const x = bx + ddx, y = by + ddy;
+      if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) continue;
+      if (obstacles.some(o => o.x === x && o.y === y)) continue;
+      cells.push({ x, y });
+    }
+    return cells;
+  }
+
+  function clientGetConnectedBombIds(targetBomb, myBombs, obstacles) {
+    const MAX_GAP = 6;
+    const adj = new Map();
+    for (const b of myBombs) adj.set(b.id, []);
+    for (let i = 0; i < myBombs.length; i++) {
+      for (let j = i + 1; j < myBombs.length; j++) {
+        const a = myBombs[i], b = myBombs[j];
+        if (a.x === b.x) {
+          const minY = Math.min(a.y, b.y), maxY = Math.max(a.y, b.y);
+          if (maxY - minY - 1 > MAX_GAP) continue;
+          let blocked = false;
+          for (let y = minY + 1; y < maxY; y++) {
+            if (obstacles.some(o => o.x === a.x && o.y === y)) { blocked = true; break; }
+          }
+          if (!blocked) { adj.get(a.id).push(b.id); adj.get(b.id).push(a.id); }
+        } else if (a.y === b.y) {
+          const minX = Math.min(a.x, b.x), maxX = Math.max(a.x, b.x);
+          if (maxX - minX - 1 > MAX_GAP) continue;
+          let blocked = false;
+          for (let x = minX + 1; x < maxX; x++) {
+            if (obstacles.some(o => o.x === x && o.y === a.y)) { blocked = true; break; }
+          }
+          if (!blocked) { adj.get(a.id).push(b.id); adj.get(b.id).push(a.id); }
+        }
+      }
+    }
+    const visited = new Set([targetBomb.id]);
+    const queue = [targetBomb.id];
+    while (queue.length > 0) {
+      for (const nb of (adj.get(queue.shift()) || [])) {
+        if (!visited.has(nb)) { visited.add(nb); queue.push(nb); }
+      }
+    }
+    return visited;
+  }
+
+  function computeDetonationAoe(bx, by, me, state) {
+    const targetBomb = state.bombs.find(b => b.ownerId === me.id && b.x === bx && b.y === by);
+    if (!targetBomb) return [];
+    const myBombs = state.bombs.filter(b => b.ownerId === me.id);
+    const connectedIds = clientGetConnectedBombIds(targetBomb, myBombs, state.obstacles);
+    const explodedIds = new Set(connectedIds);
+    const queue = state.bombs.filter(b => connectedIds.has(b.id));
+    const affectedCells = new Set();
+    while (queue.length > 0) {
+      const bomb = queue.shift();
+      const expRange = me.explosionRange || 2;
+      for (const cell of clientGetBombAoe(bomb.x, bomb.y, expRange, state.obstacles)) {
+        affectedCells.add(`${cell.x},${cell.y}`);
+        const chain = state.bombs.find(b => b.x === cell.x && b.y === cell.y && !explodedIds.has(b.id));
+        if (chain) { explodedIds.add(chain.id); queue.push(chain); }
+      }
+    }
+    return Array.from(affectedCells).map(k => { const [x,y]=k.split(',').map(Number); return {x,y}; });
   }
 
   function getHighlights() {

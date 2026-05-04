@@ -13,6 +13,10 @@ const Animations = (() => {
   const hitReactions = new Map();
   const HIT_DURATION = 300; // ms
 
+  // Death animations: id → { startTime, x, y, character, colorIndex, startAngle }
+  const deathAnimations = new Map();
+  const DEATH_DURATION = 1800;
+
   function add(type, params) {
     active.push({
       type,
@@ -209,9 +213,46 @@ const Animations = (() => {
     return Math.sin((elapsed / HIT_DURATION) * Math.PI);
   }
 
-  function hasActive() {
-    return active.length > 0 || entityMovements.size > 0 || hitReactions.size > 0;
+  function addDeathAnimation(id, x, y, character, colorIndex, facingAngle) {
+    deathAnimations.set(id, {
+      startTime: performance.now(),
+      x, y, character, colorIndex,
+      startAngle: facingAngle || 0,
+    });
   }
 
-  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, addHitReaction, getHitScale, update, draw, hasActive };
+  function getDeathAnimState(id, now) {
+    const anim = deathAnimations.get(id);
+    if (!anim) return null;
+    const elapsed = now - anim.startTime;
+    if (elapsed >= DEATH_DURATION) { deathAnimations.delete(id); return null; }
+    const t = elapsed / DEATH_DURATION;
+    const RISE = 0.28;
+    let offsetY, scale, rotation, alpha;
+    if (t < RISE) {
+      const p = t / RISE;
+      const ease = 1 - (1 - p) * (1 - p);
+      offsetY  = -ease * 2.5;
+      scale    = 1 + ease * 0.5;
+      rotation = anim.startAngle + p * Math.PI * 0.5;
+      alpha    = 1;
+    } else {
+      const p = (t - RISE) / (1 - RISE);
+      offsetY  = -2.5 + p * 8;
+      scale    = Math.max(0, 1.5 * (1 - p));
+      rotation = anim.startAngle + Math.PI * 0.5 + p * Math.PI * 3.5;
+      alpha    = Math.max(0, 1 - p * 2);
+    }
+    return { x: anim.x, y: anim.y, character: anim.character, colorIndex: anim.colorIndex, offsetY, scale, rotation, alpha };
+  }
+
+  function getDeathAnimIds() {
+    return Array.from(deathAnimations.keys());
+  }
+
+  function hasActive() {
+    return active.length > 0 || entityMovements.size > 0 || hitReactions.size > 0 || deathAnimations.size > 0;
+  }
+
+  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, addHitReaction, getHitScale, addDeathAnimation, getDeathAnimState, getDeathAnimIds, update, draw, hasActive };
 })();

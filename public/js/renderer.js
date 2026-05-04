@@ -438,6 +438,32 @@ const Renderer = (() => {
     return `rgba(${r},${g},${b},${alpha})`;
   }
 
+  function drawDeathAnimations() {
+    const ids = Animations.getDeathAnimIds();
+    if (!ids.length || !spritesReady) return;
+    const now = performance.now();
+    const { cellSize, zoom } = Camera.getTransform();
+    const cs = cellSize * zoom;
+
+    for (const id of ids) {
+      const d = Animations.getDeathAnimState(id, now);
+      if (!d) continue;
+      const s = Camera.gridToScreen(d.x, d.y);
+      const cx = s.x + cs * 0.5;
+      const cy = s.y + cs * 0.5;
+      const spriteScale = (d.character && d.character !== 'player') ? 1.2 : 1.0;
+      const drawSize = (cs - 2) * d.scale * spriteScale;
+      if (drawSize <= 0) continue;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, d.alpha);
+      ctx.translate(cx, cy + d.offsetY * cs);
+      ctx.rotate(d.rotation);
+      const charSprite = sprites[d.character] || sprites['player'];
+      ctx.drawImage(charSprite, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+      ctx.restore();
+    }
+  }
+
   function render(state, highlights) {
     if (!state) return;
     clear();
@@ -449,6 +475,7 @@ const Renderer = (() => {
     drawPlayers(state);
     Animations.update(performance.now());
     Animations.draw(ctx, Camera);
+    drawDeathAnimations();
   }
 
   return { init, render, resize };
