@@ -136,6 +136,17 @@ io.on('connection', (socket) => {
     socket.emit('rooms-updated', getPublicRoomsList());
   });
 
+  socket.on('set-name', ({ name }) => {
+    const room = getRoomBySocket(socket.id);
+    if (!room || room.status !== 'waiting') return;
+    const player = room.players.get(socket.id);
+    if (!player) return;
+    const trimmed = (name || '').trim().substring(0, 16);
+    if (!trimmed) return;
+    player.name = trimmed;
+    io.to(room.code).emit('distribution-updated', { players: room.getPlayerList() });
+  });
+
   socket.on('set-character', ({ character }) => {
     const VALID_CHARS = ['player', 'merlin', 'kael', 'borin', 'alaric', 'mordek'];
     if (!VALID_CHARS.includes(character)) return;

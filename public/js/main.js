@@ -13,9 +13,16 @@
   Socket.connect();
 
   const CHAR_NAMES = { player: 'Bob', merlin: 'Merlin', kael: 'Kael', borin: 'Borin', alaric: 'Alaric', mordek: 'Mordek' };
+  let hasCustomName = false; // true if player typed a name manually
 
   function resolvePlayerName() {
-    return document.getElementById('player-name').value.trim() || CHAR_NAMES[myCharacter] || 'Bob';
+    const typed = document.getElementById('player-name').value.trim();
+    if (typed) {
+      hasCustomName = true;
+      return typed;
+    }
+    hasCustomName = false;
+    return CHAR_NAMES[myCharacter] || 'Bob';
   }
 
   function setupLobbyHandlers() {
@@ -124,6 +131,12 @@
         c.classList.toggle('selected', c.dataset.char === myCharacter);
       });
       Socket.emit('set-character', { character: myCharacter });
+
+      // If no custom name, sync name to new character name
+      if (!hasCustomName) {
+        myName = CHAR_NAMES[myCharacter] || 'Bob';
+        Socket.emit('set-name', { name: myName });
+      }
     });
   }
 
