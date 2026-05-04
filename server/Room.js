@@ -18,7 +18,7 @@ class Room {
     this.code = code;
     this.name = (name || '').trim() || 'Partie sans nom';
     this.isPublic = isPublic !== false; // default true
-    this.obstacleCount = 22; // default = middle of the slider
+    this.obstacleCount = 30; // default obstacle count
     this.players = new Map();
     this.hostId = null;
     this.status = 'waiting';
@@ -40,8 +40,8 @@ class Room {
     if (this.players.size >= C.MAX_PLAYERS) return false;
     if (this.status !== 'waiting') return false;
 
-    const pa = C.TOTAL_POINTS - C.MIN_PM;
-    const pm = C.MIN_PM;
+    const pa = C.DEFAULT_PA;
+    const pm = C.DEFAULT_PM;
 
     this.players.set(socketId, {
       id: socketId,
@@ -66,7 +66,7 @@ class Room {
 
   setObstacleCount(count) {
     const n = Math.round(Number(count));
-    if (isNaN(n) || n < 5 || n > 39) return false;
+    if (isNaN(n) || n < 0 || n > 90) return false;
     this.obstacleCount = n;
     return true;
   }
@@ -104,8 +104,8 @@ class Room {
     this.game = null;
     this.replayVotes = new Set();
     for (const player of this.players.values()) {
-      player.pa = C.TOTAL_POINTS - C.MIN_PM;
-      player.pm = C.MIN_PM;
+      player.pa = C.DEFAULT_PA;
+      player.pm = C.DEFAULT_PM;
     }
   }
 

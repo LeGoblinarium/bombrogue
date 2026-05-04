@@ -1,7 +1,7 @@
 const C = require('./constants');
 
-// Default number of obstacles (middle of the host slider)
-const OBSTACLE_COUNT_DEFAULT = 22;
+// Default number of obstacles
+const OBSTACLE_COUNT_DEFAULT = 30;
 
 class GridMap {
   constructor(obstacleCount) {

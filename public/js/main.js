@@ -3,7 +3,7 @@
   let myRoomCode = '';
   let hostId = null;
   let myId = null;
-  let pa = 10, pm = 2;
+  let pa = 8, pm = 4;
   let myCharacter = 'player';
   let renderLoopStarted = false;
   let gameInitialized = false;
@@ -111,7 +111,7 @@
       valueEl.textContent = val;
     }
 
-    syncSliderUI(22); // default
+    syncSliderUI(30); // default
 
     slider.addEventListener('input', () => {
       const val = parseInt(slider.value);

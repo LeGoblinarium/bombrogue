@@ -6,6 +6,8 @@ const C = {
   TOTAL_POINTS: 12,
   MIN_PM: 2,
   MAX_PM: 6,
+  DEFAULT_PA: 8,
+  DEFAULT_PM: 4,
   TURN_TIME_MS: 120000,
   MAX_BOMBS_PER_PLAYER: 3,
 

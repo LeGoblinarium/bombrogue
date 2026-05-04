@@ -540,7 +540,7 @@ input[type="text"]:focus {
   appearance: none;
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(to right, #ff6b35 calc((var(--val) - 5) / 34 * 100%), #2d4059 calc((var(--val) - 5) / 34 * 100%));
+  background: linear-gradient(to right, #ff6b35 calc(var(--val) / 90 * 100%), #2d4059 calc(var(--val) / 90 * 100%));
   outline: none;
   cursor: pointer;
 }
