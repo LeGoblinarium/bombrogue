@@ -18,6 +18,7 @@ class Room {
     this.code = code;
     this.name = (name || '').trim() || 'Partie sans nom';
     this.isPublic = isPublic !== false; // default true
+    this.obstacleCount = 22; // default = middle of the slider
     this.players = new Map();
     this.hostId = null;
     this.status = 'waiting';
@@ -61,6 +62,13 @@ class Room {
     if (this.hostId === socketId && this.players.size > 0) {
       this.hostId = this.players.keys().next().value;
     }
+  }
+
+  setObstacleCount(count) {
+    const n = Math.round(Number(count));
+    if (isNaN(n) || n < 5 || n > 39) return false;
+    this.obstacleCount = n;
+    return true;
   }
 
   setCharacter(socketId, character) {

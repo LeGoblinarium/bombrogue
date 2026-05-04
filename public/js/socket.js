@@ -80,6 +80,10 @@ const Socket = (() => {
     socket.on('rooms-updated', (data) => {
       if (handlers.onRoomsUpdated) handlers.onRoomsUpdated(data);
     });
+
+    socket.on('obstacle-count-updated', (data) => {
+      if (handlers.onObstacleCountUpdated) handlers.onObstacleCountUpdated(data);
+    });
   }
 
   function emit(event, data) {

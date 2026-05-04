@@ -10,7 +10,7 @@ class Game {
   constructor(room, io) {
     this.room = room;
     this.io = io;
-    this.state = new GameState(Array.from(room.players.values()));
+    this.state = new GameState(Array.from(room.players.values()), room.obstacleCount);
     // Randomise turn order so the host doesn't always go first
     this.turnOrder = this.state.players.map(p => p.id);
     for (let i = this.turnOrder.length - 1; i > 0; i--) {

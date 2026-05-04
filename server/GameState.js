@@ -4,8 +4,8 @@ const Player = require('./Player');
 const { computeWalls } = require('./BombWallEngine');
 
 class GameState {
-  constructor(roomPlayers) {
-    this.gridMap = new GridMap();
+  constructor(roomPlayers, obstacleCount) {
+    this.gridMap = new GridMap(obstacleCount);
     this.players = [];
     this.bombs = [];
     this.bonuses = [];

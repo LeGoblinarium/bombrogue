@@ -101,6 +101,25 @@
     })[c]);
   }
 
+  function setupObstacleSlider() {
+    const slider = document.getElementById('obstacle-slider');
+    const valueEl = document.getElementById('obstacle-value');
+
+    function syncSliderUI(val) {
+      slider.value = val;
+      slider.style.setProperty('--val', val);
+      valueEl.textContent = val;
+    }
+
+    syncSliderUI(22); // default
+
+    slider.addEventListener('input', () => {
+      const val = parseInt(slider.value);
+      syncSliderUI(val);
+      Socket.emit('set-obstacle-count', { count: val });
+    });
+  }
+
   function setupRoomHandlers() {
     document.getElementById('pa-plus').addEventListener('click', () => {
       if (pm > 2) { pm--; pa++; sendDistribution(); }
@@ -315,14 +334,18 @@
   function updateStartButton(players) {
     const btn = document.getElementById('btn-start');
     const wait = document.getElementById('waiting-msg');
-    if (myId === hostId) {
+    const obstacleSection = document.getElementById('obstacle-section');
+    const isHost = myId === hostId;
+    if (isHost) {
       btn.style.display = 'block';
       wait.style.display = 'none';
+      obstacleSection.style.display = 'block';
       btn.disabled = players.length < 2;
       btn.textContent = players.length < 2 ? 'En attente de joueurs...' : 'Lancer la partie';
     } else {
       btn.style.display = 'none';
       wait.style.display = 'block';
+      obstacleSection.style.display = 'none';
     }
   }
 
@@ -492,8 +515,17 @@
     renderRoomList(rooms);
   });
 
+  Socket.on('onObstacleCountUpdated', ({ obstacleCount }) => {
+    // Non-host players see the updated value display (slider stays hidden)
+    document.getElementById('obstacle-value').textContent = obstacleCount;
+    const slider = document.getElementById('obstacle-slider');
+    slider.value = obstacleCount;
+    slider.style.setProperty('--val', obstacleCount);
+  });
+
   setupLobbyHandlers();
   setupRoomHandlers();
+  setupObstacleSlider();
   setupCharacterHandler();
   setupReplayHandler();
   setupMainMenuHandler();

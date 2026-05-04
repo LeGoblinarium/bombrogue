@@ -136,6 +136,14 @@ io.on('connection', (socket) => {
     socket.emit('rooms-updated', getPublicRoomsList());
   });
 
+  socket.on('set-obstacle-count', ({ count }) => {
+    const room = getRoomBySocket(socket.id);
+    if (!room || room.status !== 'waiting' || socket.id !== room.hostId) return;
+    if (room.setObstacleCount(count)) {
+      io.to(room.code).emit('obstacle-count-updated', { obstacleCount: room.obstacleCount });
+    }
+  });
+
   socket.on('set-name', ({ name }) => {
     const room = getRoomBySocket(socket.id);
     if (!room || room.status !== 'waiting') return;

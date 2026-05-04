@@ -510,6 +510,72 @@ input[type="text"]:focus {
   border-color: #ff6b35;
 }
 
+.obstacle-section {
+  background: #16213e;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.obstacle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 10px;
+}
+
+.obstacle-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ff6b35;
+  min-width: 28px;
+  text-align: right;
+}
+
+.obstacle-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #ff6b35 calc((var(--val) - 5) / 34 * 100%), #2d4059 calc((var(--val) - 5) / 34 * 100%));
+  outline: none;
+  cursor: pointer;
+}
+
+.obstacle-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ff6b35;
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+
+.obstacle-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ff6b35;
+  cursor: pointer;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+
+.obstacle-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: #555;
+  margin-top: 5px;
+  padding: 0 2px;
+}
+
 .waiting-msg {
   color: #888;
   font-size: 0.9rem;

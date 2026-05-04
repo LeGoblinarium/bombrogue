@@ -1,18 +1,20 @@
 const C = require('./constants');
 
-// Number of random obstacles to generate per game
-const OBSTACLE_COUNT = 22;
+// Default number of obstacles (middle of the host slider)
+const OBSTACLE_COUNT_DEFAULT = 22;
 
 class GridMap {
-  constructor() {
+  constructor(obstacleCount) {
     this.width  = C.GRID_W;
     this.height = C.GRID_H;
+
+    const count = (obstacleCount != null) ? obstacleCount : OBSTACLE_COUNT_DEFAULT;
 
     // 1. Generate 4 random spawn points, each at least 12 Manhattan distance apart
     this._spawns = this._generateSpawns(4, 12);
 
     // 2. Generate obstacles, none within 3 cells (Manhattan) of any spawn
-    const obstacleList = this._generateObstacles(OBSTACLE_COUNT, 3);
+    const obstacleList = this._generateObstacles(count, 3);
     this.obstacleSet = new Set(obstacleList.map(o => `${o.x},${o.y}`));
   }
 
