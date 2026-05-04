@@ -43,13 +43,18 @@ class Room {
     const pa = C.DEFAULT_PA;
     const pm = C.DEFAULT_PM;
 
+    // Assign the first colorIndex (0-3) not already taken by a current player
+    const usedColors = new Set(Array.from(this.players.values()).map(p => p.colorIndex));
+    let colorIndex = 0;
+    while (usedColors.has(colorIndex)) colorIndex++;
+
     this.players.set(socketId, {
       id: socketId,
       name: name.substring(0, 16),
       pa,
       pm,
       ready: false,
-      colorIndex: this.players.size,
+      colorIndex,
       character: 'player',
     });
 
