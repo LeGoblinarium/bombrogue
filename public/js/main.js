@@ -12,19 +12,23 @@
   Audio.init();
   Socket.connect();
 
+  const CHAR_NAMES = { player: 'Bob', merlin: 'Merlin', kael: 'Kael', borin: 'Borin', alaric: 'Alaric', mordek: 'Mordek' };
+
+  function resolvePlayerName() {
+    return document.getElementById('player-name').value.trim() || CHAR_NAMES[myCharacter] || 'Bob';
+  }
+
   function setupLobbyHandlers() {
     document.getElementById('btn-create').addEventListener('click', () => {
-      const name = document.getElementById('player-name').value.trim();
-      if (!name) { UI.showError('Entre ton nom'); return; }
+      const name = resolvePlayerName();
       const roomName = document.getElementById('room-name').value.trim() || `Partie de ${name}`;
       myName = name;
       Socket.emit('create-room', { playerName: name, roomName, isPublic });
     });
 
     document.getElementById('btn-join').addEventListener('click', () => {
-      const name = document.getElementById('player-name').value.trim();
+      const name = resolvePlayerName();
       const code = document.getElementById('room-code').value.trim().toUpperCase();
-      if (!name) { UI.showError('Entre ton nom'); return; }
       if (!code || code.length !== 4) { UI.showError('Code à 4 caractères'); return; }
       myName = name;
       Socket.emit('join-room', { code, playerName: name });
@@ -75,8 +79,7 @@
       `;
       if (!full) {
         entry.querySelector('.btn-join-room').addEventListener('click', () => {
-          const name = document.getElementById('player-name').value.trim();
-          if (!name) { UI.showError('Entre ton nom d\'abord'); return; }
+          const name = resolvePlayerName();
           myName = name;
           Socket.emit('join-room', { code: room.code, playerName: name });
         });
