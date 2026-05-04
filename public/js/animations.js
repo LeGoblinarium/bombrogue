@@ -13,6 +13,10 @@ const Animations = (() => {
   const hitReactions = new Map();
   const HIT_DURATION = 300; // ms
 
+  // Bomb throw animations: bombId → { startTime, fromX, fromY, toX, toY, arcHeight }
+  const bombThrows = new Map();
+  const BOMB_THROW_DURATION = 480; // ms
+
   // Death animations: id → { startTime, x, y, character, colorIndex, startAngle }
   const deathAnimations = new Map();
   const DEATH_DURATION = 1800;
@@ -147,6 +151,9 @@ const Animations = (() => {
     for (const [id, anim] of entityMovements) {
       if (now - anim.startTime >= anim.duration) entityMovements.delete(id);
     }
+    for (const [id, t] of bombThrows) {
+      if (now - t.startTime >= BOMB_THROW_DURATION) bombThrows.delete(id);
+    }
   }
 
   function draw(ctx, cam) {
@@ -266,9 +273,41 @@ const Animations = (() => {
     return Array.from(deathAnimations.keys());
   }
 
-  function hasActive() {
-    return active.length > 0 || entityMovements.size > 0 || hitReactions.size > 0 || deathAnimations.size > 0;
+  // Bomb throw animation: bombId → { startTime, fromX, fromY, toX, toY }
+  function addBombThrow(bombId, fromX, fromY, toX, toY) {
+    bombThrows.set(bombId, {
+      startTime: performance.now(),
+      fromX, fromY, toX, toY,
+    });
   }
 
-  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, addHitReaction, getHitScale, addDeathAnimation, getDeathAnimState, getDeathAnimIds, isPermaDead, resetDeadIds, update, draw, hasActive };
+  // Returns { gx, gy, arcOffset, scale } during flight, null when done
+  // arcOffset is in grid-cell units (negative = upward on screen)
+  function getBombThrowState(bombId, now) {
+    const t = bombThrows.get(bombId);
+    if (!t) return null;
+    const elapsed = now - t.startTime;
+    if (elapsed >= BOMB_THROW_DURATION) {
+      bombThrows.delete(bombId);
+      return null;
+    }
+    const progress = elapsed / BOMB_THROW_DURATION; // 0 → 1
+    const gx = t.fromX + (t.toX - t.fromX) * progress;
+    const gy = t.fromY + (t.toY - t.fromY) * progress;
+    const dist = Math.sqrt((t.toX - t.fromX) ** 2 + (t.toY - t.fromY) ** 2);
+    const arcHeight = Math.max(1.5, dist * 0.55); // lob arc proportional to distance
+    const arcOffset = -Math.sin(progress * Math.PI) * arcHeight; // peaks at progress=0.5
+    const scale = 0.1 + progress * 0.9; // 10% → 100%
+    return { gx, gy, arcOffset, scale };
+  }
+
+  function getBombThrowIds() {
+    return Array.from(bombThrows.keys());
+  }
+
+  function hasActive() {
+    return active.length > 0 || entityMovements.size > 0 || hitReactions.size > 0 || deathAnimations.size > 0 || bombThrows.size > 0;
+  }
+
+  return { add, addExplosionSequence, addDamageNumber, addEntityMovement, getEntityAnimPos, getPlayerFacing, getPlayerAnimState, addHitReaction, getHitScale, addDeathAnimation, getDeathAnimState, getDeathAnimIds, isPermaDead, resetDeadIds, addBombThrow, getBombThrowState, getBombThrowIds, update, draw, hasActive };
 })();

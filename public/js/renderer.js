@@ -135,8 +135,10 @@ const Renderer = (() => {
     const { cellSize, zoom } = Camera.getTransform();
     const cs = cellSize * zoom;
     const now = performance.now();
+    const throwingIds = new Set(Animations.getBombThrowIds());
 
     for (const bomb of state.bombs) {
+      if (throwingIds.has(bomb.id)) continue; // in-flight — drawBombThrows handles it
       let gx = bomb.x, gy = bomb.y;
       const animPos = Animations.getEntityAnimPos(bomb.id, now);
       if (animPos) { gx = animPos.x; gy = animPos.y; }
@@ -379,6 +381,38 @@ const Renderer = (() => {
     }
   }
 
+  function drawBombThrows(state) {
+    const ids = Animations.getBombThrowIds();
+    if (!ids.length || !spritesReady) return;
+    const now = performance.now();
+    const { cellSize, zoom } = Camera.getTransform();
+    const cs = cellSize * zoom;
+
+    for (const id of ids) {
+      const t = Animations.getBombThrowState(id, now);
+      if (!t) continue;
+
+      // Find the bomb in state to get owner color
+      const bomb = state && state.bombs ? state.bombs.find(b => b.id === id) : null;
+      const ownerColor = bomb ? COLORS[getOwnerColorIndex(state, bomb.ownerId)] : '#ffffff';
+
+      const s = Camera.gridToScreen(t.gx, t.gy);
+      const cx = s.x + cs * 0.5;
+      const cy = s.y + cs * 0.5 + t.arcOffset * cs;
+      const size = cs * t.scale;
+
+      ctx.save();
+      // Subtle shadow below the flying bomb
+      ctx.beginPath();
+      ctx.ellipse(s.x + cs * 0.5, s.y + cs * 0.88, cs * 0.15 * t.scale, cs * 0.04 * t.scale, 0, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      ctx.fill();
+
+      ctx.drawImage(sprites['bomb'], cx - size / 2, cy - size / 2, size, size);
+      ctx.restore();
+    }
+  }
+
   function drawHighlights(highlights) {
     if (!highlights || highlights.length === 0) return;
     const { cellSize, zoom } = Camera.getTransform();
@@ -472,6 +506,7 @@ const Renderer = (() => {
     drawHighlights(highlights);
     drawWalls(state);
     drawBombs(state);
+    drawBombThrows(state);
     drawBonuses(state);
     drawPlayers(state);
     Animations.update(performance.now());

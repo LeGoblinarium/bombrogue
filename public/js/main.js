@@ -324,6 +324,26 @@
     }
     if (delta.actionType) Audio.playForAction(delta.actionType, delta.wallsCreated);
     if (delta.bonusPickedUp) Audio.play('Bonus');
+
+    // Bomb throw animation: detect newly placed bomb before state is patched
+    if (delta.actionType === 'place-bomb' && delta.bombs) {
+      const prevStateBomb = GameClient.getState();
+      if (prevStateBomb && prevStateBomb.bombs) {
+        for (const bomb of delta.bombs) {
+          const wasPresent = prevStateBomb.bombs.some(b => b.id === bomb.id);
+          if (!wasPresent) {
+            const currentTurn = prevStateBomb.currentTurn;
+            if (currentTurn) {
+              const placer = prevStateBomb.players.find(p => p.id === currentTurn.playerId);
+              if (placer) {
+                Animations.addBombThrow(bomb.id, placer.x, placer.y, bomb.x, bomb.y);
+              }
+            }
+          }
+        }
+      }
+    }
+
     GameClient.patchState(delta);
     const state = GameClient.getState();
     UI.renderHpBars(state);
