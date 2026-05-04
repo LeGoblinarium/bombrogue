@@ -76,6 +76,10 @@ const Socket = (() => {
     socket.on('turn-tick', (data) => {
       if (handlers.onTurnTick) handlers.onTurnTick(data);
     });
+
+    socket.on('rooms-updated', (data) => {
+      if (handlers.onRoomsUpdated) handlers.onRoomsUpdated(data);
+    });
   }
 
   function emit(event, data) {

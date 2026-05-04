@@ -19,11 +19,28 @@
       </div>
 
       <div class="lobby-buttons">
-        <button id="btn-create" class="btn btn-primary">Créer une partie</button>
-        <div class="separator">ou</div>
+        <div class="create-section">
+          <input type="text" id="room-name" maxlength="24" placeholder="Nom de la partie..." autocomplete="off" class="room-name-input">
+          <div class="vis-toggle">
+            <button class="vis-btn active" id="vis-public">🌐 Public</button>
+            <button class="vis-btn" id="vis-private">🔒 Privé</button>
+          </div>
+          <button id="btn-create" class="btn btn-primary">Créer une partie</button>
+        </div>
+        <div class="separator">ou rejoindre</div>
         <div class="join-row">
           <input type="text" id="room-code" maxlength="4" placeholder="CODE" autocomplete="off" class="code-input">
           <button id="btn-join" class="btn btn-secondary">Rejoindre</button>
+        </div>
+      </div>
+
+      <div class="room-browser">
+        <div class="room-browser-header">
+          <span>Parties disponibles</span>
+          <button id="btn-refresh-rooms" class="btn-refresh">↻</button>
+        </div>
+        <div id="room-list" class="room-list">
+          <div class="room-list-empty">Aucune partie disponible</div>
         </div>
       </div>
 
@@ -123,6 +140,7 @@
       <div id="final-stats"></div>
       <p id="replay-votes-msg" class="replay-votes-msg"></p>
       <button id="btn-replay" class="btn btn-primary">Rejouer</button>
+      <button id="btn-main-menu" class="btn btn-secondary" style="margin-top:10px">Menu principal</button>
     </div>
   </div>
 

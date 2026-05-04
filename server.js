@@ -19,10 +19,29 @@ function getRoomBySocket(socketId) {
   return null;
 }
 
+function getPublicRoomsList() {
+  const list = [];
+  for (const room of rooms.values()) {
+    if (room.isPublic && room.status === 'waiting') {
+      list.push(room.publicInfo());
+    }
+  }
+  return list.sort((a, b) => b.playerCount - a.playerCount);
+}
+
+function broadcastRoomsList() {
+  io.to('_lobby').emit('rooms-updated', getPublicRoomsList());
+}
+
 io.on('connection', (socket) => {
   console.log(`Connected: ${socket.id}`);
+  socket.join('_lobby'); // All clients start in the lobby channel
 
-  socket.on('create-room', ({ playerName }) => {
+  socket.on('list-rooms', () => {
+    socket.emit('rooms-updated', getPublicRoomsList());
+  });
+
+  socket.on('create-room', ({ playerName, roomName, isPublic }) => {
     if (!playerName || playerName.trim().length === 0) {
       socket.emit('error', { message: 'Nom requis' });
       return;
@@ -35,9 +54,10 @@ io.on('connection', (socket) => {
     }
 
     const code = generateCode(new Set(rooms.keys()));
-    const room = new Room(code);
+    const room = new Room(code, roomName, isPublic);
     room.addPlayer(socket.id, playerName.trim());
     rooms.set(code, room);
+    socket.leave('_lobby');
     socket.join(code);
 
     socket.emit('room-created', { code });
@@ -46,6 +66,7 @@ io.on('connection', (socket) => {
       you: socket.id,
       hostId: room.hostId,
     });
+    broadcastRoomsList();
   });
 
   socket.on('join-room', ({ code, playerName }) => {
@@ -67,6 +88,7 @@ io.on('connection', (socket) => {
       return;
     }
 
+    socket.leave('_lobby');
     socket.join(upperCode);
 
     socket.emit('room-joined', {
@@ -78,6 +100,40 @@ io.on('connection', (socket) => {
     socket.to(upperCode).emit('player-joined', {
       players: room.getPlayerList(),
     });
+    broadcastRoomsList();
+  });
+
+  socket.on('leave-room', () => {
+    const room = getRoomBySocket(socket.id);
+    if (!room) return;
+
+    if (room.game) room.game.handleDisconnect(socket.id);
+    room.replayVotes.delete(socket.id);
+    room.removePlayer(socket.id);
+
+    socket.to(room.code).emit('player-left', {
+      playerId: socket.id,
+      players: room.getPlayerList(),
+      hostId: room.hostId,
+    });
+
+    socket.leave(room.code);
+    socket.join('_lobby');
+
+    if (room.isEmpty()) {
+      if (room.game) room.game.cleanup();
+      rooms.delete(room.code);
+    } else if (room.status === 'playing' && room.replayVotes.size > 0 &&
+               room.replayVotes.size >= room.players.size) {
+      room.resetForReplay();
+      io.to(room.code).emit('replay-ready', {
+        players: room.getPlayerList(),
+        hostId: room.hostId,
+      });
+    }
+
+    broadcastRoomsList();
+    socket.emit('rooms-updated', getPublicRoomsList());
   });
 
   socket.on('set-character', ({ character }) => {
@@ -114,6 +170,7 @@ io.on('connection', (socket) => {
     const Game = require('./server/Game');
     room.game = new Game(room, io);
     room.game.start();
+    broadcastRoomsList(); // Room is no longer available in browser
   });
 
   socket.on('action', (data) => {
@@ -169,6 +226,7 @@ io.on('connection', (socket) => {
     if (room.isEmpty()) {
       if (room.game) room.game.cleanup();
       rooms.delete(room.code);
+      broadcastRoomsList();
       return;
     }
 
@@ -181,6 +239,7 @@ io.on('connection', (socket) => {
         hostId: room.hostId,
       });
     }
+    broadcastRoomsList();
   });
 });
 

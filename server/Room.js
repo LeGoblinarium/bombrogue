@@ -14,14 +14,25 @@ function generateCode(existingCodes) {
 }
 
 class Room {
-  constructor(code) {
+  constructor(code, name, isPublic) {
     this.code = code;
+    this.name = (name || '').trim() || 'Partie sans nom';
+    this.isPublic = isPublic !== false; // default true
     this.players = new Map();
     this.hostId = null;
     this.status = 'waiting';
     this.game = null;
     this.replayVotes = new Set();
     this.createdAt = Date.now();
+  }
+
+  publicInfo() {
+    return {
+      code: this.code,
+      name: this.name,
+      playerCount: this.players.size,
+      maxPlayers: C.MAX_PLAYERS,
+    };
   }
 
   addPlayer(socketId, name) {

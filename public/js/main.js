@@ -7,6 +7,7 @@
   let myCharacter = 'player';
   let renderLoopStarted = false;
   let gameInitialized = false;
+  let isPublic = true; // room visibility
 
   Audio.init();
   Socket.connect();
@@ -15,8 +16,9 @@
     document.getElementById('btn-create').addEventListener('click', () => {
       const name = document.getElementById('player-name').value.trim();
       if (!name) { UI.showError('Entre ton nom'); return; }
+      const roomName = document.getElementById('room-name').value.trim() || `Partie de ${name}`;
       myName = name;
-      Socket.emit('create-room', { playerName: name });
+      Socket.emit('create-room', { playerName: name, roomName, isPublic });
     });
 
     document.getElementById('btn-join').addEventListener('click', () => {
@@ -31,6 +33,62 @@
     document.getElementById('room-code').addEventListener('input', (e) => {
       e.target.value = e.target.value.toUpperCase();
     });
+
+    // Visibility toggle
+    document.getElementById('vis-public').addEventListener('click', () => {
+      isPublic = true;
+      document.getElementById('vis-public').classList.add('active');
+      document.getElementById('vis-private').classList.remove('active');
+    });
+    document.getElementById('vis-private').addEventListener('click', () => {
+      isPublic = false;
+      document.getElementById('vis-private').classList.add('active');
+      document.getElementById('vis-public').classList.remove('active');
+    });
+
+    // Room browser
+    document.getElementById('btn-refresh-rooms').addEventListener('click', () => {
+      Socket.emit('list-rooms');
+    });
+
+    // Request initial room list
+    Socket.emit('list-rooms');
+  }
+
+  function renderRoomList(rooms) {
+    const list = document.getElementById('room-list');
+    if (!rooms || rooms.length === 0) {
+      list.innerHTML = '<div class="room-list-empty">Aucune partie disponible</div>';
+      return;
+    }
+    list.innerHTML = '';
+    for (const room of rooms) {
+      const entry = document.createElement('div');
+      entry.className = 'room-entry';
+      const full = room.playerCount >= room.maxPlayers;
+      entry.innerHTML = `
+        <div class="room-entry-info">
+          <div class="room-entry-name">${escapeHtml(room.name)}</div>
+          <div class="room-entry-count">${room.playerCount}/${room.maxPlayers} joueurs</div>
+        </div>
+        <button class="btn-join-room" ${full ? 'disabled' : ''}>Rejoindre</button>
+      `;
+      if (!full) {
+        entry.querySelector('.btn-join-room').addEventListener('click', () => {
+          const name = document.getElementById('player-name').value.trim();
+          if (!name) { UI.showError('Entre ton nom d\'abord'); return; }
+          myName = name;
+          Socket.emit('join-room', { code: room.code, playerName: name });
+        });
+      }
+      list.appendChild(entry);
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
   }
 
   function setupRoomHandlers() {
@@ -79,6 +137,24 @@
       btn.disabled = true;
       btn.textContent = 'En attente...';
       Socket.emit('propose-replay');
+    });
+  }
+
+  function setupMainMenuHandler() {
+    document.getElementById('btn-main-menu').addEventListener('click', () => {
+      // Leave current room
+      Socket.emit('leave-room');
+      // Reset local state
+      myId = null;
+      myRoomCode = '';
+      hostId = null;
+      pa = 10; pm = 2;
+      myCharacter = 'player';
+      // Hide game over overlay
+      document.getElementById('gameover-overlay').classList.remove('visible');
+      // Return to lobby and refresh room list
+      UI.showScreen('screen-lobby');
+      Socket.emit('list-rooms');
     });
   }
 
@@ -396,9 +472,14 @@
     UI.showScreen('screen-room');
   });
 
+  Socket.on('onRoomsUpdated', (rooms) => {
+    renderRoomList(rooms);
+  });
+
   setupLobbyHandlers();
   setupRoomHandlers();
   setupCharacterHandler();
   setupReplayHandler();
+  setupMainMenuHandler();
   setupHelpHandler();
 })();
