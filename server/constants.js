@@ -39,7 +39,7 @@ const C = {
   AGE_BONUS_PER_TURN: 0.2,
   AGE_MAX: 4,
 
-  BONUS_SPAWN_CHANCE: 0.25,
+  BONUS_SPAWN_CHANCE: 0.33,
   BONUS_TYPES: ['bomb-bonus', 'range-bonus', 'explosion-bonus', 'move-bonus', 'action-bonus'],
 
   STALL_TURNS: 3,
