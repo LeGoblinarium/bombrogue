@@ -245,13 +245,27 @@ const Input = (() => {
       }
     } else if (mode === 'detonate') {
       const detRange = 10 + (me.rangeBonus || 0);
+      // Background: all cells in range with line-of-sight
+      for (let dx = -detRange; dx <= detRange; dx++) {
+        for (let dy = -detRange; dy <= detRange; dy++) {
+          const md = Math.abs(dx) + Math.abs(dy);
+          if (md === 0 || md > detRange) continue;
+          const x = me.x + dx, y = me.y + dy;
+          if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) continue;
+          if (clientHasLoS(me.x, me.y, x, y, state, me.id)) {
+            highlights.push({ x, y, type: 'range' });
+          }
+        }
+      }
+      // Foreground: detonable bombs highlighted more prominently
       for (const bomb of state.bombs) {
         if (bomb.ownerId !== me.id) continue;
         const md = Math.abs(bomb.x - me.x) + Math.abs(bomb.y - me.y);
+        if (md < 1 || md > detRange) continue;
         const otherBombs = state.bombs.filter(b => b.id !== bomb.id);
         const losState = { ...state, bombs: otherBombs };
-        if (md >= 1 && md <= detRange && clientHasLoS(me.x, me.y, bomb.x, bomb.y, losState, me.id)) {
-          highlights.push({ x: bomb.x, y: bomb.y, type: 'range' });
+        if (clientHasLoS(me.x, me.y, bomb.x, bomb.y, losState, me.id)) {
+          highlights.push({ x: bomb.x, y: bomb.y, type: 'range-active' });
         }
       }
     } else if (mode === 'liberation') {

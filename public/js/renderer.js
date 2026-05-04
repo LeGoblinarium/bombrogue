@@ -442,6 +442,10 @@ const Renderer = (() => {
         fillColor = 'rgba(220, 60, 60, 0.55)';
         strokeColor = '#dc4040';
         strokeWidth = 3;
+      } else if (h.type === 'range-active') {
+        fillColor = 'rgba(255, 210, 50, 0.60)';
+        strokeColor = 'rgba(255, 200, 40, 0.95)';
+        strokeWidth = 2;
       } else if (h.type === 'aoe-preview') {
         fillColor = 'rgba(255, 107, 53, 0.4)';
         strokeColor = 'rgba(255, 130, 60, 0.6)';
