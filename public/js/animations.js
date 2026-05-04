@@ -227,21 +227,26 @@ const Animations = (() => {
     const elapsed = now - anim.startTime;
     if (elapsed >= DEATH_DURATION) { deathAnimations.delete(id); return null; }
     const t = elapsed / DEATH_DURATION;
-    const RISE = 0.28;
+
+    // Phase 1 — quick jump upward (0 → RISE)
+    // Phase 2 — gravity fall, exits through the bottom of the screen (RISE → 1)
+    const RISE = 0.22;
     let offsetY, scale, rotation, alpha;
+
     if (t < RISE) {
       const p = t / RISE;
-      const ease = 1 - (1 - p) * (1 - p);
-      offsetY  = -ease * 2.5;
-      scale    = 1 + ease * 0.5;
+      const ease = 1 - (1 - p) * (1 - p); // ease-out
+      offsetY  = -ease * 1.8;              // rise ~1.8 cells
+      scale    = 1 + ease * 0.25;          // grow slightly at peak
       rotation = anim.startAngle + p * Math.PI * 0.5;
       alpha    = 1;
     } else {
       const p = (t - RISE) / (1 - RISE);
-      offsetY  = -2.5 + p * 8;
-      scale    = Math.max(0, 1.5 * (1 - p));
-      rotation = anim.startAngle + Math.PI * 0.5 + p * Math.PI * 3.5;
-      alpha    = Math.max(0, 1 - p * 2);
+      const ease = p * p;                  // ease-in — accelerates like gravity
+      offsetY  = -1.8 + ease * 22;        // fall 22 cells below → well off screen
+      scale    = 1.25 - p * 0.3;          // slight shrink for depth illusion
+      rotation = anim.startAngle + Math.PI * 0.5 + p * Math.PI * 2.5; // spin during fall
+      alpha    = p > 0.88 ? (1 - p) / 0.12 : 1; // fade only in last 12% as safety
     }
     return { x: anim.x, y: anim.y, character: anim.character, colorIndex: anim.colorIndex, offsetY, scale, rotation, alpha };
   }
