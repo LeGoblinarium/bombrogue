@@ -265,10 +265,16 @@ class Game {
       const key = `${step.x},${step.y}`;
       if (!seenWallCells.has(key)) {
         seenWallCells.add(key);
+        const hasWall = this.state.wallCellMap.has(key);
         this.checkWallDamageAt(player, step.x, step.y);
         if (!player.alive) break;
-        // Grant immunity so applyInstantWallDamage won't double-hit the final position
-        player.wallImmuneCells.add(key);
+        // Grant immunity only if a wall currently exists here, to prevent
+        // applyInstantWallDamage from double-hitting the same cell.
+        // Non-wall cells must NOT get immunity — otherwise a wall forming later
+        // (e.g. from an opponent's bomb placement) would be incorrectly skipped.
+        if (hasWall) {
+          player.wallImmuneCells.add(key);
+        }
       }
       // Bonus pickup: collect any bonus on this cell
       const bonusIdx = this.state.bonuses.findIndex(b => b.x === step.x && b.y === step.y);
