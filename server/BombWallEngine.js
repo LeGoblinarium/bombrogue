@@ -18,7 +18,7 @@ function computeWalls(bombs, gridMap) {
     for (let i = 0; i < ownerBombs.length; i++) {
       for (let j = i + 1; j < ownerBombs.length; j++) {
         const a = ownerBombs[i], b = ownerBombs[j];
-        const wall = checkWallPair(a, b, gridMap, ownerBombs);
+        const wall = checkWallPair(a, b, gridMap);
         if (wall) edges.push({ a, b, cells: wall });
       }
     }
@@ -65,7 +65,7 @@ function computeWalls(bombs, gridMap) {
   return { walls: allWalls, wallCellMap };
 }
 
-function checkWallPair(a, b, gridMap, allOwnerBombs) {
+function checkWallPair(a, b, gridMap) {
   // Same row?
   if (a.y === b.y) {
     const minX = Math.min(a.x, b.x);
@@ -141,7 +141,7 @@ function getConnectedBombIds(targetBombId, ownerBombs, gridMap) {
   for (let i = 0; i < ownerBombs.length; i++) {
     for (let j = i + 1; j < ownerBombs.length; j++) {
       const a = ownerBombs[i], b = ownerBombs[j];
-      if (checkWallPair(a, b, gridMap, ownerBombs)) edges.push({ a, b });
+      if (checkWallPair(a, b, gridMap)) edges.push({ a, b });
     }
   }
 

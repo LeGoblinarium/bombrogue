@@ -111,6 +111,12 @@ class Game {
     if (currentPlayer.idleTurns >= C.STALL_TURNS) {
       currentPlayer.takeDamage(C.STALL_DAMAGE);
       currentPlayer.idleTurns = 0;
+      if (!currentPlayer.alive) {
+        this.checkGameOver();
+        if (this.gameOver) return;
+        this.endTurn(false);
+        return;
+      }
     }
 
     this.actedThisTurn = false;
@@ -141,7 +147,7 @@ class Game {
     }
 
     const currentPlayer = this.state.players.find(p => p.id === this.turnOrder[this.currentTurnIndex]);
-    if (currentPlayer) {
+    if (currentPlayer && currentPlayer.alive) {
       currentPlayer.endTurn(this.actedThisTurn);
     }
 
@@ -236,6 +242,7 @@ class Game {
     const wallsBefore = this.state.walls.length;
     this.state.recomputeWalls();
     const wallsCreated = this.state.walls.length > wallsBefore;
+    this.pruneStaleWallImmunity(); // remove immunity for cells that are no longer walls
     this.applyInstantWallDamage(); // damage any player now standing on a new wall cell
 
     if (this.checkGameOver()) return;
@@ -381,6 +388,19 @@ class Game {
     taken.add(key);
     player.wallImmuneCells.add(key);
     player.takeDamage(wall.damage);
+  }
+
+  // After recomputeWalls(), remove wall immunity for cells that are no longer walls.
+  // This prevents stale immunity (earned while a wall existed) from blocking damage
+  // when a different wall later forms at the same cell.
+  pruneStaleWallImmunity() {
+    for (const p of this.state.players) {
+      for (const key of Array.from(p.wallImmuneCells)) {
+        if (!this.state.wallCellMap.has(key)) {
+          p.wallImmuneCells.delete(key);
+        }
+      }
+    }
   }
 
   // Called after every recomputeWalls(): any player now standing on a wall cell
