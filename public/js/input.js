@@ -336,6 +336,7 @@ const Input = (() => {
 
   function canCastRepulseur(cell, me, state) {
     if (me.paLeft < 2) return false;
+    if (me.usedThisTurn && me.usedThisTurn.repulseur) return false;
     if (me.cooldowns && me.cooldowns.repulseur > 0) return false;
     if (cell.x !== me.x && cell.y !== me.y) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
