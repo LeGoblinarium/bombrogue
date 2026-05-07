@@ -200,6 +200,7 @@
             <li>Tour par tour — <b>120 s</b> maximum par joueur. Le dernier en vie gagne.</li>
             <li>Un <b>cycle complet</b> = chaque joueur a joué une fois. Les vieillissements de bombes et la zone de danger se calculent en cycles.</li>
             <li>Chaque bombe affiche son <b>âge</b> (0→4). L'âge monte d'un cran à chaque cycle complet. Multiplicateur de dégâts : ×1.0 → ×1.8.</li>
+            <li><b>Anti-stalling</b> : si un joueur ne fait aucune action pendant <b>3 tours consécutifs</b>, il reçoit <b>10 dégâts</b>.</li>
             <li><b>Rejouer</b> : quand tous les joueurs votent, on retourne à l'écran de distribution sans repasser par le lobby. L'ordre des tours est aléatoire à chaque partie.</li>
           </ul>
         </section>
@@ -209,7 +210,7 @@
           <ul>
             <li>Les obstacles <b>bloquent les déplacements et les explosions</b>.</li>
             <li>Une explosion peut <b>détruire un obstacle</b> qu'elle touche — le rayon s'arrête sur lui mais le détruit.</li>
-            <li>Quand un obstacle est détruit, il y a <b>25 % de chance</b> qu'un bonus apparaisse à sa place (voir section Bonus).</li>
+            <li>Quand un obstacle est détruit, il y a <b>33 % de chance</b> qu'un bonus apparaisse à sa place (voir section Bonus).</li>
           </ul>
         </section>
 
@@ -265,7 +266,7 @@
               </div>
               <span class="spell-meta">4 PA · portée 1–3</span>
             </div>
-            <p>Place une bombe sur une case libre à portée. Maximum 3 bombes actives simultanément. Les bombes vieillissent et font plus de dégâts avec le temps.</p>
+            <p>Place une bombe sur une case libre à portée. Maximum 3 bombes actives simultanément. Les bombes vieillissent et font plus de dégâts avec le temps. <b>Une bombe posée ne peut pas être détonée le tour même où elle est posée.</b></p>
           </div>
 
           <div class="spell-entry">
@@ -303,7 +304,7 @@
               </div>
               <span class="spell-meta">3 PA · CD 5 · portée 1–8</span>
             </div>
-            <p>Échange ta position avec l'une de <b>tes propres bombes</b>. Idéal pour se repositionner rapidement ou piéger un adversaire qui ne s'y attend pas.</p>
+            <p>Échange ta position avec l'une de <b>tes propres bombes</b>. Nécessite une <b>ligne de vue</b> jusqu'à la bombe (bloquée par obstacles, autres bombes et joueurs). Idéal pour se repositionner rapidement ou piéger un adversaire.</p>
           </div>
 
           <div class="spell-entry">
@@ -314,7 +315,7 @@
               </div>
               <span class="spell-meta">1 PA · CD 3 · portée 1–6</span>
             </div>
-            <p>Téléporte <b>n'importe quelle bombe</b> (alliée ou ennemie) à sa position précédente. La bombe doit avoir été déplacée au moins une fois. Échoue si la position précédente est occupée.</p>
+            <p>Téléporte <b>n'importe quelle bombe</b> (alliée ou ennemie) à sa position précédente. La bombe doit avoir été déplacée au moins une fois. Nécessite une <b>ligne de vue</b> jusqu'à la bombe. Échoue si la position précédente est occupée.</p>
           </div>
 
           <div class="spell-entry">
@@ -325,7 +326,7 @@
               </div>
               <span class="spell-meta">3 PA · CD 10 · sur soi</span>
             </div>
-            <p>Active le sort, puis <b>tape sur ton personnage</b> pour confirmer. Repousse toutes les bombes et entités <b>adjacentes</b> de <b>5 cases</b> dans leur direction. Portée non affectée par les bonus de portée.</p>
+            <p>Active le sort, puis <b>tape sur ton personnage</b> pour confirmer. Repousse toutes les bombes et entités sur les <b>4 cases cardinales adjacentes</b> (haut/bas/gauche/droite, pas les diagonales) de <b>5 cases</b> dans leur direction. Portée non affectée par les bonus de portée.</p>
           </div>
 
           <div class="spell-entry">
@@ -336,7 +337,7 @@
               </div>
               <span class="spell-meta">2 PA · portée 1–10</span>
             </div>
-            <p>Cible une de <b>tes propres bombes</b>. Fait exploser cette bombe et toutes celles qui lui sont <b>connectées par un mur</b> (réseau du même joueur). Les bombes non connectées ne sont pas déclenchées.</p>
+            <p>Cible une de <b>tes propres bombes</b>. Fait exploser cette bombe et toutes celles qui lui sont <b>connectées par un mur</b> (réseau du même joueur). Les bombes non connectées ne sont pas déclenchées. <b>Impossible de détoner une bombe posée ce même tour.</b></p>
           </div>
 
         </div>
