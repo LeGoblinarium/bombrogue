@@ -199,6 +199,7 @@ class Game {
           colorIndex: p.colorIndex,
           hp: p.hp,
           alive: p.alive,
+          stats: { ...p.stats },
         })),
       });
       this.cleanup();
@@ -258,6 +259,7 @@ class Game {
     if (!result || !result.ok) return;
 
     this.actedThisTurn = true;
+    if (action.type !== 'move') player.stats.spellsUsed++;
 
     // Apply wall damage for players moved by spells along their path.
     // Spell tracker: a given wall cell only damages a player once per turn
@@ -349,8 +351,10 @@ class Game {
     if (!this.state.gridMap.hasLineOfSight(player.x, player.y, x, y, this.state.bombs, this.state.players, player.id)) return { ok: false };
 
     const bomb = new Bomb(player.id, x, y);
+    bomb.placedOnTurn = this.turnNumber;
     this.state.bombs.push(bomb);
     player.paLeft -= C.COST_PLACE_BOMB;
+    player.stats.bombsPlaced++;
     return { ok: true };
   }
 
@@ -362,6 +366,9 @@ class Game {
       b => b.ownerId === player.id && b.x === x && b.y === y
     );
     if (!targetBomb) return { ok: false };
+
+    // Cannot detonate a bomb placed on the same turn (anti-cheese)
+    if (targetBomb.placedOnTurn === this.turnNumber) return { ok: false };
 
     // Range check (Manhattan distance 1–DETONATE_RANGE, extended by rangeBonus)
     const md = Math.abs(x - player.x) + Math.abs(y - player.y);
@@ -377,7 +384,20 @@ class Game {
     const comp = this.state.bombCompMap.get(targetBomb.id);
     const seedIds = comp ? comp.map(b => b.id) : [targetBomb.id];
 
+    // Build owner map before resolution (bombs still present in array)
+    const bombOwnerMap = new Map(this.state.bombs.map(b => [b.id, b.ownerId]));
+
     const result = resolveDetonation(seedIds, this.state.bombs, this.state.players, this.state.gridMap);
+
+    // Attribute explosion damage dealt to each bomb's owner
+    for (const ev of result.sequence) {
+      const ownerId = bombOwnerMap.get(ev.bombId);
+      const owner = this.state.players.find(p => p.id === ownerId);
+      if (!owner) continue;
+      for (const hit of ev.hits) {
+        owner.stats.damageDealt += hit.damage;
+      }
+    }
 
     // Remove detonated bombs
     this.state.bombs = this.state.bombs.filter(b => !result.detonatedIds.includes(b.id));
@@ -410,7 +430,8 @@ class Game {
   checkWallDamageAt(player, x, y) {
     const wall = this.state.wallCellMap.get(`${x},${y}`);
     if (!wall) return;
-    player.takeDamage(wall.damage);
+    const actual = player.takeDamage(wall.damage);
+    this._attributeWallDamage(wall, player, actual);
   }
 
   // Spell-induced wall damage: each wall cell only damages a player once per turn.
@@ -426,7 +447,14 @@ class Game {
     if (taken.has(key)) return;
     taken.add(key);
     player.wallImmuneCells.add(key);
-    player.takeDamage(wall.damage);
+    const actual = player.takeDamage(wall.damage);
+    this._attributeWallDamage(wall, player, actual);
+  }
+
+  _attributeWallDamage(wall, target, actual) {
+    if (wall.ownerId === target.id) return;
+    const owner = this.state.players.find(p => p.id === wall.ownerId);
+    if (owner) owner.stats.damageDealt += actual;
   }
 
   // After recomputeWalls(), remove wall immunity for cells that are no longer walls.
@@ -451,8 +479,9 @@ class Game {
       const wall = this.state.wallCellMap.get(key);
       if (!wall) continue;
       if (p.wallImmuneCells.has(key)) continue;
-      p.takeDamage(wall.damage);
+      const actual = p.takeDamage(wall.damage);
       p.wallImmuneCells.add(key);
+      this._attributeWallDamage(wall, p, actual);
     }
   }
 

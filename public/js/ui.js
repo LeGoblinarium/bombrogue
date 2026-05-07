@@ -245,16 +245,49 @@ const UI = (() => {
     activeSpell = spellId;
   }
 
+  function showTurnFlash(color) {
+    const el = document.getElementById('screen-game');
+    el.style.setProperty('--turn-flash-color', color);
+    el.classList.add('my-turn');
+  }
+
+  function hideTurnFlash() {
+    document.getElementById('screen-game').classList.remove('my-turn');
+  }
+
   function renderGameOver(data) {
+    hideTurnFlash();
     const winner = data.winner;
     document.getElementById('winner-text').textContent = winner ? `${winner.name} a gagné !` : 'Match nul !';
-    const stats = document.getElementById('final-stats');
-    stats.innerHTML = '';
+    const container = document.getElementById('final-stats');
+    container.innerHTML = '';
+
+    // Header row
+    const header = document.createElement('div');
+    header.className = 'stats-table-header';
+    header.innerHTML = `
+      <span class="stats-col-name">Joueur</span>
+      <span class="stats-col" title="PV restants">PV</span>
+      <span class="stats-col" title="Dégâts infligés">⚔️</span>
+      <span class="stats-col" title="Dégâts reçus">🛡️</span>
+      <span class="stats-col" title="Bombes posées">💣</span>
+      <span class="stats-col" title="Sorts utilisés">✨</span>
+    `;
+    container.appendChild(header);
+
     data.stats.forEach(s => {
       const row = document.createElement('div');
-      row.className = 'stat-row';
-      row.innerHTML = `<span class="pcolor-${s.colorIndex}">${escapeHtml(s.name)}</span><span>${s.alive ? Math.max(0, s.hp) + ' PV' : 'Éliminé'}</span>`;
-      stats.appendChild(row);
+      row.className = 'stats-table-row';
+      const ps = s.stats || {};
+      row.innerHTML = `
+        <span class="stats-col-name pcolor-${s.colorIndex}">${escapeHtml(s.name)}</span>
+        <span class="stats-col">${s.alive ? Math.max(0, s.hp) : '💀'}</span>
+        <span class="stats-col">${ps.damageDealt || 0}</span>
+        <span class="stats-col">${ps.damageReceived || 0}</span>
+        <span class="stats-col">${ps.bombsPlaced || 0}</span>
+        <span class="stats-col">${ps.spellsUsed || 0}</span>
+      `;
+      container.appendChild(row);
     });
   }
 
@@ -287,6 +320,6 @@ const UI = (() => {
     renderPlayersList, updateDistribution,
     renderHpBars, updateTurnInfo, updateTimer, renderResources,
     renderSpellBar, updateSpellSelection,
-    renderGameOver,
+    renderGameOver, showTurnFlash, hideTurnFlash,
   };
 })();

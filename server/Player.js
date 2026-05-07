@@ -30,14 +30,19 @@ class Player {
     // Cells where this player already took instant wall-formation damage.
     // Cleared at the start of their own turn so they take damage again if they stay.
     this.wallImmuneCells = new Set();
+    // Per-game statistics
+    this.stats = { damageDealt: 0, damageReceived: 0, bombsPlaced: 0, spellsUsed: 0 };
   }
 
   takeDamage(amount) {
+    const actual = Math.min(amount, this.hp);
+    this.stats.damageReceived += actual;
     this.hp -= amount;
     if (this.hp <= 0) {
       this.hp = 0;
       this.alive = false;
     }
+    return actual; // callers can attribute this to an attacker
   }
 
   startTurn() {
@@ -104,6 +109,7 @@ class Player {
       maxBombs: this.maxBombs,
       rangeBonus: this.rangeBonus,
       explosionRange: this.explosionRange,
+      stats: { ...this.stats },
     };
   }
 }

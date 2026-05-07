@@ -438,7 +438,10 @@
     if (prevStateTurn && data.players) {
       for (const np of data.players) {
         const op = prevStateTurn.players.find(p => p.id === np.id);
-        if (op && np.hp < op.hp) Animations.addHitReaction(np.id);
+        if (op && np.hp < op.hp) {
+          Animations.addHitReaction(np.id);
+          if (np.id === myId && navigator.vibrate) navigator.vibrate(150);
+        }
       }
     }
     detectAndAnimateDeaths(data.players);
@@ -454,7 +457,14 @@
     Input.setMode('move');
     UI.updateSpellSelection(null);
     Input.refreshHighlights();
-    if (isMine) Audio.play('Turn_start');
+    if (isMine) {
+      Audio.play('Turn_start');
+      // Flash the border with my player color to signal it's my turn
+      const me = state.players.find(p => p.id === myId);
+      UI.showTurnFlash(me ? COLORS[me.colorIndex] : '#4ECDC4');
+    } else {
+      UI.hideTurnFlash();
+    }
   });
 
   Socket.on('onStateUpdate', (delta) => {
@@ -464,7 +474,10 @@
       if (prevStateUpd) {
         for (const np of delta.players) {
           const op = prevStateUpd.players.find(p => p.id === np.id);
-          if (op && np.hp < op.hp) Animations.addHitReaction(np.id);
+          if (op && np.hp < op.hp) {
+            Animations.addHitReaction(np.id);
+            if (np.id === myId && navigator.vibrate) navigator.vibrate(150);
+          }
         }
       }
     }

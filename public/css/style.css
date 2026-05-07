@@ -602,6 +602,27 @@ input[type="text"]:focus {
 /* GAME */
 #screen-game {
   flex-direction: column;
+  position: relative;
+}
+
+/* ── Turn flash border ──────────────────────────────────────────────────── */
+#screen-game::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+  box-shadow: inset 0 0 0 4px var(--turn-flash-color, transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#screen-game.my-turn::before {
+  opacity: 1;
+  animation: turn-flash-pulse 1.4s ease-in-out infinite;
+}
+@keyframes turn-flash-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
 }
 
 #screen-game.active {
@@ -946,15 +967,40 @@ input[type="text"]:focus {
 
 #final-stats {
   margin-bottom: 24px;
+  width: 100%;
 }
 
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background: rgba(22, 33, 62, 0.85);
+/* Stats table (game over) */
+.stats-table-header,
+.stats-table-row {
+  display: grid;
+  grid-template-columns: 1fr repeat(5, 36px);
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
   border-radius: 6px;
-  margin-bottom: 6px;
+}
+.stats-table-header {
+  font-size: 0.7rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 4px;
+}
+.stats-table-row {
+  background: rgba(22, 33, 62, 0.85);
+  margin-bottom: 5px;
+  font-size: 0.82rem;
+}
+.stats-col-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stats-col {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 /* PLAYER COLORS */

@@ -10,6 +10,7 @@ class Bomb {
     this.y = y;
     this.age = 0;
     this.previousPosition = null;
+    this.placedOnTurn = null; // turn number when placed — used for detonation delay
   }
 
   ageTick() {
@@ -34,6 +35,7 @@ class Bomb {
       y: this.y,
       age: this.age,
       previousPosition: this.previousPosition,
+      placedOnTurn: this.placedOnTurn,
     };
   }
 }

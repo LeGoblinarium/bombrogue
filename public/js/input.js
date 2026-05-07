@@ -389,6 +389,8 @@ const Input = (() => {
     if (md < 1 || md > 10 + (me.rangeBonus || 0)) return false;
     const bomb = state.bombs.find(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
     if (!bomb) return false;
+    // Cannot detonate a bomb placed this same turn
+    if (bomb.placedOnTurn != null && state.currentTurn && bomb.placedOnTurn === state.currentTurn.turnNumber) return false;
     const otherBombs = state.bombs.filter(b => b.id !== bomb.id);
     if (!clientHasLoS(me.x, me.y, cell.x, cell.y, { ...state, bombs: otherBombs }, me.id)) return false;
     return true;
