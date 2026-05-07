@@ -4,7 +4,6 @@ const Bomb = require('./Bomb');
 const Bonus = require('./Bonus');
 const Spells = require('./SpellEngine');
 const { resolveDetonation } = require('./DetonationEngine');
-const { getConnectedBombIds } = require('./BombWallEngine');
 
 class Game {
   constructor(room, io) {
@@ -208,6 +207,38 @@ class Game {
     return false;
   }
 
+  // Dispatch table: action type → handler function + flags.
+  // mutatesBombs: whether this action can change bomb positions/count
+  //               (gates the recomputeWalls call).
+  // omit:         sections to omit from the state-update delta
+  //               (only include what actually changed).
+  static ACTION_HANDLERS = {
+    'move':        { fn: (g, p, a) => g.doMove(p, a.x, a.y),
+                     mutatesBombs: false,
+                     omit: { bombs: true, obstacles: true, walls: true } },
+    'place-bomb':  { fn: (g, p, a) => g.doPlaceBomb(p, a.x, a.y),
+                     mutatesBombs: true,
+                     omit: { obstacles: true, bonuses: true } },
+    'detonate':    { fn: (g, p, a) => g.doDetonate(p, a.x, a.y),
+                     mutatesBombs: true,
+                     omit: {} },
+    'repulseur':   { fn: (g, p, a) => Spells.castRepulseur(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
+                     mutatesBombs: true,
+                     omit: { obstacles: true, bonuses: true } },
+    'entourloupe': { fn: (g, p, a) => Spells.castEntourloupe(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
+                     mutatesBombs: true,
+                     omit: { obstacles: true, bonuses: true } },
+    'stratageme':  { fn: (g, p, a) => Spells.castStratageme(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
+                     mutatesBombs: true,
+                     omit: { obstacles: true, bonuses: true } },
+    'liberation':  { fn: (g, p, a) => Spells.castLiberation(p, g.state.bombs, g.state.players, g.state.gridMap),
+                     mutatesBombs: true,
+                     omit: { obstacles: true, bonuses: true } },
+    'aimant':      { fn: (g, p, a) => Spells.castAimant(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
+                     mutatesBombs: true,
+                     omit: { obstacles: true, bonuses: true } },
+  };
+
   handleAction(socketId, action) {
     if (this.gameOver) return;
     const currentPid = this.turnOrder[this.currentTurnIndex];
@@ -215,37 +246,22 @@ class Game {
     const player = this.state.players.find(p => p.id === socketId);
     if (!player || !player.alive) return;
 
-    let result = null;
-
-    if (action.type === 'move') {
-      result = this.doMove(player, action.x, action.y);
-    } else if (action.type === 'place-bomb') {
-      result = this.doPlaceBomb(player, action.x, action.y);
-    } else if (action.type === 'detonate') {
-      result = this.doDetonate(player, action.x, action.y);
-    } else if (action.type === 'repulseur') {
-      result = Spells.castRepulseur(player, action.x, action.y, this.state.bombs, this.state.players, this.state.gridMap);
-    } else if (action.type === 'entourloupe') {
-      result = Spells.castEntourloupe(player, action.x, action.y, this.state.bombs, this.state.players, this.state.gridMap);
-    } else if (action.type === 'stratageme') {
-      result = Spells.castStratageme(player, action.x, action.y, this.state.bombs, this.state.players, this.state.gridMap);
-    } else if (action.type === 'liberation') {
-      result = Spells.castLiberation(player, this.state.bombs, this.state.players, this.state.gridMap);
-    } else if (action.type === 'aimant') {
-      result = Spells.castAimant(player, action.x, action.y, this.state.bombs, this.state.players, this.state.gridMap);
-    } else if (action.type === 'end-turn') {
+    if (action.type === 'end-turn') {
       this.endTurn(true);
       return;
     }
 
+    const handler = Game.ACTION_HANDLERS[action.type];
+    if (!handler) return;
+
+    const result = handler.fn(this, player, action);
     if (!result || !result.ok) return;
 
     this.actedThisTurn = true;
 
     // Apply wall damage for players moved by spells along their path.
-    // Uses spell tracker: a given wall cell only damages a player once per turn
-    // from spell-induced movement (regardless of how many times they're pushed through it).
-    // Voluntary movement (doMove) bypasses this tracker and always applies damage.
+    // Spell tracker: a given wall cell only damages a player once per turn
+    // from spell-induced movement. Voluntary movement (doMove) bypasses this.
     if (result.movements && action.type !== 'move') {
       for (const m of result.movements) {
         if (m.type !== 'player') continue;
@@ -258,16 +274,19 @@ class Game {
       }
     }
 
-    const wallsBefore = this.state.walls.length;
-    this.state.recomputeWalls();
-    const wallsCreated = this.state.walls.length > wallsBefore;
-    this.pruneStaleWallImmunity(); // remove immunity for cells that are no longer walls
-    this.applyInstantWallDamage(); // damage any player now standing on a new wall cell
+    let wallsCreated = false;
+    if (handler.mutatesBombs) {
+      const wallsBefore = this.state.walls.length;
+      this.state.recomputeWalls();
+      wallsCreated = this.state.walls.length > wallsBefore;
+      this.pruneStaleWallImmunity();
+      this.applyInstantWallDamage();
+    }
 
     if (this.checkGameOver()) return;
 
     this.io.to(this.room.code).emit('state-update', {
-      ...this.state.serializeDelta(this.buildCurrentTurn()),
+      ...this.state.serializeDelta(this.buildCurrentTurn(), handler.omit),
       movements: result.movements || [],
       actionType: action.type,
       wallsCreated,
@@ -353,9 +372,10 @@ class Game {
 
     player.paLeft -= C.COST_DETONATE;
 
-    // Only detonate the target bomb + bombs connected to it via walls
-    const ownerBombs  = this.state.bombs.filter(b => b.ownerId === player.id);
-    const seedIds     = getConnectedBombIds(targetBomb.id, ownerBombs, this.state.gridMap);
+    // Use the component map cached by the last recomputeWalls() call —
+    // it reflects the current bomb layout without rebuilding the graph.
+    const comp = this.state.bombCompMap.get(targetBomb.id);
+    const seedIds = comp ? comp.map(b => b.id) : [targetBomb.id];
 
     const result = resolveDetonation(seedIds, this.state.bombs, this.state.players, this.state.gridMap);
 

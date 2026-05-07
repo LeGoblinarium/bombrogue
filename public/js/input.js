@@ -140,11 +140,18 @@ const Input = (() => {
   function computeMovePath(cell, me) {
     const state = GameClient.getState();
     const visited = new Map();
+    // Pre-build occupancy set to avoid O(n) scan per BFS neighbour
+    const occupied = new Set(state.obstacles.map(o => `${o.x},${o.y}`));
+    for (const b of state.bombs) occupied.add(`${b.x},${b.y}`);
+    for (const p of state.players) {
+      if (p.alive && p.id !== me.id) occupied.add(`${p.x},${p.y}`);
+    }
     const queue = [{ x: me.x, y: me.y, dist: 0, path: [] }];
     visited.set(`${me.x},${me.y}`, true);
 
-    while (queue.length > 0) {
-      const cur = queue.shift();
+    let qi = 0;
+    while (qi < queue.length) {
+      const cur = queue[qi++];
       if (cur.x === cell.x && cur.y === cell.y) return cur.path;
       if (cur.dist >= me.pmLeft) continue;
 
@@ -153,9 +160,7 @@ const Input = (() => {
         if (nx < 0 || nx >= GRID_W || ny < 0 || ny >= GRID_H) continue;
         const key = `${nx},${ny}`;
         if (visited.has(key)) continue;
-        if (state.obstacles.some(o => o.x === nx && o.y === ny)) continue;
-        if (state.bombs.some(b => b.x === nx && b.y === ny)) continue;
-        if (state.players.some(p => p.alive && p.id !== me.id && p.x === nx && p.y === ny)) continue;
+        if (occupied.has(key)) continue;
         visited.set(key, true);
         queue.push({ x: nx, y: ny, dist: cur.dist + 1, path: [...cur.path, { x: nx, y: ny }] });
       }
@@ -293,12 +298,18 @@ const Input = (() => {
 
   function computeReachable(me, state) {
     const visited = new Map();
+    const occupied = new Set(state.obstacles.map(o => `${o.x},${o.y}`));
+    for (const b of state.bombs) occupied.add(`${b.x},${b.y}`);
+    for (const p of state.players) {
+      if (p.alive && p.id !== me.id) occupied.add(`${p.x},${p.y}`);
+    }
     const queue = [{ x: me.x, y: me.y, dist: 0 }];
     visited.set(`${me.x},${me.y}`, 0);
     const out = [];
 
-    while (queue.length > 0) {
-      const cur = queue.shift();
+    let qi = 0;
+    while (qi < queue.length) {
+      const cur = queue[qi++];
       if (cur.dist > 0) out.push({ x: cur.x, y: cur.y });
       if (cur.dist >= me.pmLeft) continue;
 
@@ -307,9 +318,7 @@ const Input = (() => {
         if (nx < 0 || nx >= GRID_W || ny < 0 || ny >= GRID_H) continue;
         const key = `${nx},${ny}`;
         if (visited.has(key)) continue;
-        if (state.obstacles.some(o => o.x === nx && o.y === ny)) continue;
-        if (state.bombs.some(b => b.x === nx && b.y === ny)) continue;
-        if (state.players.some(p => p.alive && p.id !== me.id && p.x === nx && p.y === ny)) continue;
+        if (occupied.has(key)) continue;
         visited.set(key, cur.dist + 1);
         queue.push({ x: nx, y: ny, dist: cur.dist + 1 });
       }
@@ -431,38 +440,43 @@ const Input = (() => {
     if (x1 === x2 && y1 === y2) return true;
     const dx = x2 - x1, dy = y2 - y1;
     const steps = Math.max(Math.abs(dx), Math.abs(dy));
+    if (steps <= 1) return true; // no intermediate cells
+    const obstacleSet = new Set(state.obstacles.map(o => `${o.x},${o.y}`));
+    const bombSet = new Set(state.bombs.map(b => `${b.x},${b.y}`));
+    const playerSet = new Set(
+      state.players.filter(p => p.alive && p.id !== selfId).map(p => `${p.x},${p.y}`)
+    );
     for (let i = 1; i < steps; i++) {
       const t = i / steps;
-      const cx = Math.round(x1 + dx * t);
-      const cy = Math.round(y1 + dy * t);
-      if (state.obstacles.some(o => o.x === cx && o.y === cy)) return false;
-      if (state.bombs.some(b => b.x === cx && b.y === cy)) return false;
-      if (state.players.some(p => p.alive && p.id !== selfId && p.x === cx && p.y === cy)) return false;
+      const key = `${Math.round(x1 + dx * t)},${Math.round(y1 + dy * t)}`;
+      if (obstacleSet.has(key)) return false;
+      if (bombSet.has(key)) return false;
+      if (playerSet.has(key)) return false;
     }
     return true;
   }
 
   function clientGetBombAoe(bx, by, expRange, obstacles) {
+    const obstacleSet = new Set(obstacles.map(o => `${o.x},${o.y}`));
     const cells = [];
     for (const [ddx, ddy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
       for (let d = 1; d <= expRange; d++) {
         const x = bx + ddx * d, y = by + ddy * d;
         if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) break;
         cells.push({ x, y });
-        if (obstacles.some(o => o.x === x && o.y === y)) break;
+        if (obstacleSet.has(`${x},${y}`)) break;
       }
     }
     for (const [ddx, ddy] of [[1,1],[-1,1],[1,-1],[-1,-1]]) {
       const x = bx + ddx, y = by + ddy;
       if (x < 0 || x >= GRID_W || y < 0 || y >= GRID_H) continue;
-      if (obstacles.some(o => o.x === x && o.y === y)) continue;
-      cells.push({ x, y });
+      if (!obstacleSet.has(`${x},${y}`)) cells.push({ x, y });
     }
     return cells;
   }
 
   function clientGetConnectedBombIds(targetBomb, myBombs, obstacles) {
-    const MAX_GAP = 6;
+    const obstacleSet = new Set(obstacles.map(o => `${o.x},${o.y}`));
     const adj = new Map();
     for (const b of myBombs) adj.set(b.id, []);
     for (let i = 0; i < myBombs.length; i++) {
@@ -470,18 +484,18 @@ const Input = (() => {
         const a = myBombs[i], b = myBombs[j];
         if (a.x === b.x) {
           const minY = Math.min(a.y, b.y), maxY = Math.max(a.y, b.y);
-          if (maxY - minY - 1 > MAX_GAP) continue;
+          if (maxY - minY - 1 > WALL_MAX_GAP) continue;
           let blocked = false;
           for (let y = minY + 1; y < maxY; y++) {
-            if (obstacles.some(o => o.x === a.x && o.y === y)) { blocked = true; break; }
+            if (obstacleSet.has(`${a.x},${y}`)) { blocked = true; break; }
           }
           if (!blocked) { adj.get(a.id).push(b.id); adj.get(b.id).push(a.id); }
         } else if (a.y === b.y) {
           const minX = Math.min(a.x, b.x), maxX = Math.max(a.x, b.x);
-          if (maxX - minX - 1 > MAX_GAP) continue;
+          if (maxX - minX - 1 > WALL_MAX_GAP) continue;
           let blocked = false;
           for (let x = minX + 1; x < maxX; x++) {
-            if (obstacles.some(o => o.x === x && o.y === a.y)) { blocked = true; break; }
+            if (obstacleSet.has(`${x},${a.y}`)) { blocked = true; break; }
           }
           if (!blocked) { adj.get(a.id).push(b.id); adj.get(b.id).push(a.id); }
         }
@@ -489,8 +503,9 @@ const Input = (() => {
     }
     const visited = new Set([targetBomb.id]);
     const queue = [targetBomb.id];
-    while (queue.length > 0) {
-      for (const nb of (adj.get(queue.shift()) || [])) {
+    let qi = 0;
+    while (qi < queue.length) {
+      for (const nb of (adj.get(queue[qi++]) || [])) {
         if (!visited.has(nb)) { visited.add(nb); queue.push(nb); }
       }
     }
@@ -505,8 +520,9 @@ const Input = (() => {
     const explodedIds = new Set(connectedIds);
     const queue = state.bombs.filter(b => connectedIds.has(b.id));
     const affectedCells = new Set();
-    while (queue.length > 0) {
-      const bomb = queue.shift();
+    let qi = 0;
+    while (qi < queue.length) {
+      const bomb = queue[qi++];
       const expRange = me.explosionRange || 2;
       for (const cell of clientGetBombAoe(bomb.x, bomb.y, expRange, state.obstacles)) {
         affectedCells.add(`${cell.x},${cell.y}`);

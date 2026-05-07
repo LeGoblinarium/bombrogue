@@ -4,6 +4,7 @@ const GRID_H = 20;
 const TOTAL_POINTS = 12;
 const MIN_PM = 2;
 const MAX_PM = 6;
+const WALL_MAX_GAP = 6;
 
 const SPELLS = [
   {

@@ -11,6 +11,7 @@ class GameState {
     this.bonuses = [];
     this.walls = [];
     this.wallCellMap = new Map();
+    this.bombCompMap = new Map(); // bombId → component (array of bomb objects)
 
     let i = 0;
     for (const p of roomPlayers) {
@@ -24,6 +25,7 @@ class GameState {
     const result = computeWalls(this.bombs, this.gridMap);
     this.walls = result.walls;
     this.wallCellMap = result.wallCellMap;
+    this.bombCompMap = result.compByBomb;
   }
 
   serializeFull(currentTurn) {
@@ -43,20 +45,19 @@ class GameState {
     };
   }
 
-  serializeDelta(currentTurn) {
-    return {
-      players: this.players.map(p => p.serialize()),
-      bombs: this.bombs.map(b => b.serialize()),
-      bonuses: this.bonuses.map(b => b.serialize()),
-      obstacles: this.gridMap.getObstacles(),
-      walls: this.walls.map(w => ({
-        cells: w.cells,
-        ownerId: w.ownerId,
-        damage: w.damage,
-        compSize: w.compSize,
-      })),
-      currentTurn,
-    };
+  // omit: object whose truthy keys are excluded from the delta.
+  // Callers pass only what actually changed, e.g. { obstacles: true, bonuses: true }
+  // to skip those sections. Defaults to sending everything.
+  serializeDelta(currentTurn, omit = {}) {
+    const delta = { currentTurn };
+    if (!omit.players)   delta.players   = this.players.map(p => p.serialize());
+    if (!omit.bombs)     delta.bombs     = this.bombs.map(b => b.serialize());
+    if (!omit.bonuses)   delta.bonuses   = this.bonuses.map(b => b.serialize());
+    if (!omit.obstacles) delta.obstacles = this.gridMap.getObstacles();
+    if (!omit.walls)     delta.walls     = this.walls.map(w => ({
+      cells: w.cells, ownerId: w.ownerId, damage: w.damage, compSize: w.compSize,
+    }));
+    return delta;
   }
 }
 

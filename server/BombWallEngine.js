@@ -9,9 +9,16 @@ function computeWalls(bombs, gridMap) {
   }
 
   const allWalls = [];
+  // Full component map: bombId → [bomb objects in connected component].
+  // Includes lone bombs (component = [self]) so doDetonate can skip getConnectedBombIds.
+  const globalCompByBomb = new Map();
 
   for (const [ownerId, ownerBombs] of byOwner) {
-    if (ownerBombs.length < 2) continue;
+    if (ownerBombs.length < 2) {
+      // Single bomb for this owner — its component is just itself
+      globalCompByBomb.set(ownerBombs[0].id, ownerBombs);
+      continue;
+    }
 
     // Build edges: pairs that form a valid wall (1-6 cells gap, no obstacle in between)
     const edges = [];
@@ -25,6 +32,11 @@ function computeWalls(bombs, gridMap) {
 
     // Find connected components
     const components = findConnectedComponents(ownerBombs, edges);
+
+    // Merge into global map
+    for (const [bombId, comp] of components) {
+      globalCompByBomb.set(bombId, comp);
+    }
 
     // For each edge, determine wall cells & damage based on its component size
     for (const edge of edges) {
@@ -62,7 +74,7 @@ function computeWalls(bombs, gridMap) {
     }
   }
 
-  return { walls: allWalls, wallCellMap };
+  return { walls: allWalls, wallCellMap, compByBomb: globalCompByBomb };
 }
 
 function checkWallPair(a, b, gridMap) {
@@ -75,7 +87,6 @@ function checkWallPair(a, b, gridMap) {
     const cells = [];
     for (let x = minX + 1; x < maxX; x++) {
       if (gridMap.isObstacle(x, a.y)) return null;
-      // Other bombs can be in between (this is OK - walls can pass through bombs)
       cells.push({ x, y: a.y });
     }
     return cells;
@@ -128,26 +139,4 @@ function findConnectedComponents(bombs, edges) {
   return compByBomb;
 }
 
-/**
- * Returns the IDs of all bombs connected to targetBombId via the wall network.
- * If the target bomb has no connections, returns [targetBombId] alone.
- */
-function getConnectedBombIds(targetBombId, ownerBombs, gridMap) {
-  if (ownerBombs.length < 2) {
-    return ownerBombs.some(b => b.id === targetBombId) ? [targetBombId] : [];
-  }
-
-  const edges = [];
-  for (let i = 0; i < ownerBombs.length; i++) {
-    for (let j = i + 1; j < ownerBombs.length; j++) {
-      const a = ownerBombs[i], b = ownerBombs[j];
-      if (checkWallPair(a, b, gridMap)) edges.push({ a, b });
-    }
-  }
-
-  const compByBomb = findConnectedComponents(ownerBombs, edges);
-  const component  = compByBomb.get(targetBombId);
-  return component ? component.map(b => b.id) : [targetBombId];
-}
-
-module.exports = { computeWalls, getConnectedBombIds };
+module.exports = { computeWalls };
