@@ -37,8 +37,21 @@ html, body {
 #screen-room {
   background-image: url('/images/bg-menu.jpg');
   background-size: cover;
-  background-position: center;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
+}
+
+/* On portrait mobile the landscape image is wider than the viewport.
+   Pan it slowly left↔right so the full artwork is visible over time. */
+@keyframes bg-pan-lr {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+
+@media (orientation: portrait) and (max-width: 768px) {
+  #screen-lobby {
+    animation: bg-pan-lr 24s linear infinite alternate;
+  }
 }
 
 /* Dark overlay for readability */
