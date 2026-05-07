@@ -12,6 +12,9 @@
   Audio.init();
   Socket.connect();
 
+  // Start music on first user interaction (browser autoplay policy)
+  document.addEventListener('pointerdown', () => Audio.startMusic(), { once: true, passive: true });
+
   const CHAR_NAMES = { player: 'Bob', merlin: 'Merlin', kael: 'Kael', borin: 'Borin', alaric: 'Alaric', mordek: 'Mordek' };
   let hasCustomName = false; // true if player typed a name manually
 
@@ -208,6 +211,24 @@
       // Return to lobby and refresh room list
       UI.showScreen('screen-lobby');
       Socket.emit('list-rooms');
+    });
+  }
+
+  function setupMusicHandler() {
+    const btn = document.getElementById('btn-music');
+
+    // Apply initial muted state (restored from localStorage inside Audio)
+    function syncMusicBtn() {
+      btn.classList.toggle('muted', Audio.isMusicMuted());
+      btn.setAttribute('aria-label', Audio.isMusicMuted() ? 'Musique coupée' : 'Musique');
+    }
+    syncMusicBtn();
+
+    btn.addEventListener('click', () => {
+      // Start music on first interaction (satisfies browser autoplay policy)
+      Audio.startMusic();
+      Audio.toggleMusic();
+      syncMusicBtn();
     });
   }
 
@@ -640,5 +661,6 @@
   setupCharacterHandler();
   setupReplayHandler();
   setupMainMenuHandler();
+  setupMusicHandler();
   setupHelpHandler();
 })();
