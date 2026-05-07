@@ -76,20 +76,38 @@
     for (const room of rooms) {
       const entry = document.createElement('div');
       entry.className = 'room-entry';
-      const full = room.playerCount >= room.maxPlayers;
-      entry.innerHTML = `
-        <div class="room-entry-info">
-          <div class="room-entry-name">${escapeHtml(room.name)}</div>
-          <div class="room-entry-count">${room.playerCount}/${room.maxPlayers} joueurs</div>
-        </div>
-        <button class="btn-join-room" ${full ? 'disabled' : ''}>Rejoindre</button>
-      `;
-      if (!full) {
+
+      if (room.inProgress) {
+        // In-progress room with available disconnected slots
+        const n = room.disconnectedCount;
+        entry.innerHTML = `
+          <div class="room-entry-info">
+            <div class="room-entry-name">${escapeHtml(room.name)} <span class="badge-inprogress">En cours</span></div>
+            <div class="room-entry-count">${n} personnage${n > 1 ? 's' : ''} disponible${n > 1 ? 's' : ''}</div>
+          </div>
+          <button class="btn-join-room">Rejoindre</button>
+        `;
         entry.querySelector('.btn-join-room').addEventListener('click', () => {
           const name = resolvePlayerName();
           myName = name;
           Socket.emit('join-room', { code: room.code, playerName: name });
         });
+      } else {
+        const full = room.playerCount >= room.maxPlayers;
+        entry.innerHTML = `
+          <div class="room-entry-info">
+            <div class="room-entry-name">${escapeHtml(room.name)}</div>
+            <div class="room-entry-count">${room.playerCount}/${room.maxPlayers} joueurs</div>
+          </div>
+          <button class="btn-join-room" ${full ? 'disabled' : ''}>Rejoindre</button>
+        `;
+        if (!full) {
+          entry.querySelector('.btn-join-room').addEventListener('click', () => {
+            const name = resolvePlayerName();
+            myName = name;
+            Socket.emit('join-room', { code: room.code, playerName: name });
+          });
+        }
       }
       list.appendChild(entry);
     }
@@ -515,12 +533,105 @@
     renderRoomList(rooms);
   });
 
+  // --- Reconnection / disconnect handlers ---
+
+  let pendingRejoinCode = null;
+
+  Socket.on('onGameInProgress', ({ code, name, slots }) => {
+    pendingRejoinCode = code;
+    // Populate the rejoin modal with available character slots
+    const container = document.getElementById('rejoin-slots');
+    container.innerHTML = '';
+    for (const slot of slots) {
+      const color = COLORS[slot.colorIndex] || '#ffffff';
+      const card = document.createElement('button');
+      card.className = 'rejoin-card';
+      card.innerHTML = `
+        <img src="/images/${escapeHtml(slot.character || 'player')}.png" alt="${escapeHtml(slot.name)}" draggable="false">
+        <span class="rejoin-card-name">${escapeHtml(slot.name)}</span>
+        <span class="rejoin-card-dot" style="background:${color}"></span>
+      `;
+      card.addEventListener('click', () => {
+        Socket.emit('claim-slot', { code: pendingRejoinCode, targetPlayerId: slot.id });
+        document.getElementById('rejoin-modal').classList.add('hidden');
+      });
+      container.appendChild(card);
+    }
+    document.getElementById('rejoin-modal').classList.remove('hidden');
+  });
+
+  Socket.on('onGameRejoin', ({ state, yourPlayerId }) => {
+    // Enter the game as the reclaimed character
+    myId = yourPlayerId;
+    resetGameOverOverlay();
+    Animations.resetDeadIds();
+    GameClient.init(state, myId);
+    UI.showScreen('screen-game');
+
+    const canvas = document.getElementById('game-canvas');
+    if (!gameInitialized) {
+      Renderer.init(canvas);
+      Input.init(canvas);
+      gameInitialized = true;
+      startRenderLoop();
+    } else {
+      requestAnimationFrame(() => Renderer.resize());
+    }
+
+    Input.setMode('move');
+    UI.renderHpBars(state);
+    UI.updateTurnInfo(state);
+    UI.renderResources(state.players.find(p => p.id === myId));
+    const isMine = state.currentTurn.playerId === myId;
+    GameClient.setMyTurn(isMine, state.currentTurn.timeLeft);
+    UI.renderSpellBar(state, isMine);
+    UI.updateTimer(state.currentTurn.timeLeft);
+    Input.refreshHighlights();
+  });
+
+  Socket.on('onPlayerDisconnected', ({ playerId }) => {
+    const state = GameClient.getState();
+    if (!state) return;
+    const p = state.players.find(pp => pp.id === playerId);
+    if (p) UI.showToast(`${p.name} s'est déconnecté(e)`);
+  });
+
+  Socket.on('onPlayerReconnected', ({ playerId }) => {
+    const state = GameClient.getState();
+    // Hide pause overlay if visible
+    document.getElementById('game-paused-overlay').classList.add('hidden');
+    if (!state) return;
+    const p = state.players.find(pp => pp.id === playerId);
+    if (p) UI.showToast(`${p.name} a rejoint la partie`);
+  });
+
+  Socket.on('onGamePaused', () => {
+    document.getElementById('game-paused-overlay').classList.remove('hidden');
+  });
+
+  Socket.on('onGameResumed', () => {
+    document.getElementById('game-paused-overlay').classList.add('hidden');
+  });
+
+  Socket.on('onTurnSkipped', ({ playerId }) => {
+    const state = GameClient.getState();
+    if (!state) return;
+    const p = state.players.find(pp => pp.id === playerId);
+    if (p) UI.showToast(`Tour de ${p.name} passé (déconnecté)`);
+  });
+
   Socket.on('onObstacleCountUpdated', ({ obstacleCount }) => {
     // Non-host players see the updated value display (slider stays hidden)
     document.getElementById('obstacle-value').textContent = obstacleCount;
     const slider = document.getElementById('obstacle-slider');
     slider.value = obstacleCount;
     slider.style.setProperty('--val', obstacleCount);
+  });
+
+  // Rejoin modal cancel button
+  document.getElementById('btn-rejoin-cancel').addEventListener('click', () => {
+    document.getElementById('rejoin-modal').classList.add('hidden');
+    pendingRejoinCode = null;
   });
 
   setupLobbyHandlers();

@@ -19,10 +19,21 @@ function getRoomBySocket(socketId) {
   return null;
 }
 
+// Returns the effective player ID for a socket (handles reconnected players whose
+// socket.id differs from their original player.id).
+function getEffectivePlayerId(room, socketId) {
+  const entry = room.players.get(socketId);
+  return entry ? entry.id : socketId;
+}
+
 function getPublicRoomsList() {
   const list = [];
   for (const room of rooms.values()) {
-    if (room.isPublic && room.status === 'waiting') {
+    if (!room.isPublic) continue;
+    if (room.status === 'waiting') {
+      list.push(room.publicInfo());
+    } else if (room.status === 'playing' && room.disconnectedPlayers.size > 0) {
+      // In-progress room with open slots — visible so anyone can claim them
       list.push(room.publicInfo());
     }
   }
@@ -83,8 +94,24 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Game already in progress — offer disconnected slots if any
+    if (room.status === 'playing') {
+      const slots = room.getDisconnectedSlots();
+      if (slots.length === 0) {
+        socket.emit('error', { message: 'Partie en cours, aucun personnage disponible' });
+        return;
+      }
+      socket.emit('game-in-progress', {
+        code: upperCode,
+        name: room.name,
+        slots,
+        playerName: playerName.trim(),
+      });
+      return;
+    }
+
     if (!room.addPlayer(socket.id, playerName.trim())) {
-      socket.emit('error', { message: room.status !== 'waiting' ? 'Partie en cours' : 'Room pleine' });
+      socket.emit('error', { message: 'Room pleine' });
       return;
     }
 
@@ -103,16 +130,42 @@ io.on('connection', (socket) => {
     broadcastRoomsList();
   });
 
+  // Claim a disconnected player's slot in an in-progress game
+  socket.on('claim-slot', ({ code, targetPlayerId }) => {
+    const upperCode = (code || '').toUpperCase().trim();
+    const room = rooms.get(upperCode);
+
+    if (!room || room.status !== 'playing') {
+      socket.emit('error', { message: 'Partie introuvable' });
+      return;
+    }
+
+    if (!room.claimSlot(socket.id, targetPlayerId)) {
+      socket.emit('error', { message: 'Personnage non disponible' });
+      return;
+    }
+
+    socket.leave('_lobby');
+    socket.join(upperCode);
+
+    if (room.game) {
+      room.game.handleRejoin(socket.id, targetPlayerId);
+    }
+
+    broadcastRoomsList();
+  });
+
   socket.on('leave-room', () => {
     const room = getRoomBySocket(socket.id);
     if (!room) return;
 
-    if (room.game) room.game.handleDisconnect(socket.id);
+    const effectiveId = getEffectivePlayerId(room, socket.id);
+    if (room.game) room.game.handleDisconnect(effectiveId);
     room.replayVotes.delete(socket.id);
     room.removePlayer(socket.id);
 
     socket.to(room.code).emit('player-left', {
-      playerId: socket.id,
+      playerId: effectiveId,
       players: room.getPlayerList(),
       hostId: room.hostId,
     });
@@ -195,7 +248,8 @@ io.on('connection', (socket) => {
   socket.on('action', (data) => {
     const room = getRoomBySocket(socket.id);
     if (!room || !room.game) return;
-    room.game.handleAction(socket.id, data);
+    const effectiveId = getEffectivePlayerId(room, socket.id);
+    room.game.handleAction(effectiveId, data);
   });
 
   socket.on('propose-replay', () => {
@@ -229,15 +283,31 @@ io.on('connection', (socket) => {
     const room = getRoomBySocket(socket.id);
     if (!room) return;
 
-    if (room.game) {
-      room.game.handleDisconnect(socket.id);
+    if (room.game && room.status === 'playing') {
+      // Involuntary disconnect during an active game: keep character alive
+      const effectiveId = getEffectivePlayerId(room, socket.id);
+      room.moveToDisconnected(socket.id);
+      room.game.handleConnectionLost(effectiveId);
+
+      socket.to(room.code).emit('player-left', {
+        playerId: effectiveId,
+        players: room.getPlayerList(),
+        hostId: room.hostId,
+      });
+
+      broadcastRoomsList(); // Room now appears in lobby with open slot
+      return;
     }
+
+    // Not in a game (waiting room) → remove and potentially kill
+    const effectiveId = getEffectivePlayerId(room, socket.id);
+    if (room.game) room.game.handleDisconnect(effectiveId);
 
     room.replayVotes.delete(socket.id);
     room.removePlayer(socket.id);
 
     socket.to(room.code).emit('player-left', {
-      playerId: socket.id,
+      playerId: effectiveId,
       players: room.getPlayerList(),
       hostId: room.hostId,
     });

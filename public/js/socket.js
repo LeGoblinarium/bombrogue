@@ -84,6 +84,34 @@ const Socket = (() => {
     socket.on('obstacle-count-updated', (data) => {
       if (handlers.onObstacleCountUpdated) handlers.onObstacleCountUpdated(data);
     });
+
+    socket.on('game-in-progress', (data) => {
+      if (handlers.onGameInProgress) handlers.onGameInProgress(data);
+    });
+
+    socket.on('game-rejoin', (data) => {
+      if (handlers.onGameRejoin) handlers.onGameRejoin(data);
+    });
+
+    socket.on('player-disconnected', (data) => {
+      if (handlers.onPlayerDisconnected) handlers.onPlayerDisconnected(data);
+    });
+
+    socket.on('player-reconnected', (data) => {
+      if (handlers.onPlayerReconnected) handlers.onPlayerReconnected(data);
+    });
+
+    socket.on('game-paused', () => {
+      if (handlers.onGamePaused) handlers.onGamePaused();
+    });
+
+    socket.on('game-resumed', () => {
+      if (handlers.onGameResumed) handlers.onGameResumed();
+    });
+
+    socket.on('turn-skipped', (data) => {
+      if (handlers.onTurnSkipped) handlers.onTurnSkipped(data);
+    });
   }
 
   function emit(event, data) {

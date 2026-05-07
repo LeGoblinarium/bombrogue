@@ -20,6 +20,7 @@ class Room {
     this.isPublic = isPublic !== false; // default true
     this.obstacleCount = 30; // default obstacle count
     this.players = new Map();
+    this.disconnectedPlayers = new Map(); // originalSocketId → player data (during active game)
     this.hostId = null;
     this.status = 'waiting';
     this.game = null;
@@ -33,6 +34,8 @@ class Room {
       name: this.name,
       playerCount: this.players.size,
       maxPlayers: C.MAX_PLAYERS,
+      inProgress: this.status === 'playing',
+      disconnectedCount: this.disconnectedPlayers.size,
     };
   }
 
@@ -67,6 +70,45 @@ class Room {
     if (this.hostId === socketId && this.players.size > 0) {
       this.hostId = this.players.keys().next().value;
     }
+  }
+
+  // Move a player to the disconnected pool (used when they drop during an active game).
+  // Their character stays alive and the slot can be claimed by anyone.
+  moveToDisconnected(socketId) {
+    const player = this.players.get(socketId);
+    if (!player) return false;
+    this.disconnectedPlayers.set(socketId, player); // key = original socket id = player.id
+    this.players.delete(socketId);
+    // Reassign host if necessary
+    if (this.hostId === socketId && this.players.size > 0) {
+      this.hostId = this.players.keys().next().value;
+    }
+    return true;
+  }
+
+  // Let a new socket claim a disconnected player's slot.
+  // The original player ID is preserved so game state lookup still works.
+  claimSlot(newSocketId, targetPlayerId) {
+    // targetPlayerId == original socketId of the disconnected player
+    const player = this.disconnectedPlayers.get(targetPlayerId);
+    if (!player) return false;
+    this.disconnectedPlayers.delete(targetPlayerId);
+    // Re-add under new socket key but keep player.id = original socket id
+    this.players.set(newSocketId, { ...player });
+    return true;
+  }
+
+  isPlayerDisconnected(playerId) {
+    return this.disconnectedPlayers.has(playerId);
+  }
+
+  getDisconnectedSlots() {
+    return Array.from(this.disconnectedPlayers.values()).map(p => ({
+      id: p.id,
+      name: p.name,
+      colorIndex: p.colorIndex,
+      character: p.character || 'player',
+    }));
   }
 
   setObstacleCount(count) {
@@ -108,6 +150,7 @@ class Room {
     this.status = 'waiting';
     this.game = null;
     this.replayVotes = new Set();
+    this.disconnectedPlayers = new Map();
     for (const player of this.players.values()) {
       player.pa = C.DEFAULT_PA;
       player.pm = C.DEFAULT_PM;
@@ -115,7 +158,7 @@ class Room {
   }
 
   isEmpty() {
-    return this.players.size === 0;
+    return this.players.size === 0 && this.disconnectedPlayers.size === 0;
   }
 
   canStart() {

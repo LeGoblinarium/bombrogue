@@ -264,8 +264,26 @@ const UI = (() => {
     })[c]);
   }
 
+  let _toastTimer = null;
+  function showToast(message) {
+    let toast = document.getElementById('ui-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'ui-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.remove('toast-hidden');
+    toast.classList.add('toast-visible');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => {
+      toast.classList.remove('toast-visible');
+      toast.classList.add('toast-hidden');
+    }, 3000);
+  }
+
   return {
-    showScreen, showError,
+    showScreen, showError, showToast,
     renderPlayersList, updateDistribution,
     renderHpBars, updateTurnInfo, updateTimer, renderResources,
     renderSpellBar, updateSpellSelection,

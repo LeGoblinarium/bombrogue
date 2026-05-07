@@ -23,6 +23,7 @@ class Game {
     this.turnStartTime = 0;
     this.turnTimer = null;
     this.gameOver = false;
+    this.gamePaused = false; // true when all alive players are disconnected
     this.actedThisTurn = false;
     // Tracks wall cells where each player already took spell-induced damage this turn
     // Resets each turn. Voluntary movement (doMove) bypasses this tracker.
@@ -81,6 +82,22 @@ class Game {
 
     const currentPlayer = this.state.players.find(p => p.id === this.turnOrder[this.currentTurnIndex]);
     if (!currentPlayer) return;
+
+    // Auto-skip disconnected players (their character stays alive but no one is playing them)
+    if (this.room.isPlayerDisconnected(currentPlayer.id)) {
+      // If ALL alive players are disconnected, pause the game until someone reconnects
+      const alive = this.state.players.filter(p => p.alive);
+      const allDisconnected = alive.every(p => this.room.isPlayerDisconnected(p.id));
+      if (allDisconnected) {
+        this.gamePaused = true;
+        this.io.to(this.room.code).emit('game-paused');
+        return;
+      }
+      // Skip this disconnected player's turn
+      this.io.to(this.room.code).emit('turn-skipped', { playerId: currentPlayer.id, reason: 'disconnected' });
+      this.endTurn(false);
+      return;
+    }
 
     currentPlayer.startTurn();
     this.spellWallDamageTaken.clear();
@@ -417,17 +434,49 @@ class Game {
     }
   }
 
-  handleDisconnect(socketId) {
-    const p = this.state.players.find(pp => pp.id === socketId);
+  // Intentional leave (leave-room button) — kills the player immediately.
+  handleDisconnect(playerId) {
+    const p = this.state.players.find(pp => pp.id === playerId);
     if (!p) return;
     p.alive = false;
     p.hp = 0;
 
-    // If it was their turn, end it
-    if (this.turnOrder[this.currentTurnIndex] === socketId) {
+    if (this.turnOrder[this.currentTurnIndex] === playerId) {
       this.endTurn(false);
     } else {
       this.checkGameOver();
+    }
+  }
+
+  // Involuntary disconnect (socket drop) — character stays alive, turn is auto-skipped.
+  handleConnectionLost(socketId) {
+    this.io.to(this.room.code).emit('player-disconnected', { playerId: socketId });
+
+    // If it was their turn, end it immediately (beginTurn will then auto-skip future turns)
+    if (this.turnOrder[this.currentTurnIndex] === socketId) {
+      this.endTurn(false);
+    }
+    // Otherwise beginTurn will handle auto-skip when this player's turn comes around
+  }
+
+  // A new socket has claimed a disconnected player's slot. Resume the game if it was paused.
+  handleRejoin(newSocketId, originalPlayerId) {
+    this.io.to(this.room.code).emit('player-reconnected', { playerId: originalPlayerId });
+
+    // Send full game state to the rejoining socket
+    const rejoiningSocket = this.io.sockets.sockets.get(newSocketId);
+    if (rejoiningSocket) {
+      rejoiningSocket.emit('game-rejoin', {
+        state: this.state.serializeFull(this.buildCurrentTurn()),
+        yourPlayerId: originalPlayerId,
+      });
+    }
+
+    // Resume if paused (all-disconnected situation resolved)
+    if (this.gamePaused) {
+      this.gamePaused = false;
+      this.io.to(this.room.code).emit('game-resumed');
+      this.beginTurn();
     }
   }
 
