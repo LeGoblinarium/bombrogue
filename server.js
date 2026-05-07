@@ -335,9 +335,19 @@ io.on('connection', (socket) => {
 setInterval(() => {
   const now = Date.now();
   for (const [code, room] of rooms) {
+    // Remove empty waiting rooms older than 30 minutes
     if (room.isEmpty() && now - room.createdAt > 30 * 60 * 1000) {
       if (room.game) room.game.cleanup();
       rooms.delete(code);
+      continue;
+    }
+    // Remove paused games where all players have been gone for more than 15 minutes
+    if (room.game && room.game.gamePaused && room.game.pausedAt &&
+        now - room.game.pausedAt > 15 * 60 * 1000) {
+      console.log(`Cleaning up abandoned paused game: ${code}`);
+      room.game.cleanup();
+      rooms.delete(code);
+      broadcastRoomsList();
     }
   }
 }, 5 * 60 * 1000);

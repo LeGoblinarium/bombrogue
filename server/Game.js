@@ -24,6 +24,7 @@ class Game {
     this.turnTimer = null;
     this.gameOver = false;
     this.gamePaused = false; // true when all alive players are disconnected
+    this.pausedAt = null;    // timestamp when gamePaused became true
     this.actedThisTurn = false;
     // Tracks wall cells where each player already took spell-induced damage this turn
     // Resets each turn. Voluntary movement (doMove) bypasses this tracker.
@@ -90,6 +91,7 @@ class Game {
       const allDisconnected = alive.every(p => this.room.isPlayerDisconnected(p.id));
       if (allDisconnected) {
         this.gamePaused = true;
+        this.pausedAt = Date.now();
         this.io.to(this.room.code).emit('game-paused');
         return;
       }
@@ -475,6 +477,7 @@ class Game {
     // Resume if paused (all-disconnected situation resolved)
     if (this.gamePaused) {
       this.gamePaused = false;
+      this.pausedAt = null;
       this.io.to(this.room.code).emit('game-resumed');
       this.beginTurn();
     }
