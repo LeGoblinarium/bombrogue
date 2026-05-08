@@ -1044,6 +1044,10 @@ const Bubbles = (() => {
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
+  // Bob's internal character id is 'player'; dialogue keys and speaker fields
+  // use 'bob'. This normalises so lookups always match.
+  function normChar(c) { return (c === 'player' || !c) ? 'bob' : c; }
+
   function pairKey(charA, charB) {
     return [charA, charB].sort().join('-');
   }
@@ -1089,7 +1093,7 @@ const Bubbles = (() => {
     el.className = 'speech-bubble';
 
     const color = (typeof COLORS !== 'undefined' && COLORS.length) ? COLORS[_colorIndexFor(playerId)] : '#4ECDC4';
-    const CHAR_NAMES = { player: 'Bob', merlin: 'Merlin', kael: 'Kael', borin: 'Borin', alaric: 'Alaric', mordek: 'Mordek' };
+    const CHAR_NAMES = { player: 'Bob', bob: 'Bob', merlin: 'Merlin', kael: 'Kael', borin: 'Borin', alaric: 'Alaric', mordek: 'Mordek' };
     const displayName = CHAR_NAMES[charKey] || charKey;
 
     el.innerHTML =
@@ -1181,8 +1185,8 @@ const Bubbles = (() => {
     const shuffled = nearPairs.slice().sort(() => Math.random() - 0.5);
 
     for (const [pa, pb] of shuffled) {
-      const charA = pa.character || 'player';
-      const charB = pb.character || 'player';
+      const charA = normChar(pa.character);
+      const charB = normChar(pb.character);
       const key   = pairKey(charA, charB);
 
       if (pairCooldowns[key] && now - pairCooldowns[key] < PAIR_COOLDOWN) continue;
@@ -1199,8 +1203,8 @@ const Bubbles = (() => {
       const [lineA, lineB] = dialogue;
 
       // Resolve which live player plays each speaker
-      const speakerA = alive.find(p => (p.character || 'player') === lineA.speaker);
-      const speakerB = alive.find(p => (p.character || 'player') === lineB.speaker);
+      const speakerA = alive.find(p => normChar(p.character) === lineA.speaker);
+      const speakerB = alive.find(p => normChar(p.character) === lineB.speaker);
       if (!speakerA || !speakerB) continue;
 
       _spawn(speakerA.id, lineA.speaker, lineA.text);
