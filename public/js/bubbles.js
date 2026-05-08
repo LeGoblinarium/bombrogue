@@ -53,6 +53,34 @@ const Bubbles = (() => {
         { speaker: 'mordek', text: "Tu te souviens de ton premier sort, Merlin ?" },
         { speaker: 'merlin', text: "Oui. Dommage que tu te souviennes de ta mort." },
       ],
+      [
+        { speaker: 'merlin', text: "Combien de grimoires as-tu dévorés avant de mourir ?" },
+        { speaker: 'mordek', text: "Tous les tiens. Je les ai pris sur ton futur cadavre." },
+      ],
+      [
+        { speaker: 'mordek', text: "Tu vieilliras, Merlin. Moi non." },
+        { speaker: 'merlin', text: "Et toi tu pourris. Moi non." },
+      ],
+      [
+        { speaker: 'merlin', text: "La nécromancie est une insulte à l'ordre naturel !" },
+        { speaker: 'mordek', text: "L'ordre naturel est ennuyeux." },
+      ],
+      [
+        { speaker: 'mordek', text: "Tu parles beaucoup pour quelqu'un qui va perdre." },
+        { speaker: 'merlin', text: "Et toi peu pour quelqu'un qui va souffrir." },
+      ],
+      [
+        { speaker: 'merlin', text: "Tes yeux sont vides, Mordek." },
+        { speaker: 'mordek', text: "Ils ont vu assez." },
+      ],
+      [
+        { speaker: 'merlin', text: "Je refuse de perdre contre un cadavre." },
+        { speaker: 'mordek', text: "Les cadavres ont moins à perdre." },
+      ],
+      [
+        { speaker: 'mordek', text: "La magie finit toujours par tuer son utilisateur." },
+        { speaker: 'merlin', text: "Pas si on la maîtrise. Ce que tu ignores." },
+      ],
     ],
 
     'borin-merlin': [
@@ -84,6 +112,38 @@ const Bubbles = (() => {
         { speaker: 'merlin', text: "Borin, tu as un plan ?" },
         { speaker: 'borin', text: "Ouais : toi tu meurs en premier." },
       ],
+      [
+        { speaker: 'borin', text: "T'as jamais travaillé de tes mains, hein ?" },
+        { speaker: 'merlin', text: "Mon esprit est mon outil. Bien plus efficace." },
+      ],
+      [
+        { speaker: 'merlin', text: "Je t'ai sauvé la mise trois fois ce tour." },
+        { speaker: 'borin', text: "Compte pas sur un merci." },
+      ],
+      [
+        { speaker: 'borin', text: "La magie ça sent le roussi." },
+        { speaker: 'merlin', text: "Et les nains ça sent la roche mouillée." },
+      ],
+      [
+        { speaker: 'borin', text: "T'as l'air du genre à lire des cartes avant de se perdre." },
+        { speaker: 'merlin', text: "...Je ne me perds jamais." },
+      ],
+      [
+        { speaker: 'merlin', text: "Un peu plus de finesse, Borin !" },
+        { speaker: 'borin', text: "Un peu plus de silence, Merlin !" },
+      ],
+      [
+        { speaker: 'borin', text: "T'as des muscles sous cette robe ?" },
+        { speaker: 'merlin', text: "J'ai quelque chose de bien plus dangereux." },
+      ],
+      [
+        { speaker: 'merlin', text: "Ta stratégie consiste à foncer dans le tas ?" },
+        { speaker: 'borin', text: "Ça marche depuis deux cents ans. J'arrête pas." },
+      ],
+      [
+        { speaker: 'borin', text: "Un sorcier nain, j'en ai jamais vu." },
+        { speaker: 'merlin', text: "Parce que la magie requiert un cerveau fonctionnel." },
+      ],
     ],
 
     'kael-merlin': [
@@ -110,6 +170,42 @@ const Bubbles = (() => {
       [
         { speaker: 'kael', text: "Le vent m'a parlé de toi, Merlin. Rien de flatteur." },
         { speaker: 'merlin', text: "Je n'écoute pas les commérages météorologiques." },
+      ],
+      [
+        { speaker: 'merlin', text: "Tes sens elfiques te donnent un avantage. Je l'admets." },
+        { speaker: 'kael', text: "Première fois que tu admets quelque chose." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu contrôles la magie. Elle finira par te contrôler." },
+        { speaker: 'merlin', text: "Romantique. Et faux." },
+      ],
+      [
+        { speaker: 'merlin', text: "La nature ne décide rien. Elle subit." },
+        { speaker: 'kael', text: "Elle décide de tout. Silencieusement." },
+      ],
+      [
+        { speaker: 'kael', text: "Tes sorts blessent la trame du monde." },
+        { speaker: 'merlin', text: "La trame du monde me remerciera quand j'aurai gagné." },
+      ],
+      [
+        { speaker: 'merlin', text: "Combien de temps faut-il pour qu'un elfe se décide ?" },
+        { speaker: 'kael', text: "Autant qu'il faut." },
+      ],
+      [
+        { speaker: 'kael', text: "Le silence t'est inconnu, Merlin ?" },
+        { speaker: 'merlin', text: "Le silence est une perte de temps." },
+      ],
+      [
+        { speaker: 'merlin', text: "Je pourrais te lancer un sort en dormant." },
+        { speaker: 'kael', text: "Et moi je pourrais t'abattre les yeux fermés." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu portes le poids de tous tes livres." },
+        { speaker: 'merlin', text: "Et toi le poids de ton ego forestier." },
+      ],
+      [
+        { speaker: 'merlin', text: "Tu cours vite pour quelqu'un qui 'écoute la forêt'." },
+        { speaker: 'kael', text: "La forêt dit de courir. J'écoute." },
       ],
     ],
 
@@ -146,6 +242,34 @@ const Bubbles = (() => {
         { speaker: 'alaric', text: "Même un mort-vivant peut se racheter !" },
         { speaker: 'mordek', text: "Intéressant. Je vais y réfléchir. Après t'avoir tué." },
       ],
+      [
+        { speaker: 'alaric', text: "Que cherches-tu dans l'éternité, Mordek ?" },
+        { speaker: 'mordek', text: "La paix. Personne pour me déranger." },
+      ],
+      [
+        { speaker: 'mordek', text: "Tu feras un beau chevalier mort-vivant." },
+        { speaker: 'alaric', text: "Je mourrai vivant. Merci." },
+      ],
+      [
+        { speaker: 'alaric', text: "L'honneur transcende la mort !" },
+        { speaker: 'mordek', text: "Rien ne transcende la mort. Je sais de quoi je parle." },
+      ],
+      [
+        { speaker: 'mordek', text: "Ta loyauté est admirable. Et inutile." },
+        { speaker: 'alaric', text: "La loyauté n'est jamais inutile." },
+      ],
+      [
+        { speaker: 'alaric', text: "Quelqu'un t'aimait-il, avant ?" },
+        { speaker: 'mordek', text: "...Prochaine question." },
+      ],
+      [
+        { speaker: 'mordek', text: "Ta vertu te rend prévisible." },
+        { speaker: 'alaric', text: "Et ta noirceur te rend solitaire." },
+      ],
+      [
+        { speaker: 'alaric', text: "Même les morts méritent la paix !" },
+        { speaker: 'mordek', text: "J'ai refusé la mienne. Merci de votre sollicitude." },
+      ],
     ],
 
     'alaric-bob': [
@@ -181,6 +305,34 @@ const Bubbles = (() => {
         { speaker: 'alaric', text: "Courage, Bob ! Un guerrier ne capitule jamais !" },
         { speaker: 'bob', text: "Je capitule pas, je... recule stratégiquement." },
       ],
+      [
+        { speaker: 'alaric', text: "Bob, as-tu un code de vie ?" },
+        { speaker: 'bob', text: "Euh... éviter les bombes ?" },
+      ],
+      [
+        { speaker: 'bob', text: "T'aurais été quoi si t'avais pas été chevalier ?" },
+        { speaker: 'alaric', text: "...Je n'ai jamais envisagé autre chose." },
+      ],
+      [
+        { speaker: 'alaric', text: "Reste derrière moi, Bob. Je ferai bouclier." },
+        { speaker: 'bob', text: "Sympa mais... les bombes viennent de partout." },
+      ],
+      [
+        { speaker: 'bob', text: "Pourquoi tu parles tout seul des fois ?" },
+        { speaker: 'alaric', text: "Je me rappelle mes serments. C'est important." },
+      ],
+      [
+        { speaker: 'alaric', text: "La noblesse se reconnaît à ses actes, Bob." },
+        { speaker: 'bob', text: "J'espère que 'survivre' c'est noble alors." },
+      ],
+      [
+        { speaker: 'bob', text: "T'as un cheval ?" },
+        { speaker: 'alaric', text: "Tempête. Il est magnifique et m'attend sagement." },
+      ],
+      [
+        { speaker: 'alaric', text: "Ce combat forgera ton caractère, Bob !" },
+        { speaker: 'bob', text: "Mon caractère préfèrerait rester non forgé, merci." },
+      ],
     ],
 
     'borin-kael': [
@@ -211,6 +363,38 @@ const Bubbles = (() => {
       [
         { speaker: 'kael', text: "Est-ce que tu chantes parfois, Borin ?" },
         { speaker: 'borin', text: "Oui. Mais seulement quand personne peut m'entendre." },
+      ],
+      [
+        { speaker: 'borin', text: "Un elfe dans une mine, ça dure combien de temps ?" },
+        { speaker: 'kael', text: "Assez longtemps pour remarquer ce que tu rates." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu as de l'or dans les yeux, Borin." },
+        { speaker: 'borin', text: "Et toi t'as des étoiles dans la tête. C'est moins utile." },
+      ],
+      [
+        { speaker: 'borin', text: "Les arbres poussent trop lentement. Je préfère la roche." },
+        { speaker: 'kael', text: "La roche ne fleurit pas." },
+      ],
+      [
+        { speaker: 'kael', text: "Chaque être a une place dans l'équilibre du monde." },
+        { speaker: 'borin', text: "La mienne c'est le premier rang. Avec ma hache." },
+      ],
+      [
+        { speaker: 'borin', text: "T'as une famille, toi ?" },
+        { speaker: 'kael', text: "La forêt entière est ma famille." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu construis. J'observe. On n'est pas si différents." },
+        { speaker: 'borin', text: "Si." },
+      ],
+      [
+        { speaker: 'borin', text: "Pourquoi les elfes sourient tout le temps ?" },
+        { speaker: 'kael', text: "Pour ne pas pleurer." },
+      ],
+      [
+        { speaker: 'kael', text: "Cette bombe est à toi ?" },
+        { speaker: 'borin', text: "Non. Mais la suivante oui." },
       ],
     ],
 
@@ -243,6 +427,38 @@ const Bubbles = (() => {
         { speaker: 'bob', text: "T'as des amis, Mordek ?" },
         { speaker: 'mordek', text: "J'en ai eu. Ils m'obéissent encore." },
       ],
+      [
+        { speaker: 'bob', text: "T'as une maison, toi ?" },
+        { speaker: 'mordek', text: "Un tombeau. Assez spacieux." },
+      ],
+      [
+        { speaker: 'mordek', text: "Je collectionne les âmes, Bob." },
+        { speaker: 'bob', text: "T'as celle d'un nommé Dave ?" },
+      ],
+      [
+        { speaker: 'bob', text: "T'as déjà ri ?" },
+        { speaker: 'mordek', text: "Une fois. Il y a longtemps. Je ne recommencerai pas." },
+      ],
+      [
+        { speaker: 'mordek', text: "Tu me rappelles quelqu'un que j'ai... absorbé." },
+        { speaker: 'bob', text: "...C'est censé me rassurer ?" },
+      ],
+      [
+        { speaker: 'bob', text: "T'as l'air triste." },
+        { speaker: 'mordek', text: "Je suis au-delà de la tristesse." },
+      ],
+      [
+        { speaker: 'mordek', text: "L'erreur des vivants : croire qu'ils vont rester vivants." },
+        { speaker: 'bob', text: "Wow. Sympa le message." },
+      ],
+      [
+        { speaker: 'bob', text: "Mordek, t'es quand même sympa des fois." },
+        { speaker: 'mordek', text: "Ne répète jamais ça." },
+      ],
+      [
+        { speaker: 'mordek', text: "Ton âme a un goût de fromage ordinaire." },
+        { speaker: 'bob', text: "Je... prends ça comme un compliment." },
+      ],
     ],
 
     'bob-kael': [
@@ -270,6 +486,42 @@ const Bubbles = (() => {
         { speaker: 'kael', text: "Tu as un instinct de survie remarquable, Bob." },
         { speaker: 'bob', text: "C'est surtout de la chance." },
       ],
+      [
+        { speaker: 'bob', text: "Kael, t'arrives à dormir dans les arbres ?" },
+        { speaker: 'kael', text: "Mieux que toi dans ton lit, j'imagine." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu es plus courageux que tu n'y parais, Bob." },
+        { speaker: 'bob', text: "C'est parce que je vois pas le danger." },
+      ],
+      [
+        { speaker: 'bob', text: "T'as un arc mais t'as pas l'air méchant." },
+        { speaker: 'kael', text: "L'arc ne ment pas. Lui." },
+      ],
+      [
+        { speaker: 'kael', text: "Chaque pas laisse une trace. La tienne est lourde." },
+        { speaker: 'bob', text: "J'ai mangé avant de venir." },
+      ],
+      [
+        { speaker: 'bob', text: "Kael, t'as jamais voulu être... normal ?" },
+        { speaker: 'kael', text: "'Normal' est le plus triste des destins." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu as de la chance, Bob. Cultive-la." },
+        { speaker: 'bob', text: "C'est littéralement tout ce que je fais." },
+      ],
+      [
+        { speaker: 'bob', text: "T'as déjà pleuré devant un arbre ?" },
+        { speaker: 'kael', text: "...Oui. Et l'arbre a pleuré aussi." },
+      ],
+      [
+        { speaker: 'kael', text: "La nature t'accepte, Bob. C'est rare." },
+        { speaker: 'bob', text: "Ah bon ? Sympa la nature." },
+      ],
+      [
+        { speaker: 'bob', text: "On pourrait être amis si on survit ?" },
+        { speaker: 'kael', text: "Dans cette vie aussi. Si on survit." },
+      ],
     ],
 
     'alaric-borin': [
@@ -283,10 +535,10 @@ const Bubbles = (() => {
       ],
       [
         { speaker: 'alaric', text: "Un nain et un chevalier, ça pourrait être une belle alliance." },
-        { speaker: 'borin', text: "Faudrait d'abord te mettre d'accord sur le partage du butin." },
+        { speaker: 'borin', text: "Faudrait s'entendre sur le partage du butin." },
       ],
       [
-        { speaker: 'borin', text: "T'as jamais voulu juste te battre pour l'argent, toi ?" },
+        { speaker: 'borin', text: "T'as jamais voulu te battre juste pour l'argent ?" },
         { speaker: 'alaric', text: "L'honneur ne se monnaie pas, Borin." },
       ],
       [
@@ -294,8 +546,44 @@ const Bubbles = (() => {
         { speaker: 'borin', text: "J'avise pas, je charge. Toujours." },
       ],
       [
-        { speaker: 'borin', text: "T'as un cheval qui t'attend quelque part ?" },
+        { speaker: 'borin', text: "T'as un cheval qui t'attend ?" },
         { speaker: 'alaric', text: "Oui. Il s'appelle Tempête. Il est très bien élevé." },
+      ],
+      [
+        { speaker: 'alaric', text: "Je t'ai vu au combat, Borin. Tu es redoutable." },
+        { speaker: 'borin', text: "Et toi t'es pas mauvais pour un gars en fer-blanc." },
+      ],
+      [
+        { speaker: 'borin', text: "C'est quoi ce truc que tu fais avec ton épée ?" },
+        { speaker: 'alaric', text: "Une feinte de chevalier. Quatre ans d'entraînement." },
+      ],
+      [
+        { speaker: 'alaric', text: "La discipline forge l'homme, Borin." },
+        { speaker: 'borin', text: "L'enclume forge mieux. Et plus vite." },
+      ],
+      [
+        { speaker: 'borin', text: "T'as déjà trinqué avec un nain ?" },
+        { speaker: 'alaric', text: "Non. Je suppose que c'est une expérience formatrice." },
+      ],
+      [
+        { speaker: 'alaric', text: "Même les nains ont leur noblesse." },
+        { speaker: 'borin', text: "On préfère l'or à la noblesse. C'est plus lourd." },
+      ],
+      [
+        { speaker: 'borin', text: "T'as un écuyer ?" },
+        { speaker: 'alaric', text: "Oui. Il attend sagement à l'écurie." },
+      ],
+      [
+        { speaker: 'alaric', text: "La forteresse naine est réputée imprenable." },
+        { speaker: 'borin', text: "C'est vrai. Et on loue des chambres." },
+      ],
+      [
+        { speaker: 'borin', text: "T'as jamais voulu enlever cette armure ?" },
+        { speaker: 'alaric', text: "Chaque soir. Et chaque matin je la remets." },
+      ],
+      [
+        { speaker: 'alaric', text: "Le courage sans honneur est juste de la violence." },
+        { speaker: 'borin', text: "Et l'honneur sans courage c'est du bla-bla." },
       ],
     ],
 
@@ -328,6 +616,38 @@ const Bubbles = (() => {
         { speaker: 'bob', text: "Tu te trompes parfois ?" },
         { speaker: 'merlin', text: "...J'ai du mal à me souvenir des exemples." },
       ],
+      [
+        { speaker: 'bob', text: "T'as un apprenti, Merlin ?" },
+        { speaker: 'merlin', text: "J'ai essayé. C'était décevant. Un peu comme toi." },
+      ],
+      [
+        { speaker: 'merlin', text: "Bob, tu représentes parfaitement la médiocrité confortable." },
+        { speaker: 'bob', text: "...Merci ?" },
+      ],
+      [
+        { speaker: 'bob', text: "T'as des ennemis ?" },
+        { speaker: 'merlin', text: "Uniquement des jaloux. C'est différent." },
+      ],
+      [
+        { speaker: 'merlin', text: "Je t'enseignerais bien quelque chose. Mais par où commencer ?" },
+        { speaker: 'bob', text: "La base ?" },
+      ],
+      [
+        { speaker: 'bob', text: "Merlin, t'es heureux dans la vie ?" },
+        { speaker: 'merlin', text: "Je suis compétent. C'est plus important." },
+      ],
+      [
+        { speaker: 'merlin', text: "La médiocrité ne te pèse pas, Bob ?" },
+        { speaker: 'bob', text: "Non. Elle est légère en fait." },
+      ],
+      [
+        { speaker: 'bob', text: "T'arrives à dormir avec ce chapeau ?" },
+        { speaker: 'merlin', text: "Le chapeau ne me gêne pas. Toi si." },
+      ],
+      [
+        { speaker: 'merlin', text: "Tu m'irrites, Bob. Mais je ne sais pas pourquoi." },
+        { speaker: 'bob', text: "Parce que je m'en fous de ta magie ?" },
+      ],
     ],
 
     'kael-mordek': [
@@ -354,6 +674,42 @@ const Bubbles = (() => {
       [
         { speaker: 'mordek', text: "Tu communies avec la nature. J'ai essayé une fois." },
         { speaker: 'kael', text: "Elle t'a dit quoi ?" },
+      ],
+      [
+        { speaker: 'kael', text: "Même les morts ont un lien avec la terre." },
+        { speaker: 'mordek', text: "Surtout les morts. On y retourne tous." },
+      ],
+      [
+        { speaker: 'mordek', text: "Les elfes vivent longtemps. Jusqu'à ce qu'ils ne vivent plus." },
+        { speaker: 'kael', text: "Et les morts-vivants persistent. Jusqu'à ce qu'on les libère." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu aurais pu choisir la paix, Mordek." },
+        { speaker: 'mordek', text: "C'est ennuyeux, la paix." },
+      ],
+      [
+        { speaker: 'mordek', text: "Je pourrais t'offrir une forme d'éternité." },
+        { speaker: 'kael', text: "Je préfère vivre un seul jour en paix." },
+      ],
+      [
+        { speaker: 'kael', text: "La nuit t'appartient. Mais l'aube aussi vient." },
+        { speaker: 'mordek', text: "Je n'ai pas peur de l'aube." },
+      ],
+      [
+        { speaker: 'mordek', text: "Curieux, un elfe qui n'a pas fui encore." },
+        { speaker: 'kael', text: "Je ne fuis que le vide. Et tu en es plein." },
+      ],
+      [
+        { speaker: 'kael', text: "La mort t'a changé profondément." },
+        { speaker: 'mordek', text: "Elle m'a surtout... simplifié." },
+      ],
+      [
+        { speaker: 'mordek', text: "Tu communies avec la forêt la nuit aussi ?" },
+        { speaker: 'kael', text: "Surtout la nuit." },
+      ],
+      [
+        { speaker: 'kael', text: "Il reste quelque chose d'humain en toi, je le sens." },
+        { speaker: 'mordek', text: "Ne le dis pas à voix haute." },
       ],
     ],
 
@@ -382,6 +738,42 @@ const Bubbles = (() => {
         { speaker: 'borin', text: "T'as peur de rien, toi ?" },
         { speaker: 'mordek', text: "J'ai peur de l'ennui. Et toi tu m'ennuies." },
       ],
+      [
+        { speaker: 'borin', text: "Un mort-vivant dans une mine, c'est mauvais présage." },
+        { speaker: 'mordek', text: "Un nain dans une tombe, ça fait un bon début." },
+      ],
+      [
+        { speaker: 'mordek', text: "Tu mourras en combat, Borin. Glorieusement. Dommage." },
+        { speaker: 'borin', text: "Dommage pour toi. Tu récupères pas ma hache." },
+      ],
+      [
+        { speaker: 'borin', text: "T'as froid ?" },
+        { speaker: 'mordek', text: "Je ne ressens plus le froid depuis... longtemps." },
+      ],
+      [
+        { speaker: 'mordek', text: "Un nain mort-vivant pourrait creuser pendant l'éternité." },
+        { speaker: 'borin', text: "Si tu m'approches, c'est toi qu'on enterre." },
+      ],
+      [
+        { speaker: 'borin', text: "Tes serviteurs morts, ils touchent un salaire ?" },
+        { speaker: 'mordek', text: "Non. C'est un avantage compétitif." },
+      ],
+      [
+        { speaker: 'mordek', text: "Tu as des cicatrices de batailles. Je les sens." },
+        { speaker: 'borin', text: "Et toi t'as des vers dans les os. C'est moins romantique." },
+      ],
+      [
+        { speaker: 'borin', text: "La mort c'est pas une fin pour toi ?" },
+        { speaker: 'mordek', text: "C'est un début. Je l'ai découvert." },
+      ],
+      [
+        { speaker: 'mordek', text: "Je respecte les nains. Ils savent rester sous la terre." },
+        { speaker: 'borin', text: "On en sort aussi. Pour asséner des coups." },
+      ],
+      [
+        { speaker: 'borin', text: "À ta santé, Mordek !" },
+        { speaker: 'mordek', text: "Je n'ai pas de santé. Mais j'apprécie le geste." },
+      ],
     ],
 
     'alaric-kael': [
@@ -394,7 +786,7 @@ const Bubbles = (() => {
         { speaker: 'alaric', text: "Je le prends comme tel. En garde !" },
       ],
       [
-        { speaker: 'alaric', text: "On devrait s'allier, Kael. La vertu et la nature, ça va ensemble." },
+        { speaker: 'alaric', text: "On devrait s'allier. La vertu et la nature, ça va ensemble." },
         { speaker: 'kael', text: "Jusqu'à la fin de la partie. Après, on verra." },
       ],
       [
@@ -407,7 +799,43 @@ const Bubbles = (() => {
       ],
       [
         { speaker: 'kael', text: "As-tu déjà dormi sous les étoiles, Alaric ?" },
-        { speaker: 'alaric', text: "Lors de chaque campagne militaire. C'est froid et humide." },
+        { speaker: 'alaric', text: "Lors de chaque campagne. C'est froid et humide." },
+      ],
+      [
+        { speaker: 'alaric', text: "Un elfe archer et un chevalier : bonne combinaison." },
+        { speaker: 'kael', text: "Jusqu'à ce que nos intérêts divergent." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu protèges les faibles. C'est dans ta nature." },
+        { speaker: 'alaric', text: "C'est mon devoir. Ce n'est pas pareil." },
+      ],
+      [
+        { speaker: 'kael', text: "Le monde sera là après nous deux, Alaric." },
+        { speaker: 'alaric', text: "C'est réconfortant et déprimant à la fois." },
+      ],
+      [
+        { speaker: 'kael', text: "Tu portes le poids d'un serment lourd." },
+        { speaker: 'alaric', text: "Et fièrement." },
+      ],
+      [
+        { speaker: 'alaric', text: "Si je tombe, continue le combat !" },
+        { speaker: 'kael', text: "Je n'attendais pas ta permission." },
+      ],
+      [
+        { speaker: 'kael', text: "La forêt dit que tu es tenace, Alaric." },
+        { speaker: 'alaric', text: "La forêt a bon goût." },
+      ],
+      [
+        { speaker: 'alaric', text: "Je n'ai jamais combattu aux côtés d'un elfe." },
+        { speaker: 'kael', text: "Comment tu trouves ?" },
+      ],
+      [
+        { speaker: 'kael', text: "Sais-tu ce qu'est l'honneur pour un elfe ?" },
+        { speaker: 'alaric', text: "Le respect du cycle, j'imagine. Et toi ?" },
+      ],
+      [
+        { speaker: 'alaric', text: "Tu pries quels dieux, Kael ?" },
+        { speaker: 'kael', text: "La forêt. Les rivières. Le vent. Ils suffisent." },
       ],
     ],
 
@@ -436,6 +864,42 @@ const Bubbles = (() => {
         { speaker: 'borin', text: "T'as pas de classe, toi. Juste toi et tes poings." },
         { speaker: 'bob', text: "C'est déjà pas mal, non ?" },
       ],
+      [
+        { speaker: 'bob', text: "Borin, t'as jamais voulu voyager ?" },
+        { speaker: 'borin', text: "Si. Vers l'or. C'est tout." },
+      ],
+      [
+        { speaker: 'borin', text: "Bob, tu fais quoi comme métier normalement ?" },
+        { speaker: 'bob', text: "Bonne question." },
+      ],
+      [
+        { speaker: 'bob', text: "T'as une famille ?" },
+        { speaker: 'borin', text: "Treize frères. Tous mineurs. Tous têtus." },
+      ],
+      [
+        { speaker: 'borin', text: "Tu manges bien au moins ?" },
+        { speaker: 'bob', text: "Avant la partie, oui." },
+      ],
+      [
+        { speaker: 'bob', text: "T'as l'air de savoir ce que tu fais." },
+        { speaker: 'borin', text: "Ouais. Ça arrive." },
+      ],
+      [
+        { speaker: 'borin', text: "Le problème avec les normaux c'est qu'ils sont imprévisibles." },
+        { speaker: 'bob', text: "Merci, je crois." },
+      ],
+      [
+        { speaker: 'bob', text: "C'est quoi le truc le plus fou que t'as fait ?" },
+        { speaker: 'borin', text: "J'ai combattu un dragon. J'ai gagné. On en parle plus." },
+      ],
+      [
+        { speaker: 'borin', text: "Ton défaut c'est que tu poses trop de questions." },
+        { speaker: 'bob', text: "Et ton défaut c'est que tu réponds jamais." },
+      ],
+      [
+        { speaker: 'bob', text: "Si on survit, on va boire un coup ?" },
+        { speaker: 'borin', text: "...Ouais. T'as quelque chose de bien dans le fond." },
+      ],
     ],
 
     'alaric-merlin': [
@@ -444,7 +908,7 @@ const Bubbles = (() => {
         { speaker: 'merlin', text: "Elle peut remplacer beaucoup de choses. Le courage inclus." },
       ],
       [
-        { speaker: 'merlin', text: "Tu es brave, Alaric. Dommage que la bravoure ne suffise pas." },
+        { speaker: 'merlin', text: "Tu es brave, Alaric. Dommage que ça ne suffise pas." },
         { speaker: 'alaric', text: "Et la magie ne remplace pas la conviction." },
       ],
       [
@@ -452,8 +916,52 @@ const Bubbles = (() => {
         { speaker: 'merlin', text: "Seul je suis déjà imbattable. C'est arithmétique." },
       ],
       [
-        { speaker: 'merlin', text: "Alaric, ton épée ne pourra rien contre certains de mes sorts." },
-        { speaker: 'alaric', text: "Et ta robe n'arrêtera pas mon épée. Alors on est quittes." },
+        { speaker: 'merlin', text: "Ton épée ne pourra rien contre certains de mes sorts." },
+        { speaker: 'alaric', text: "Et ta robe n'arrêtera pas mon épée. Quittes." },
+      ],
+      [
+        { speaker: 'alaric', text: "Merlin, la magie peut-elle ressusciter les morts ?" },
+        { speaker: 'merlin', text: "Oui. Mais on appelle ça la nécromancie. Je refuse." },
+      ],
+      [
+        { speaker: 'merlin', text: "Tu charges sans réfléchir, Alaric." },
+        { speaker: 'alaric', text: "Je charge avec conviction. C'est différent." },
+      ],
+      [
+        { speaker: 'alaric', text: "Avons-nous un plan, Merlin ?" },
+        { speaker: 'merlin', text: "Moi oui. Le tien consiste à 'tenir bon'. Ce n'est pas un plan." },
+      ],
+      [
+        { speaker: 'merlin', text: "L'armure ralentit. Les sorts tuent à distance." },
+        { speaker: 'alaric', text: "L'armure protège. Les sorciers s'épuisent." },
+      ],
+      [
+        { speaker: 'alaric', text: "Quelle est ta faiblesse, Merlin ?" },
+        { speaker: 'merlin', text: "Question idiote. Je n'en ai pas." },
+      ],
+      [
+        { speaker: 'merlin', text: "Tu crois en les dieux, Alaric ?" },
+        { speaker: 'alaric', text: "Avec foi absolue. Et toi ?" },
+      ],
+      [
+        { speaker: 'alaric', text: "Tu aurais fait un excellent chevalier, Merlin." },
+        { speaker: 'merlin', text: "Et toi un médiocre apprenti. Heureusement pour nous deux." },
+      ],
+      [
+        { speaker: 'merlin', text: "L'honneur est une construction sociale, Alaric." },
+        { speaker: 'alaric', text: "Et la magie est une béquille pour ceux qui ne savent pas se battre." },
+      ],
+      [
+        { speaker: 'alaric', text: "Merlin, je t'ai vu hésiter. C'est rare." },
+        { speaker: 'merlin', text: "Je réfléchissais. Nuance." },
+      ],
+      [
+        { speaker: 'merlin', text: "Ton code de chevalerie a-t-il une clause pour 'gagner' ?" },
+        { speaker: 'alaric', text: "Il dit : gagner avec honneur." },
+      ],
+      [
+        { speaker: 'alaric', text: "Je t'admire, Merlin. Ne le répète à personne." },
+        { speaker: 'merlin', text: "...Idem. Et oublie que je l'ai dit." },
       ],
     ],
 
