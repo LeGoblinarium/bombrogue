@@ -10,6 +10,7 @@
   let isPublic = true; // room visibility
 
   Audio.init();
+  Bubbles.init();
   Socket.connect();
 
   // Start music on first user interaction (browser autoplay policy)
@@ -316,6 +317,7 @@
       const state = GameClient.getState();
       if (state) {
         Renderer.render(state, Input.getHighlights());
+        Bubbles.tick(state);
       }
       requestAnimationFrame(loop);
     }
@@ -391,6 +393,7 @@
   Socket.on('onGameStart', (data) => {
     resetGameOverOverlay();
     Animations.resetDeadIds();
+    Bubbles.clear();
     GameClient.init(data.state, myId);
     UI.showScreen('screen-game');
 
@@ -548,6 +551,7 @@
   });
 
   Socket.on('onGameOver', (data) => {
+    Bubbles.clear();
     // Trigger death animations for players who just died
     const state = GameClient.getState();
     if (state) {
