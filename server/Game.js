@@ -276,6 +276,30 @@ class Game {
       }
     }
 
+    // Pick up any bonus at the final position of each player moved by a spell
+    // (teleport like Entourloupe, or push like Repulseur/Libération)
+    if (result.movements && action.type !== 'move') {
+      for (const m of result.movements) {
+        if (m.type !== 'player') continue;
+        const movedPlayer = this.state.players.find(p => p.id === m.id);
+        if (!movedPlayer || !movedPlayer.alive) continue;
+        const bonusIdx = this.state.bonuses.findIndex(b => b.x === movedPlayer.x && b.y === movedPlayer.y);
+        if (bonusIdx !== -1) {
+          movedPlayer.applyBonus(this.state.bonuses[bonusIdx].type);
+          this.state.bonuses.splice(bonusIdx, 1);
+          result.bonusPickedUp = true;
+        }
+      }
+    }
+
+    // Destroy any bonus that a bomb has been pushed/teleported onto
+    if (handler.mutatesBombs) {
+      for (const bomb of this.state.bombs) {
+        const bonusIdx = this.state.bonuses.findIndex(b => b.x === bomb.x && b.y === bomb.y);
+        if (bonusIdx !== -1) this.state.bonuses.splice(bonusIdx, 1);
+      }
+    }
+
     let wallsCreated = false;
     if (handler.mutatesBombs) {
       const wallsBefore = this.state.walls.length;
@@ -293,6 +317,7 @@ class Game {
       actionType: action.type,
       wallsCreated,
       bonusPickedUp: result.bonusPickedUp || false,
+      bonusPickups: result.bonusPickups || [],
     });
   }
 
@@ -305,8 +330,9 @@ class Game {
     if (!pathData) return { ok: false };
 
     const seenWallCells = new Set();
-    let bonusPickedUp = false;
-    for (const step of pathData.path) {
+    const bonusPickups = []; // [{x, y, type, stepIndex}] for deferred client-side pickup
+    for (let si = 0; si < pathData.path.length; si++) {
+      const step = pathData.path[si];
       player.x = step.x;
       player.y = step.y;
       const key = `${step.x},${step.y}`;
@@ -323,19 +349,19 @@ class Game {
           player.wallImmuneCells.add(key);
         }
       }
-      // Bonus pickup: collect any bonus on this cell
+      // Bonus pickup: apply effect now but record step for client-side timing
       const bonusIdx = this.state.bonuses.findIndex(b => b.x === step.x && b.y === step.y);
       if (bonusIdx !== -1) {
         const bonus = this.state.bonuses[bonusIdx];
+        bonusPickups.push({ x: bonus.x, y: bonus.y, type: bonus.type, stepIndex: si });
         player.applyBonus(bonus.type);
         this.state.bonuses.splice(bonusIdx, 1);
-        bonusPickedUp = true;
       }
     }
     player.pmLeft -= pathData.dist;
 
     const fullPath = [{ x: fromX, y: fromY }, ...pathData.path];
-    return { ok: true, movements: [{ id: player.id, type: 'player', path: fullPath }], bonusPickedUp };
+    return { ok: true, movements: [{ id: player.id, type: 'player', path: fullPath }], bonusPickups };
   }
 
   doPlaceBomb(player, x, y) {
@@ -345,6 +371,7 @@ class Game {
     if (this.state.gridMap.isObstacle(x, y)) return { ok: false };
     if (!this.state.gridMap.inBounds(x, y)) return { ok: false };
     if (this.state.bombs.some(b => b.x === x && b.y === y)) return { ok: false };
+    if (this.state.bonuses.some(b => b.x === x && b.y === y)) return { ok: false };
     if (this.state.players.some(p => p.alive && p.x === x && p.y === y)) return { ok: false };
     const md = Math.abs(x - player.x) + Math.abs(y - player.y);
     if (md < 1 || md > C.BOMB_PLACE_RANGE + (player.rangeBonus || 0)) return { ok: false };
@@ -402,10 +429,21 @@ class Game {
     // Remove detonated bombs
     this.state.bombs = this.state.bombs.filter(b => !result.detonatedIds.includes(b.id));
 
-    // Remove obstacles destroyed by the explosion; 25% chance to spawn a bonus
+    // Destroy any bonus caught in the explosion AoE
+    const explodedCells = new Set();
+    for (const ev of result.sequence) {
+      for (const cell of ev.aoe) {
+        if (!cell.destroyedObstacle) explodedCells.add(`${cell.x},${cell.y}`);
+      }
+    }
+    this.state.bonuses = this.state.bonuses.filter(b => !explodedCells.has(`${b.x},${b.y}`));
+
+    // Remove obstacles destroyed by the explosion; chance to spawn a bonus
     for (const obs of result.destroyedObstacles) {
       this.state.gridMap.removeObstacle(obs.x, obs.y);
-      if (Math.random() < C.BONUS_SPAWN_CHANCE) {
+      // Don't spawn a bonus if a bomb already occupies that cell
+      const bombOnCell = this.state.bombs.some(b => b.x === obs.x && b.y === obs.y);
+      if (!bombOnCell && Math.random() < C.BONUS_SPAWN_CHANCE) {
         const type = C.BONUS_TYPES[Math.floor(Math.random() * C.BONUS_TYPES.length)];
         this.state.bonuses.push(new Bonus(type, obs.x, obs.y));
       }

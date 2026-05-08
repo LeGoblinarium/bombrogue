@@ -336,6 +336,7 @@ const Input = (() => {
     if (state.bombs.filter(b => b.ownerId === me.id).length >= (me.maxBombs || 3)) return false;
     if (state.obstacles.some(o => o.x === cell.x && o.y === cell.y)) return false;
     if (state.bombs.some(b => b.x === cell.x && b.y === cell.y)) return false;
+    if (state.bonuses && state.bonuses.some(b => b.x === cell.x && b.y === cell.y)) return false;
     if (state.players.some(p => p.alive && p.x === cell.x && p.y === cell.y)) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md < 1 || md > 3 + (me.rangeBonus || 0)) return false;

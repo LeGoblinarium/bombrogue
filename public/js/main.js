@@ -490,7 +490,29 @@
       }
     }
     if (delta.actionType) Audio.playForAction(delta.actionType, delta.wallsCreated);
-    if (delta.bonusPickedUp) Audio.play('Bonus');
+
+    // Deferred bonus pickup: re-add picked-up bonuses to delta so they stay
+    // visible during the walk animation, then remove them step by step.
+    const MS_PER_CELL = 180;
+    if (delta.bonusPickups && delta.bonusPickups.length > 0 && delta.bonuses !== undefined) {
+      for (const pu of delta.bonusPickups) {
+        delta.bonuses.push({ x: pu.x, y: pu.y, type: pu.type });
+      }
+      for (const pu of delta.bonusPickups) {
+        // Player reaches pathData.path[stepIndex] after (stepIndex+1) cells of travel
+        const delay = (pu.stepIndex + 1) * MS_PER_CELL;
+        setTimeout(() => {
+          const s = GameClient.getState();
+          if (!s) return;
+          const idx = s.bonuses.findIndex(b => b.x === pu.x && b.y === pu.y);
+          if (idx !== -1) s.bonuses.splice(idx, 1);
+          Audio.play('Bonus');
+        }, delay);
+      }
+    } else if (delta.bonusPickedUp) {
+      // Instant pickup (e.g. player teleported onto a bonus)
+      Audio.play('Bonus');
+    }
 
     // Bomb throw animation: detect newly placed bomb before state is patched
     if (delta.actionType === 'place-bomb' && delta.bombs) {
