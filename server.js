@@ -160,7 +160,7 @@ io.on('connection', (socket) => {
     if (!room) return;
 
     const effectiveId = getEffectivePlayerId(room, socket.id);
-    if (room.game) room.game.handleDisconnect(effectiveId);
+    if (room.game && !room.game.gameOver) room.game.handleDisconnect(effectiveId);
     room.replayVotes.delete(socket.id);
     room.removePlayer(socket.id);
 
