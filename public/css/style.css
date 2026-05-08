@@ -745,16 +745,14 @@ input[type="text"]:focus {
 
 .spell-btn {
   flex-shrink: 0;
-  padding: 6px 8px;
+  padding: 0;
   border: 2px solid #333;
   border-radius: 8px;
   background: #16213e;
-  color: #e0e0e0;
-  font-size: 0.7rem;
-  font-weight: 600;
   cursor: pointer;
-  text-align: center;
-  min-width: 56px;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
   transition: border-color 0.2s, opacity 0.2s;
 }
 
@@ -768,9 +766,9 @@ input[type="text"]:focus {
   }
   .spell-btn {
     flex-shrink: unset;
-    min-width: 0;
-    padding: 5px 4px;
-    font-size: 0.65rem;
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
   }
 }
 
@@ -783,9 +781,8 @@ input[type="text"]:focus {
 
 .spell-icon-wrap {
   position: relative;
-  width: 32px;
-  height: 32px;
-  margin: 0 auto 2px;
+  width: 100%;
+  height: 100%;
 }
 
 .spell-icon {
@@ -817,16 +814,25 @@ input[type="text"]:focus {
   pointer-events: none;
 }
 
-.spell-btn .spell-name-text {
-  display: block;
-  font-size: 0.7rem;
-}
-
-.spell-btn .spell-cost {
-  display: block;
-  font-size: 0.65rem;
-  color: #888;
-  margin-top: 1px;
+/* PA cost badge — small black circle, top-right of icon */
+.spell-pa-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.82);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  line-height: 1;
+  border: 1px solid rgba(255,255,255,0.15);
 }
 
 /* On cooldown: keep visible but clearly locked — overlay carries the info */

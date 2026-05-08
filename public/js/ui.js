@@ -205,9 +205,9 @@ const UI = (() => {
                draggable="false"
                onerror="this.style.display='none';this.nextElementSibling.style.display=''">
           <span class="spell-name-text" style="display:none">${spell.name}</span>
+          ${spell.cost > 0 ? `<div class="spell-pa-badge">${spell.cost}</div>` : ''}
           ${cdDisplay > 0 ? `<div class="spell-cd-overlay">${cdDisplay}</div>` : ''}
         </div>
-        <span class="spell-cost">${spell.cost > 0 ? spell.cost + ' PA' : ''}</span>
       `;
 
       if (disabled) btn.classList.add('disabled');
