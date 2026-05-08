@@ -199,6 +199,7 @@
 
   function setupMainMenuHandler() {
     document.getElementById('btn-main-menu').addEventListener('click', () => {
+      Bubbles.clear();
       // Leave current room
       Socket.emit('leave-room');
       // Reset local state

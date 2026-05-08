@@ -4,8 +4,9 @@ const Bubbles = (() => {
   let activeBubbles = []; // { id, playerId, el, removeTimer }
   let lastCheckTime = 0;
 
-  const CHECK_INTERVAL  = 6500;  // ms between proximity scans
-  const TRIGGER_CHANCE  = 0.38;  // probability a scan fires dialogue
+  const CHECK_INTERVAL  = 8000;  // ms between proximity scans
+  const PAIR_CHANCE     = 0.45;  // probability a proximity scan fires pair dialogue
+  const SOLO_CHANCE     = 0.12;  // probability a scan fires a solo line (no nearby pair)
   const BUBBLE_DURATION = 4800;  // ms before auto-dismiss
   const RESPONSE_DELAY  = 2600;  // ms before response bubble appears
   const PROXIMITY_CELLS = 5;     // Manhattan distance threshold
@@ -359,13 +360,17 @@ const Bubbles = (() => {
     }
 
     if (nearPairs.length === 0) {
-      // Solo line — any alive player
+      // No nearby pair — rare solo line
+      if (Math.random() > SOLO_CHANCE) return;
       const p     = randomOf(alive);
       const char  = p.character || 'player';
       const lines = SOLO_LINES[char] || SOLO_LINES['player'];
       _spawn(p.id, char, randomOf(lines));
       return;
     }
+
+    // At least one nearby pair — try to fire pair dialogue
+    if (Math.random() > PAIR_CHANCE) return;
 
     // Shuffle pairs and try until one fires (respects cooldowns)
     const shuffled = nearPairs.slice().sort(() => Math.random() - 0.5);
@@ -378,14 +383,7 @@ const Bubbles = (() => {
       if (pairCooldowns[key] && now - pairCooldowns[key] < PAIR_COOLDOWN) continue;
 
       const dialogues = PAIR_DIALOGUES[key];
-      if (!dialogues || dialogues.length === 0) {
-        // No pair dialogue — solo line for one of them
-        const p     = Math.random() < 0.5 ? pa : pb;
-        const char  = p.character || 'player';
-        const lines = SOLO_LINES[char] || SOLO_LINES['player'];
-        _spawn(p.id, char, randomOf(lines));
-        return;
-      }
+      if (!dialogues || dialogues.length === 0) continue; // no dialogue for this pair, try next
 
       // Rotate through dialogues to avoid repeating
       if (!dialogueIndex[key]) dialogueIndex[key] = 0;
@@ -403,9 +401,9 @@ const Bubbles = (() => {
       _spawn(speakerA.id, lineA.speaker, lineA.text);
 
       // Response after a short delay
-      const sidB    = speakerB.id;
-      const charSB  = lineB.speaker;
-      const textSB  = lineB.text;
+      const sidB   = speakerB.id;
+      const charSB = lineB.speaker;
+      const textSB = lineB.text;
       setTimeout(() => {
         const s = (typeof GameClient !== 'undefined') ? GameClient.getState() : null;
         if (!s) return;
@@ -416,18 +414,21 @@ const Bubbles = (() => {
 
       return; // fired successfully
     }
-
-    // All pairs on cooldown → solo line
-    const p     = randomOf(alive);
-    const char  = p.character || 'player';
-    const lines = SOLO_LINES[char] || SOLO_LINES['player'];
-    _spawn(p.id, char, randomOf(lines));
+    // All nearby pairs on cooldown — skip silently (no fallback solo)
   }
 
   // ── Main tick (called every animation frame) ─────────────────────────────────
 
   function tick(state) {
     if (!state || !container) return;
+
+    // Only run while the game screen is actually visible
+    const gameScreen = document.getElementById('screen-game');
+    if (!gameScreen || !gameScreen.classList.contains('active')) {
+      if (activeBubbles.length > 0) clear();
+      return;
+    }
+
     _updatePositions(state);
 
     const now = Date.now();
@@ -435,7 +436,6 @@ const Bubbles = (() => {
     lastCheckTime = now;
 
     if (activeBubbles.length >= MAX_BUBBLES) return;
-    if (Math.random() > TRIGGER_CHANCE) return;
 
     _tryFireDialogue(state);
   }
