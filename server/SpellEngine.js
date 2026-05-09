@@ -101,9 +101,7 @@ function castEntourloupe(caster, targetX, targetY, bombs, players, gridMap) {
 
   const bomb = bombs.find(b => b.x === targetX && b.y === targetY && b.ownerId === caster.id);
   if (!bomb) return { ok: false, error: 'Pas de bombe à toi sur cette case' };
-  // LoS: exclude the target bomb itself from blocking its own line of sight
-  const otherBombs = bombs.filter(b => b.id !== bomb.id);
-  if (!gridMap.hasLineOfSight(caster.x, caster.y, targetX, targetY, otherBombs, players, caster.id)) return { ok: false, error: 'Ligne de vue bloquée' };
+  // No line-of-sight required: Entourloupe can be cast through obstacles and entities.
 
   const casterFrom = { x: caster.x, y: caster.y };
   const bombFrom = { x: bomb.x, y: bomb.y };
