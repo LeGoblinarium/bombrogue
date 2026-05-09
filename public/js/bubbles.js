@@ -972,7 +972,7 @@ const Bubbles = (() => {
       ],
       [
         { speaker: 'bob', text: "J'aimerais trop débloquer Mordek." },
-        { speaker: 'bob', text: "Il paraît que son pouvoir fait disparaître les pubs." },
+        { speaker: 'bob', text: "C'est le seul moyen de soutenir le dév du jeu." },
       ],
       [
         { speaker: 'bob', text: "T'as essayé Merlin ?" },
@@ -991,8 +991,8 @@ const Bubbles = (() => {
         { speaker: 'bob', text: "Rang 30. On a encore du chemin..." },
       ],
       [
-        { speaker: 'bob', text: "Mordek c'est 2€ il paraît." },
-        { speaker: 'bob', text: "Et en échange plus de pubs pour toute la room. Plutôt honnête." },
+        { speaker: 'bob', text: "Mordek c'est 1,99€ il paraît." },
+        { speaker: 'bob', text: "Pour soutenir le dév et débloquer un perso stylé. Plutôt honnête." },
       ],
       [
         { speaker: 'bob', text: "Tu joues souvent ?" },
