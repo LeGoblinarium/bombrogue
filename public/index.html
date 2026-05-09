@@ -47,6 +47,14 @@
       <div id="error-msg" class="error-msg"></div>
 
       <button id="btn-auth" class="btn-auth-lobby">👤 Connexion</button>
+
+      <footer class="lobby-footer">
+        <a href="/mentions-legales.html">Mentions légales</a>
+        <span class="footer-sep">·</span>
+        <a href="/cgv.html">CGV</a>
+        <span class="footer-sep">·</span>
+        <a href="/politique-confidentialite.html">Confidentialité</a>
+      </footer>
     </div>
   </div>
 
@@ -271,6 +279,23 @@
       <button class="modal-close" id="invite-modal-close">✕</button>
       <h3 style="margin-bottom:14px">Inviter un ami</h3>
       <div id="invite-friends-list"><p style="color:#888;padding:12px 0">Chargement…</p></div>
+    </div>
+  </div>
+
+  <!-- MORDEK PURCHASE MODAL -->
+  <div id="mordek-modal" class="modal-overlay hidden">
+    <div class="modal-panel mordek-modal-panel">
+      <button class="modal-close" id="mordek-modal-close">✕</button>
+      <img src="/images/mordek.png" alt="Mordek" class="mordek-modal-img" draggable="false">
+      <h2 class="mordek-modal-title">Mordek</h2>
+      <p class="mordek-modal-desc">Le Maître des Ombres. Un personnage unique aux pouvoirs redoutables — et il supprime les publicités pour toute ta room.</p>
+      <ul class="mordek-modal-perks">
+        <li>🎮 Personnage exclusif avec sorts uniques</li>
+        <li>🚫 Zéro pub pour toi et tes adversaires</li>
+        <li>⚡ Achat unique, débloqué à vie</li>
+      </ul>
+      <button id="btn-buy-mordek" class="btn btn-primary mordek-buy-btn">💳 Acheter pour 1,99 €</button>
+      <p class="mordek-modal-legal">Paiement sécurisé via Stripe. Aucun abonnement.</p>
     </div>
   </div>
 

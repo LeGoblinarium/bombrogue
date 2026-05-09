@@ -280,25 +280,34 @@
     });
   }
 
-  const CHAR_RANK_REQ = { player: 0, merlin: 2, kael: 5, borin: 15, alaric: 30, mordek: Infinity };
+  const CHAR_RANK_REQ = { player: 0, merlin: 2, kael: 5, borin: 15, alaric: 30 };
 
   function isCharLocked(char) {
     const user = Auth.getUser();
-    if (char === 'mordek') return true; // locked until Phase 5 (purchase)
+    if (char === 'mordek') return !user || !user.hasMordek;
     if (!user) return char !== 'player'; // guests: only Bob
     return (user.rank || 0) < (CHAR_RANK_REQ[char] || 0);
   }
 
+  // Mordek is "purchasable" (shows 🛒) when the user is logged-in but hasn't bought it yet
+  function isMordekPurchasable() {
+    const user = Auth.getUser();
+    return !!user && !user.hasMordek;
+  }
+
   function updateCharacterCards() {
     document.querySelectorAll('.char-card').forEach(card => {
-      const char = card.dataset.char;
+      const char   = card.dataset.char;
       const locked = isCharLocked(char);
       card.classList.toggle('char-locked', locked);
+      card.classList.toggle('char-purchasable', char === 'mordek' && isMordekPurchasable());
       const req = CHAR_RANK_REQ[char];
       if (locked && char !== 'mordek') {
         card.title = `Rang ${req} requis`;
-      } else if (locked && char === 'mordek') {
-        card.title = 'Achat requis (bientôt disponible)';
+      } else if (char === 'mordek' && isMordekPurchasable()) {
+        card.title = 'Acheter Mordek — 1,99 €';
+      } else if (char === 'mordek' && !Auth.getUser()) {
+        card.title = 'Connexion requise pour acheter Mordek';
       } else {
         card.title = '';
       }
@@ -312,9 +321,17 @@
       const char = card.dataset.char;
       if (!char || char === myCharacter) return;
       if (isCharLocked(char)) {
-        const req = CHAR_RANK_REQ[char];
-        if (char === 'mordek') UI.showToast('Mordek sera disponible à l\'achat prochainement');
-        else UI.showToast(`Rang ${req} requis pour jouer ${CHAR_NAMES[char] || char}`);
+        if (char === 'mordek') {
+          // Logged-in user → open purchase modal; guest → prompt login first
+          if (isMordekPurchasable()) {
+            document.getElementById('mordek-modal').classList.remove('hidden');
+          } else {
+            UI.showToast('Connecte-toi pour acheter Mordek');
+          }
+        } else {
+          const req = CHAR_RANK_REQ[char];
+          UI.showToast(`Rang ${req} requis pour jouer ${CHAR_NAMES[char] || char}`);
+        }
         return;
       }
       myCharacter = char;
@@ -1037,6 +1054,61 @@
     updateAuthButton();
   });
 
+  Socket.on('onMordekUnlocked', ({ token }) => {
+    Auth.updateHasMordek(token);
+    updateCharacterCards();
+    updateAuthButton();
+    UI.showToast('🎉 Mordek débloqué ! Tu peux maintenant jouer ce personnage.');
+  });
+
+  // ── Mordek purchase modal ─────────────────────────────────────────────────
+
+  function setupMordekModal() {
+    const modal    = document.getElementById('mordek-modal');
+    const closeBtn = document.getElementById('mordek-modal-close');
+    const buyBtn   = document.getElementById('btn-buy-mordek');
+
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+
+    buyBtn.addEventListener('click', async () => {
+      buyBtn.disabled = true;
+      buyBtn.textContent = 'Chargement…';
+      try {
+        const token = Auth.getToken();
+        const res   = await fetch('/api/payments/mordek', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        window.location.href = data.url; // redirect to Stripe Checkout
+      } catch (err) {
+        UI.showToast(`Erreur : ${err.message}`);
+        buyBtn.disabled = false;
+        buyBtn.textContent = '💳 Acheter pour 1,99 €';
+      }
+    });
+  }
+
+  // Handle ?payment=success / ?payment=cancel URL params after Stripe redirect
+  (function handlePaymentReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('payment');
+    if (status === 'success') {
+      // Token will be refreshed via 'mordek-unlocked' socket event once Stripe webhook fires.
+      // Show a toast in case the webhook fires before the user notices.
+      UI.showToast('Paiement reçu ! Mordek se débloque dans quelques secondes…');
+    } else if (status === 'cancel') {
+      UI.showToast('Paiement annulé.');
+    }
+    if (status) {
+      // Clean the URL so a refresh doesn't re-trigger the toast
+      const url = window.location.pathname;
+      window.history.replaceState({}, '', url);
+    }
+  })();
+
   // Rejoin modal cancel button
   document.getElementById('btn-rejoin-cancel').addEventListener('click', () => {
     document.getElementById('rejoin-modal').classList.add('hidden');
@@ -1046,6 +1118,7 @@
   Profile.init();
   setupInviteModal();
   setupPlayerActionModal();
+  setupMordekModal();
   setupAuthHandler();
   setupLobbyHandlers();
   setupRoomHandlers();

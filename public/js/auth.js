@@ -70,5 +70,11 @@ const Auth = (() => {
     if (newToken) localStorage.setItem(KEY, newToken);
   }
 
-  return { init, login, register, logout, getToken, getUser, isLoggedIn, updateRank };
+  // Called when the server emits mordek-unlocked with a fresh token
+  function updateHasMordek(newToken) {
+    if (_user) _user.hasMordek = true;
+    if (newToken) localStorage.setItem(KEY, newToken);
+  }
+
+  return { init, login, register, logout, getToken, getUser, isLoggedIn, updateRank, updateHasMordek };
 })();

@@ -501,6 +501,85 @@ input[type="password"]:focus {
   line-height: 1;
 }
 
+/* Purchasable Mordek card — orange border, 🛒 badge, pointer cursor */
+.char-card.char-purchasable {
+  opacity: 1;
+  cursor: pointer;
+  border-color: #d97706;
+  background: #1a1200;
+}
+.char-card.char-purchasable:hover {
+  border-color: #f59e0b;
+  background: #261a00;
+}
+.char-card.char-purchasable::after {
+  content: '🛒';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+/* Mordek purchase modal */
+.mordek-modal-panel {
+  text-align: center;
+  max-width: 340px;
+}
+.mordek-modal-img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  margin: 0 auto 10px;
+  display: block;
+  filter: drop-shadow(0 0 12px rgba(217,119,6,0.6));
+}
+.mordek-modal-title {
+  font-size: 1.4rem;
+  color: #f59e0b;
+  margin: 0 0 8px;
+}
+.mordek-modal-desc {
+  font-size: 0.85rem;
+  color: #aaa;
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+.mordek-modal-perks {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 18px;
+  text-align: left;
+}
+.mordek-modal-perks li {
+  font-size: 0.85rem;
+  color: #ccc;
+  padding: 4px 0;
+}
+.mordek-buy-btn {
+  width: 100%;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: #000;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+}
+.mordek-buy-btn:hover {
+  background: linear-gradient(135deg, #b45309, #d97706);
+}
+.mordek-buy-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.mordek-modal-legal {
+  font-size: 0.7rem;
+  color: #666;
+  margin: 10px 0 0;
+}
+
 .distribution-section {
   background: #16213e;
   border-radius: 8px;
@@ -1704,6 +1783,27 @@ input[type="password"]:focus {
 .btn-auth-lobby.logged-in {
   border-color: #4ECDC4;
   color: #4ECDC4;
+}
+
+/* ── Lobby footer (legal links) ──────────────────────────────────────────── */
+.lobby-footer {
+  text-align: center;
+  margin-top: 24px;
+  padding-bottom: 12px;
+}
+.lobby-footer a {
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  font-size: 0.72rem;
+  transition: color 0.2s;
+}
+.lobby-footer a:hover {
+  color: rgba(255,255,255,0.65);
+}
+.footer-sep {
+  color: rgba(255,255,255,0.15);
+  font-size: 0.72rem;
+  margin: 0 6px;
 }
 
 /* ── Auth modal ───────────────────────────────────────────────────────────── */

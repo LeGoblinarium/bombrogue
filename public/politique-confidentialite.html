@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Politique de confidentialité — BombRogue</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { background: #0a0f1e; color: #ccc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
+    .legal-container { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+    .legal-back { display: inline-block; color: #7c8cf8; text-decoration: none; font-size: 0.9rem; margin-bottom: 32px; }
+    .legal-back:hover { color: #a5b4fc; }
+    h1 { color: #fff; font-size: 1.8rem; margin-bottom: 8px; }
+    .legal-date { color: #666; font-size: 0.8rem; margin-bottom: 32px; }
+    h2 { color: #a5b4fc; font-size: 1.1rem; margin: 28px 0 10px; border-bottom: 1px solid #1e2a4a; padding-bottom: 6px; }
+    p, li { line-height: 1.7; font-size: 0.92rem; color: #bbb; }
+    a { color: #7c8cf8; }
+    ul { padding-left: 20px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+    th { background: #0f1e3a; color: #a5b4fc; text-align: left; padding: 8px 12px; }
+    td { padding: 8px 12px; border-bottom: 1px solid #1e2a4a; color: #bbb; }
+  </style>
+</head>
+<body>
+  <div class="legal-container">
+    <a href="/" class="legal-back">← Retour au jeu</a>
+    <h1>Politique de confidentialité</h1>
+    <p class="legal-date">Dernière mise à jour : mai 2026</p>
+
+    <p>
+      BombRogue s'engage à protéger la vie privée de ses utilisateurs. Cette politique explique quelles données sont collectées, pourquoi, et comment elles sont utilisées.
+    </p>
+
+    <h2>1. Responsable du traitement</h2>
+    <p>
+      <strong>[Prénom Nom]</strong> — [email@domaine.com]<br>
+      BCE : 0802.163.571 — TVA : BE0802163571
+    </p>
+
+    <h2>2. Données collectées</h2>
+    <table>
+      <thead>
+        <tr><th>Donnée</th><th>Raison de la collecte</th><th>Durée de conservation</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Pseudo (username)</td><td>Identification dans le jeu</td><td>Jusqu'à suppression du compte</td></tr>
+        <tr><td>Mot de passe (haché)</td><td>Authentification sécurisée</td><td>Jusqu'à suppression du compte</td></tr>
+        <tr><td>Statistiques de jeu</td><td>Calcul du rang, historique des parties</td><td>Jusqu'à suppression du compte</td></tr>
+        <tr><td>Identifiant Stripe</td><td>Suivi de l'achat Mordek uniquement</td><td>5 ans (obligation comptable)</td></tr>
+        <tr><td>Adresse IP</td><td>Logs serveur techniques (non stockés)</td><td>Non conservée</td></tr>
+      </tbody>
+    </table>
+    <p>BombRogue <strong>ne collecte pas</strong> d'adresse email, de nom réel, ni aucune donnée bancaire.</p>
+
+    <h2>3. Données de paiement</h2>
+    <p>
+      Les paiements sont intégralement gérés par <strong>Stripe</strong>. BombRogue ne voit ni ne stocke aucune donnée de carte bancaire. Stripe est certifié PCI DSS niveau 1. Sa politique de confidentialité est disponible sur <a href="https://stripe.com/fr/privacy" target="_blank" rel="noopener">stripe.com/fr/privacy</a>.
+    </p>
+
+    <h2>4. Cookies</h2>
+    <p>
+      BombRogue n'utilise <strong>aucun cookie de traçage ou publicitaire</strong>. Un token d'authentification JWT est stocké dans le <code>localStorage</code> de votre navigateur pour maintenir votre session de jeu. Il ne contient que votre pseudo et votre rang de jeu.
+    </p>
+
+    <h2>5. Partage des données</h2>
+    <p>
+      Aucune donnée personnelle n'est vendue, louée ou partagée avec des tiers, à l'exception de <strong>Stripe</strong> (traitement du paiement) et <strong>Render</strong> (hébergement du serveur). Ces prestataires agissent en tant que sous-traitants et ne peuvent utiliser les données à d'autres fins.
+    </p>
+
+    <h2>6. Vos droits (RGPD)</h2>
+    <p>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants :</p>
+    <ul>
+      <li><strong>Droit d'accès</strong> — obtenir une copie de vos données</li>
+      <li><strong>Droit de rectification</strong> — corriger des données inexactes</li>
+      <li><strong>Droit à l'effacement</strong> — supprimer votre compte et toutes vos données</li>
+      <li><strong>Droit à la portabilité</strong> — recevoir vos données dans un format structuré</li>
+    </ul>
+    <p>
+      Pour exercer ces droits, contactez : <a href="mailto:[email@domaine.com]">[email@domaine.com]</a><br>
+      Vous pouvez également introduire une réclamation auprès de l'<a href="https://www.autoriteprotectiondonnees.be" target="_blank" rel="noopener">Autorité de protection des données (APD)</a> belge.
+    </p>
+
+    <h2>7. Sécurité</h2>
+    <p>
+      Les mots de passe sont hachés avec bcrypt avant stockage. Les communications entre le client et le serveur sont chiffrées via HTTPS/TLS. L'accès à la base de données est restreint au serveur applicatif.
+    </p>
+
+    <h2>8. Modifications</h2>
+    <p>
+      Cette politique peut être mise à jour. La date de dernière modification est indiquée en haut de la page. L'utilisation continue du jeu après modification vaut acceptation.
+    </p>
+  </div>
+</body>
+</html>

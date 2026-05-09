@@ -145,6 +145,10 @@ const Socket = (() => {
     socket.on('friend-request-accepted', (data) => {
       if (handlers.onFriendRequestAccepted) handlers.onFriendRequestAccepted(data);
     });
+
+    socket.on('mordek-unlocked', (data) => {
+      if (handlers.onMordekUnlocked) handlers.onMordekUnlocked(data);
+    });
   }
 
   function emit(event, data) {

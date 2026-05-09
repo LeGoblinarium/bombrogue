@@ -7,15 +7,20 @@ const { Room, generateCode } = require('./server/Room');
 const { verifyToken } = require('./server/auth');
 const authRoutes       = require('./server/routes/auth');
 const profileRoutes    = require('./server/routes/profile');
-const makeFriendsRouter = require('./server/routes/friends');
-const { saveGame }     = require('./server/ranks');
-const db               = require('./server/db');
+const makeFriendsRouter   = require('./server/routes/friends');
+const makePaymentsRouter  = require('./server/routes/payments');
+const { saveGame }        = require('./server/ranks');
+const db                  = require('./server/db');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.json());
+// express.json() for all routes except the Stripe webhook, which needs the raw body
+app.use((req, res, next) => {
+  if (req.path === '/api/payments/webhook') return next(); // webhook uses its own body parser
+  express.json()(req, res, next);
+});
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth',    authRoutes);
 app.use('/api/profile', profileRoutes);
@@ -26,8 +31,9 @@ const socketByUserId = new Map();
 // Map userId → 'lobby'|'room'|'playing' for online status
 const userStatus = new Map();
 
-// Friends routes need access to the live Maps — mount after they're declared
-app.use('/api/friends', makeFriendsRouter({ socketByUserId, userStatus, io }));
+// Friends & payments routes need access to the live Maps — mount after they're declared
+app.use('/api/friends',  makeFriendsRouter({ socketByUserId, userStatus, io }));
+app.use('/api/payments', makePaymentsRouter({ io, socketByUserId }));
 
 const VALID_EMOTES = new Set(['😂','👍','👎','😮','😡','🎉','💀','💣','🤔','😎','❤️','👋']);
 
