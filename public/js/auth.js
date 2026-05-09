@@ -61,5 +61,11 @@ const Auth = (() => {
     }
   }
 
-  return { init, login, register, logout, getToken, getUser, isLoggedIn };
+  // Called when the server emits rank-updated with a fresh token
+  function updateRank(newRank, newToken) {
+    if (_user) _user.rank = newRank;
+    if (newToken) localStorage.setItem(KEY, newToken);
+  }
+
+  return { init, login, register, logout, getToken, getUser, isLoggedIn, updateRank };
 })();

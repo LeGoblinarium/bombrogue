@@ -1,4 +1,5 @@
 const db = require('./db');
+const { signToken } = require('./auth');
 
 const HISTORY_LIMIT = 50; // max game_players rows kept per user
 
@@ -76,23 +77,39 @@ async function saveGame(room, stats, winnerId, io, socketByUserId) {
         [userId, HISTORY_LIMIT]
       );
 
-      // Update rank_points and rank
+      // Update rank_points and rank.
+      // Use a CTE to capture the old rank before the UPDATE so rank_delta is correct.
       const pts = (RANK_POINTS[playerCount] || {})[finishRank] || 0;
       if (pts > 0) {
         const updateRes = await db.query(
-          `UPDATE users
+          `WITH prev AS (SELECT rank, has_mordek, username FROM users WHERE id = $2)
+           UPDATE users
            SET rank_points = rank_points + $1,
                rank        = FLOOR(rank_points + $1)
            WHERE id = $2
-           RETURNING rank, rank - (SELECT rank FROM users WHERE id = $2) AS rank_delta`,
+           RETURNING rank,
+                     rank - (SELECT rank FROM prev)       AS rank_delta,
+                     (SELECT has_mordek FROM prev)        AS has_mordek,
+                     (SELECT username   FROM prev)        AS username`,
           [pts, userId]
         );
         const row = updateRes.rows[0];
         if (row && row.rank_delta > 0) {
-          // Notify the player live if they're still connected
+          // Issue a fresh JWT so the client's token reflects the new rank
+          const newToken = signToken({
+            userId,
+            username:  row.username,
+            rank:      row.rank,
+            hasMordek: row.has_mordek,
+          });
+
           const sid = socketByUserId.get(userId);
           if (sid) {
-            io.to(sid).emit('rank-updated', { newRank: row.rank });
+            // Update the live socket so the next room join uses the correct rank
+            const liveSocket = io.sockets.sockets.get(sid);
+            if (liveSocket) liveSocket.userRank = row.rank;
+
+            io.to(sid).emit('rank-updated', { newRank: row.rank, token: newToken });
           }
         }
       }

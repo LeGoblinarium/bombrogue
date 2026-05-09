@@ -896,14 +896,11 @@
     slider.style.setProperty('--val', seconds);
   });
 
-  Socket.on('onRankUpdated', ({ newRank }) => {
+  Socket.on('onRankUpdated', ({ newRank, token }) => {
     UI.showToast(`🎉 Rang ${newRank} !`);
-    // Update local auth user so button reflects new rank
-    const user = Auth.getUser();
-    if (user) {
-      user.rank = newRank;
-      updateAuthButton();
-    }
+    // Persist new rank and fresh JWT (rank is now baked into the token)
+    Auth.updateRank(newRank, token);
+    updateAuthButton();
   });
 
   // Rejoin modal cancel button
