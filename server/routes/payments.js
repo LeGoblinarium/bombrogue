@@ -5,7 +5,17 @@ const { verifyToken, signToken } = require('../auth');
 
 module.exports = function makePaymentsRouter({ io, socketByUserId }) {
   const router = express.Router();
-  const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
+  // Lazy init — Stripe n'est instancié qu'au premier appel d'une route,
+  // pas au démarrage du serveur (évite le crash si la clé n'est pas encore définie)
+  let _stripe = null;
+  function getStripe() {
+    if (!_stripe) {
+      if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY manquante dans les variables d\'environnement');
+      _stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+    }
+    return _stripe;
+  }
 
   // ── Auth middleware ────────────────────────────────────────────────────────
   function requireAuth(req, res, next) {
@@ -34,7 +44,7 @@ module.exports = function makePaymentsRouter({ io, socketByUserId }) {
     const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
     try {
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [{
           price_data: {
@@ -69,7 +79,7 @@ module.exports = function makePaymentsRouter({ io, socketByUserId }) {
 
     let event;
     try {
-      event = stripe.webhooks.constructEvent(req.body, sig, secret);
+      event = getStripe().webhooks.constructEvent(req.body, sig, secret);
     } catch (err) {
       console.error('Webhook signature error:', err.message);
       return res.status(400).send(`Webhook Error: ${err.message}`);
