@@ -288,7 +288,7 @@ const Input = (() => {
           if (md > r) continue;
           const x = me.x + dx, y = me.y + dy;
           if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H
-              && clientHasLoS(me.x, me.y, x, y, state, me.id)) {
+              && (mode === 'entourloupe' || clientHasLoS(me.x, me.y, x, y, state, me.id))) {
             highlights.push({ x, y, type: 'range' });
           }
         }
