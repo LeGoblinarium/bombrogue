@@ -47,14 +47,17 @@ const Auth = (() => {
     return data.user;
   }
 
-  // Called on app load — verifies stored token and refreshes user data
+  // Called on app load — verifies stored token, refreshes user data and
+  // stores a fresh token (which has the current rank baked in)
   async function init() {
     const token = getToken();
     if (!token) return null;
     try {
-      const user = await _apiFetch('/api/auth/me');
-      _user = user;
-      return user;
+      const data = await _apiFetch('/api/auth/me');
+      // Server returns { token, id, username, rank, hasMordek }
+      if (data.token) localStorage.setItem(KEY, data.token);
+      _user = { id: data.id, username: data.username, rank: data.rank, hasMordek: data.hasMordek };
+      return _user;
     } catch {
       logout(); // token expired or invalid
       return null;

@@ -54,7 +54,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /api/me  (vérifie le token et renvoie les infos à jour)
+// GET /api/auth/me — vérifie le token, renvoie les infos à jour + un token frais
 router.get('/me', async (req, res) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Non authentifié' });
@@ -66,7 +66,9 @@ router.get('/me', async (req, res) => {
     );
     if (!result.rows.length) return res.status(404).json({ error: 'Utilisateur introuvable' });
     const user = result.rows[0];
-    res.json({ id: user.id, username: user.username, rank: user.rank, hasMordek: user.has_mordek });
+    // Issue a fresh token so the socket always gets the up-to-date rank
+    const token = signToken({ userId: user.id, username: user.username, rank: user.rank, hasMordek: user.has_mordek });
+    res.json({ token, id: user.id, username: user.username, rank: user.rank, hasMordek: user.has_mordek });
   } catch {
     res.status(401).json({ error: 'Token invalide' });
   }
