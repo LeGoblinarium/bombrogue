@@ -245,6 +245,27 @@ io.on('connection', (socket) => {
   socket.on('set-character', ({ character }) => {
     const VALID_CHARS = ['player', 'merlin', 'kael', 'borin', 'alaric', 'mordek'];
     if (!VALID_CHARS.includes(character)) return;
+
+    // Rank requirements (server-side enforcement)
+    const CHAR_RANK_REQ = { player: 0, merlin: 2, kael: 5, borin: 15, alaric: 30, mordek: 0 };
+    const playerRank = socket.userRank || 0;
+    const isAuthenticated = !!socket.userId;
+
+    // Guests can only play Bob
+    if (!isAuthenticated && character !== 'player') {
+      socket.emit('error', { message: 'Créez un compte pour jouer ce personnage' });
+      return;
+    }
+    // Mordek requires hasMordek flag (purchase) — enforced in Phase 5
+    if (character === 'mordek' && !socket.hasMordek) {
+      socket.emit('error', { message: 'Mordek nécessite un achat' });
+      return;
+    }
+    if (playerRank < (CHAR_RANK_REQ[character] || 0)) {
+      socket.emit('error', { message: `Rang ${CHAR_RANK_REQ[character]} requis pour ce personnage` });
+      return;
+    }
+
     const room = getRoomBySocket(socket.id);
     if (!room || room.status !== 'waiting') return;
     if (room.setCharacter(socket.id, character)) {

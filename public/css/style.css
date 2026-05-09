@@ -471,6 +471,23 @@ input[type="password"]:focus {
 .char-card.selected span {
   color: #f0c040;
 }
+.char-card.char-locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  position: relative;
+}
+.char-card.char-locked:hover {
+  border-color: #2a3a5a;
+  background: #0f1a2e;
+}
+.char-card.char-locked::after {
+  content: '🔒';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
 
 .distribution-section {
   background: #16213e;

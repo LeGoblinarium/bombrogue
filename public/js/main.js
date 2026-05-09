@@ -281,14 +281,44 @@
     });
   }
 
+  const CHAR_RANK_REQ = { player: 0, merlin: 2, kael: 5, borin: 15, alaric: 30, mordek: Infinity };
+
+  function isCharLocked(char) {
+    const user = Auth.getUser();
+    if (char === 'mordek') return true; // locked until Phase 5 (purchase)
+    if (!user) return char !== 'player'; // guests: only Bob
+    return (user.rank || 0) < (CHAR_RANK_REQ[char] || 0);
+  }
+
+  function updateCharacterCards() {
+    document.querySelectorAll('.char-card').forEach(card => {
+      const char = card.dataset.char;
+      const locked = isCharLocked(char);
+      card.classList.toggle('char-locked', locked);
+      const req = CHAR_RANK_REQ[char];
+      if (locked && char !== 'mordek') {
+        card.title = `Rang ${req} requis`;
+      } else if (locked && char === 'mordek') {
+        card.title = 'Achat requis (bientôt disponible)';
+      } else {
+        card.title = '';
+      }
+    });
+  }
+
   function setupCharacterHandler() {
     document.getElementById('char-grid').addEventListener('click', (e) => {
       const card = e.target.closest('.char-card');
       if (!card) return;
       const char = card.dataset.char;
       if (!char || char === myCharacter) return;
+      if (isCharLocked(char)) {
+        const req = CHAR_RANK_REQ[char];
+        if (char === 'mordek') UI.showToast('Mordek sera disponible à l\'achat prochainement');
+        else UI.showToast(`Rang ${req} requis pour jouer ${CHAR_NAMES[char] || char}`);
+        return;
+      }
       myCharacter = char;
-      // Update selected state visually
       document.querySelectorAll('.char-card').forEach(c => {
         c.classList.toggle('selected', c.dataset.char === myCharacter);
       });
@@ -473,6 +503,7 @@
   Socket.on('onRoomCreated', ({ code }) => {
     myRoomCode = code;
     document.getElementById('room-code-display').textContent = code;
+    updateCharacterCards();
     UI.showScreen('screen-room');
   });
 
@@ -484,6 +515,7 @@
       myRoomCode = codeFromInput;
     }
     document.getElementById('room-code-display').textContent = myRoomCode;
+    updateCharacterCards();
     UI.showScreen('screen-room');
     UI.renderPlayersList(players, hostId, myId);
     updateStartButton(players);
