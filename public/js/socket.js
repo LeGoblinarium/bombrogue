@@ -125,6 +125,26 @@ const Socket = (() => {
     socket.on('player-emote', (data) => {
       if (handlers.onPlayerEmote) handlers.onPlayerEmote(data);
     });
+
+    socket.on('friends-status', (data) => {
+      if (handlers.onFriendsStatus) handlers.onFriendsStatus(data);
+    });
+
+    socket.on('friend-status-changed', (data) => {
+      if (handlers.onFriendStatusChanged) handlers.onFriendStatusChanged(data);
+    });
+
+    socket.on('room-invite', (data) => {
+      if (handlers.onRoomInvite) handlers.onRoomInvite(data);
+    });
+
+    socket.on('friend-request-received', (data) => {
+      if (handlers.onFriendRequestReceived) handlers.onFriendRequestReceived(data);
+    });
+
+    socket.on('friend-request-accepted', (data) => {
+      if (handlers.onFriendRequestAccepted) handlers.onFriendRequestAccepted(data);
+    });
   }
 
   function emit(event, data) {

@@ -98,6 +98,7 @@
     <div class="room-container">
       <div class="room-header">
         <h2>Room : <span id="room-code-display"></span></h2>
+        <button id="btn-invite-friends" class="btn-invite-friends hidden" title="Inviter un ami">👥</button>
       </div>
 
       <div id="players-list" class="players-list"></div>
@@ -195,6 +196,7 @@
       <div class="profile-tabs">
         <button class="profile-tab active" data-tab="stats">📊 Stats</button>
         <button class="profile-tab" data-tab="history">📋 Historique</button>
+        <button class="profile-tab" data-tab="friends">👥 Amis</button>
       </div>
 
       <div id="profile-tab-stats" class="profile-tab-content">
@@ -203,6 +205,10 @@
 
       <div id="profile-tab-history" class="profile-tab-content hidden">
         <div class="history-list" id="history-list"></div>
+      </div>
+
+      <div id="profile-tab-friends" class="profile-tab-content hidden">
+        <div id="friends-content"></div>
       </div>
 
       <div class="profile-footer">
@@ -247,6 +253,24 @@
       <p id="replay-votes-msg" class="replay-votes-msg"></p>
       <button id="btn-replay" class="btn btn-primary">Rejouer</button>
       <button id="btn-main-menu" class="btn btn-secondary" style="margin-top:10px">Menu principal</button>
+    </div>
+  </div>
+
+  <!-- INVITE FRIENDS MODAL (shown from waiting room) -->
+  <div id="invite-friends-modal" class="modal-overlay hidden">
+    <div class="modal-panel">
+      <button class="modal-close" id="invite-modal-close">✕</button>
+      <h3 style="margin-bottom:14px">Inviter un ami</h3>
+      <div id="invite-friends-list"><p style="color:#888;padding:12px 0">Chargement…</p></div>
+    </div>
+  </div>
+
+  <!-- ROOM INVITE BANNER (fixed bottom, appears when receiving an invite) -->
+  <div id="room-invite-banner" class="invite-banner hidden">
+    <span id="invite-banner-text"></span>
+    <div class="invite-banner-btns">
+      <button id="btn-invite-join">Rejoindre</button>
+      <button id="btn-invite-dismiss" aria-label="Ignorer">✕</button>
     </div>
   </div>
 

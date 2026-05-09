@@ -5,9 +5,11 @@ const { Server } = require('socket.io');
 const path = require('path');
 const { Room, generateCode } = require('./server/Room');
 const { verifyToken } = require('./server/auth');
-const authRoutes    = require('./server/routes/auth');
-const profileRoutes = require('./server/routes/profile');
-const { saveGame }  = require('./server/ranks');
+const authRoutes       = require('./server/routes/auth');
+const profileRoutes    = require('./server/routes/profile');
+const makeFriendsRouter = require('./server/routes/friends');
+const { saveGame }     = require('./server/ranks');
+const db               = require('./server/db');
 
 const app = express();
 const server = http.createServer(app);
@@ -17,10 +19,13 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth',    authRoutes);
 app.use('/api/profile', profileRoutes);
+app.use('/api/friends', makeFriendsRouter({ socketByUserId, userStatus, io }));
 
 const rooms = new Map();
-// Map userId → socketId for live rank-up notifications
+// Map userId → socketId for live notifications
 const socketByUserId = new Map();
+// Map userId → 'lobby'|'room'|'playing' for online status
+const userStatus = new Map();
 
 const VALID_EMOTES = new Set(['😂','👍','👎','😮','😡','🎉','💀','💣','🤔','😎','❤️','👋']);
 
@@ -56,6 +61,46 @@ function broadcastRoomsList() {
   io.to('_lobby').emit('rooms-updated', getPublicRoomsList());
 }
 
+// Emit 'friend-status-changed' to all online friends of a user
+async function notifyFriendStatusChange(userId, username, status) {
+  if (!userId) return;
+  try {
+    const result = await db.query(
+      `SELECT CASE WHEN requester_id = $1 THEN addressee_id ELSE requester_id END AS friend_id
+       FROM friendships
+       WHERE (requester_id = $1 OR addressee_id = $1) AND status = 'accepted'`,
+      [userId]
+    );
+    for (const row of result.rows) {
+      const sid = socketByUserId.get(row.friend_id);
+      if (sid) io.to(sid).emit('friend-status-changed', { userId, username, status });
+    }
+  } catch (err) {
+    console.error('notifyFriendStatusChange error:', err.message);
+  }
+}
+
+// Send bulk friends status list to a newly connected socket
+async function sendFriendsStatus(socket, userId) {
+  if (!userId) return;
+  try {
+    const result = await db.query(
+      `SELECT u.id, u.username
+       FROM friendships f
+       JOIN users u ON u.id = CASE WHEN f.requester_id = $1 THEN f.addressee_id ELSE f.requester_id END
+       WHERE (f.requester_id = $1 OR f.addressee_id = $1) AND f.status = 'accepted'`,
+      [userId]
+    );
+    socket.emit('friends-status', result.rows.map(r => ({
+      userId:   r.id,
+      username: r.username,
+      status:   userStatus.get(r.id) || 'offline',
+    })));
+  } catch (err) {
+    console.error('sendFriendsStatus error:', err.message);
+  }
+}
+
 // Socket.io JWT middleware — attaches userId/username/rank/hasMordek if token valid
 io.use((socket, next) => {
   const token = socket.handshake.auth && socket.handshake.auth.token;
@@ -73,7 +118,12 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   console.log(`Connected: ${socket.id}${socket.userId ? ` (${socket.username})` : ' (guest)'}`);
-  if (socket.userId) socketByUserId.set(socket.userId, socket.id);
+  if (socket.userId) {
+    socketByUserId.set(socket.userId, socket.id);
+    userStatus.set(socket.userId, 'lobby');
+    sendFriendsStatus(socket, socket.userId);
+    notifyFriendStatusChange(socket.userId, socket.username, 'lobby');
+  }
   socket.join('_lobby'); // All clients start in the lobby channel
 
   socket.on('list-rooms', () => {
@@ -98,6 +148,10 @@ io.on('connection', (socket) => {
     rooms.set(code, room);
     socket.leave('_lobby');
     socket.join(code);
+    if (socket.userId) {
+      userStatus.set(socket.userId, 'room');
+      notifyFriendStatusChange(socket.userId, socket.username, 'room');
+    }
 
     socket.emit('room-created', { code });
     socket.emit('room-joined', {
@@ -145,6 +199,10 @@ io.on('connection', (socket) => {
 
     socket.leave('_lobby');
     socket.join(upperCode);
+    if (socket.userId) {
+      userStatus.set(socket.userId, 'room');
+      notifyFriendStatusChange(socket.userId, socket.username, 'room');
+    }
 
     socket.emit('room-joined', {
       players: room.getPlayerList(),
@@ -179,6 +237,10 @@ io.on('connection', (socket) => {
     if (room.game) {
       room.game.handleRejoin(socket.id, targetPlayerId);
     }
+    if (socket.userId) {
+      userStatus.set(socket.userId, 'playing');
+      notifyFriendStatusChange(socket.userId, socket.username, 'playing');
+    }
 
     broadcastRoomsList();
   });
@@ -200,6 +262,10 @@ io.on('connection', (socket) => {
 
     socket.leave(room.code);
     socket.join('_lobby');
+    if (socket.userId) {
+      userStatus.set(socket.userId, 'lobby');
+      notifyFriendStatusChange(socket.userId, socket.username, 'lobby');
+    }
 
     if (room.isEmpty()) {
       if (room.game) room.game.cleanup();
@@ -296,6 +362,14 @@ io.on('connection', (socket) => {
 
     room.status = 'playing';
 
+    // Update online status for all players now entering the game
+    for (const player of room.players.values()) {
+      if (player.userId) {
+        userStatus.set(player.userId, 'playing');
+        notifyFriendStatusChange(player.userId, player.name, 'playing');
+      }
+    }
+
     const Game = require('./server/Game');
     room.game = new Game(room, io, socketByUserId);
     room.game.start();
@@ -335,6 +409,18 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('invite-friend', ({ targetUserId }) => {
+    const room = getRoomBySocket(socket.id);
+    if (!room || room.status !== 'waiting' || !socket.userId) return;
+    const sid = socketByUserId.get(targetUserId);
+    if (!sid) return;
+    io.to(sid).emit('room-invite', {
+      fromUsername: socket.username,
+      fromUserId:   socket.userId,
+      roomCode:     room.code,
+    });
+  });
+
   socket.on('emote', ({ emoji }) => {
     const room = getRoomBySocket(socket.id);
     if (!room || room.status !== 'playing') return;
@@ -347,6 +433,8 @@ io.on('connection', (socket) => {
     console.log(`Disconnected: ${socket.id}`);
     if (socket.userId && socketByUserId.get(socket.userId) === socket.id) {
       socketByUserId.delete(socket.userId);
+      userStatus.delete(socket.userId);
+      notifyFriendStatusChange(socket.userId, socket.username, 'offline');
     }
     const room = getRoomBySocket(socket.id);
     if (!room) return;

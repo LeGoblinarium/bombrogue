@@ -503,6 +503,7 @@
     myRoomCode = code;
     document.getElementById('room-code-display').textContent = code;
     updateCharacterCards();
+    document.getElementById('btn-invite-friends').classList.toggle('hidden', !Auth.isLoggedIn());
     UI.showScreen('screen-room');
   });
 
@@ -515,6 +516,7 @@
     }
     document.getElementById('room-code-display').textContent = myRoomCode;
     updateCharacterCards();
+    document.getElementById('btn-invite-friends').classList.toggle('hidden', !Auth.isLoggedIn());
     UI.showScreen('screen-room');
     UI.renderPlayersList(players, hostId, myId);
     updateStartButton(players);
@@ -895,6 +897,94 @@
     slider.style.setProperty('--val', seconds);
   });
 
+  // ── Friends & invites ────────────────────────────────────────────────────
+
+  Socket.on('onFriendsStatus', (list) => {
+    // Bulk status on connect — refresh friends tab if open
+    Profile.refreshFriendsIfOpen();
+  });
+
+  Socket.on('onFriendStatusChanged', ({ username, status }) => {
+    Profile.refreshFriendsIfOpen();
+  });
+
+  Socket.on('onFriendRequestReceived', ({ fromUsername }) => {
+    UI.showToast(`👥 ${fromUsername} t'a envoyé une demande d'ami`);
+    Profile.refreshFriendsIfOpen();
+  });
+
+  Socket.on('onFriendRequestAccepted', ({ byUsername }) => {
+    UI.showToast(`✅ ${byUsername} a accepté ta demande d'ami !`);
+  });
+
+  let _inviteDismissTimer = null;
+  Socket.on('onRoomInvite', ({ fromUsername, roomCode }) => {
+    const banner   = document.getElementById('room-invite-banner');
+    const textEl   = document.getElementById('invite-banner-text');
+    const joinBtn  = document.getElementById('btn-invite-join');
+    const closeBtn = document.getElementById('btn-invite-dismiss');
+
+    textEl.textContent = `👥 ${fromUsername} t'invite dans la room ${roomCode}`;
+    banner.classList.remove('hidden');
+
+    joinBtn.onclick = () => {
+      banner.classList.add('hidden');
+      clearTimeout(_inviteDismissTimer);
+      const playerName = Auth.isLoggedIn() ? Auth.getUser().username : null;
+      if (!playerName) { UI.showToast('Connecte-toi pour rejoindre'); return; }
+      Socket.emit('join-room', { code: roomCode, playerName });
+    };
+    closeBtn.onclick = () => {
+      banner.classList.add('hidden');
+      clearTimeout(_inviteDismissTimer);
+    };
+
+    clearTimeout(_inviteDismissTimer);
+    _inviteDismissTimer = setTimeout(() => banner.classList.add('hidden'), 20000);
+  });
+
+  // ── Invite friends modal (from waiting room) ─────────────────────────────
+
+  function setupInviteModal() {
+    const modal    = document.getElementById('invite-friends-modal');
+    const listEl   = document.getElementById('invite-friends-list');
+    const closeBtn = document.getElementById('invite-modal-close');
+    const openBtn  = document.getElementById('btn-invite-friends');
+
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+
+    openBtn.addEventListener('click', async () => {
+      modal.classList.remove('hidden');
+      listEl.innerHTML = '<p style="color:#888;padding:12px 0">Chargement…</p>';
+      try {
+        const friends = await fetch('/api/friends', {
+          headers: { Authorization: `Bearer ${Auth.getToken()}` },
+        }).then(r => r.json());
+        const online = friends.filter(f => f.status !== 'offline');
+        if (!online.length) {
+          listEl.innerHTML = '<p style="color:#888;padding:12px 0">Aucun ami en ligne.</p>';
+          return;
+        }
+        const STATUS_ICON = { lobby: '🟢', room: '🟡', playing: '🟠' };
+        listEl.innerHTML = online.map(f => `
+          <div class="invite-friend-row">
+            <span>${STATUS_ICON[f.status] || '🟢'} <strong>${f.username}</strong></span>
+            <button class="btn-invite-send" data-id="${f.id}">Inviter</button>
+          </div>`).join('');
+        listEl.querySelectorAll('.btn-invite-send').forEach(btn => {
+          btn.addEventListener('click', () => {
+            Socket.emit('invite-friend', { targetUserId: btn.dataset.id });
+            btn.textContent = '✓ Envoyé';
+            btn.disabled = true;
+          });
+        });
+      } catch {
+        listEl.innerHTML = '<p style="color:#f88">Erreur de chargement</p>';
+      }
+    });
+  }
+
   Socket.on('onRankUpdated', ({ newRank, token }) => {
     UI.showToast(`🎉 Rang ${newRank} !`);
     // Persist new rank and fresh JWT (rank is now baked into the token)
@@ -909,6 +999,7 @@
   });
 
   Profile.init();
+  setupInviteModal();
   setupAuthHandler();
   setupLobbyHandlers();
   setupRoomHandlers();

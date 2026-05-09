@@ -337,9 +337,16 @@ input[type="password"]:focus {
 }
 .room-container::-webkit-scrollbar { display: none; }
 
+.room-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
 .room-header h2 {
   font-size: 1.4rem;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .room-header h2 span {
@@ -1964,4 +1971,178 @@ input[type="password"]:focus {
   color: #f88;
   padding: 28px;
   font-size: 0.9rem;
+}
+
+/* ── Friends tab ─────────────────────────────────────────────────────────── */
+.friends-section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #777;
+  margin: 14px 0 6px;
+}
+.friends-section-title:first-child { margin-top: 0; }
+
+.friend-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #253444;
+  border-radius: 9px;
+  padding: 9px 12px;
+  margin-bottom: 6px;
+}
+.friend-dot { font-size: 0.9rem; flex-shrink: 0; }
+.friend-info {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.friend-name { font-weight: 600; font-size: 0.9rem; color: #e0e0e0; }
+.friend-status-txt { font-size: 0.72rem; color: #888; }
+
+.friend-btns { display: flex; gap: 6px; }
+.btn-friend-accept, .btn-friend-decline, .btn-friend-remove {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid #3a4a5a;
+  color: #ccc;
+  border-radius: 6px;
+  width: 30px; height: 30px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.btn-friend-accept { color: #6f6; border-color: rgba(100,200,100,.4); }
+.btn-friend-accept:hover { background: rgba(100,200,100,.2); }
+.btn-friend-decline, .btn-friend-remove { color: #f88; border-color: rgba(200,80,80,.4); }
+.btn-friend-decline:hover, .btn-friend-remove:hover { background: rgba(200,80,80,.2); }
+
+.friend-add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.friend-add-row input {
+  flex: 1;
+  background: #0e1624;
+  border: 1px solid #3a4a5a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+}
+.friend-add-row input:focus { outline: none; border-color: #ff6b00; }
+#btn-friend-send {
+  background: #ff6b00;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  padding: 9px 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+#btn-friend-send:hover { background: #e05e00; }
+
+.friend-add-msg {
+  font-size: 0.8rem;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+.friend-add-msg.hidden { display: none; }
+.friend-add-msg.ok  { background: rgba(100,200,100,.15); color: #8f8; }
+.friend-add-msg.err { background: rgba(200,80,80,.15);  color: #f88; }
+
+/* ── Invite friends button in room header ────────────────────────────────── */
+.btn-invite-friends {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid #3a4a5a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background .15s;
+  margin-left: auto;
+}
+.btn-invite-friends:hover { background: rgba(255,255,255,0.18); }
+.btn-invite-friends.hidden { display: none; }
+
+/* Invite modal friend rows */
+.invite-friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #253444;
+  gap: 10px;
+}
+.invite-friend-row:last-child { border-bottom: none; }
+.btn-invite-send {
+  background: #ff6b00;
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.btn-invite-send:hover:not(:disabled) { background: #e05e00; }
+.btn-invite-send:disabled { background: #555; cursor: default; }
+
+/* ── Room invite banner ───────────────────────────────────────────────────── */
+.invite-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a2636;
+  border: 1px solid #ff6b00;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 3000;
+  box-shadow: 0 6px 24px rgba(0,0,0,.6);
+  max-width: min(420px, 92vw);
+  font-size: 0.88rem;
+  color: #e0e0e0;
+  animation: slideUp .25s ease;
+}
+.invite-banner.hidden { display: none; }
+.invite-banner-btns { display: flex; gap: 8px; flex-shrink: 0; }
+#btn-invite-join {
+  background: #ff6b00;
+  border: none;
+  border-radius: 7px;
+  color: #fff;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+#btn-invite-join:hover { background: #e05e00; }
+#btn-invite-dismiss {
+  background: transparent;
+  border: 1px solid #555;
+  border-radius: 7px;
+  color: #999;
+  width: 30px; height: 30px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  display: flex; align-items: center; justify-content: center;
+}
+#btn-invite-dismiss:hover { background: rgba(255,255,255,.08); }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
