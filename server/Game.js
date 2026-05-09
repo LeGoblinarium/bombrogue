@@ -50,7 +50,7 @@ class Game {
       turnNumber: this.turnNumber,
       paLeft: player ? player.paLeft : 0,
       pmLeft: player ? player.pmLeft : 0,
-      timeLeft: C.TURN_TIME_MS,
+      timeLeft: this.room.turnDurationMs,
       zoneDepth: this.getZoneDepth(),
     };
   }
@@ -154,7 +154,7 @@ class Game {
 
     // Set turn timer
     if (this.turnTimer) clearTimeout(this.turnTimer);
-    this.turnTimer = setTimeout(() => this.endTurn(false), C.TURN_TIME_MS);
+    this.turnTimer = setTimeout(() => this.endTurn(false), this.room.turnDurationMs);
   }
 
   endTurn(playerInitiated) {

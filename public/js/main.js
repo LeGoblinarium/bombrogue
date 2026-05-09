@@ -143,6 +143,25 @@
     });
   }
 
+  function setupTurnDurationSlider() {
+    const slider  = document.getElementById('turn-duration-slider');
+    const valueEl = document.getElementById('turn-duration-value');
+
+    function syncSliderUI(seconds) {
+      slider.value = seconds;
+      slider.style.setProperty('--val', seconds);
+      valueEl.textContent = seconds + 's';
+    }
+
+    syncSliderUI(60); // default
+
+    slider.addEventListener('input', () => {
+      const val = parseInt(slider.value);
+      syncSliderUI(val);
+      Socket.emit('set-turn-duration', { seconds: val });
+    });
+  }
+
   function setupRoomHandlers() {
     document.getElementById('pa-plus').addEventListener('click', () => {
       if (pm > 2) { pm--; pa++; sendDistribution(); }
@@ -370,6 +389,31 @@
     hostId = hid;
     UI.renderPlayersList(players, hostId, myId);
     updateStartButton(players);
+
+    // If we're on the game-over screen, keep players informed of departures
+    const overlay = document.getElementById('gameover-overlay');
+    if (!overlay.classList.contains('visible')) return;
+
+    const others = players.filter(p => p.id !== myId);
+    if (others.length === 0) {
+      // Everyone left — no point waiting, bring us back to lobby
+      Bubbles.clear();
+      Emotes.clear();
+      Socket.emit('leave-room');
+      myId = null; myRoomCode = ''; hostId = null;
+      pa = 10; pm = 2; myCharacter = 'player';
+      overlay.classList.remove('visible');
+      UI.showScreen('screen-lobby');
+      Socket.emit('list-rooms');
+      UI.showToast('Tous les joueurs ont quitté.');
+    } else {
+      // Some left — update the waiting message
+      const msg = document.getElementById('replay-votes-msg');
+      if (msg) {
+        const n = others.length;
+        msg.textContent = `Un joueur a quitté — ${n} joueur${n > 1 ? 's' : ''} encore en partie.`;
+      }
+    }
   });
 
   Socket.on('onDistributionUpdated', ({ players }) => {
@@ -380,17 +424,20 @@
     const btn = document.getElementById('btn-start');
     const wait = document.getElementById('waiting-msg');
     const obstacleSection = document.getElementById('obstacle-section');
+    const turnDurSection  = document.getElementById('turn-duration-section');
     const isHost = myId === hostId;
     if (isHost) {
       btn.style.display = 'block';
       wait.style.display = 'none';
       obstacleSection.style.display = 'block';
+      turnDurSection.style.display  = 'block';
       btn.disabled = players.length < 2;
       btn.textContent = players.length < 2 ? 'En attente de joueurs...' : 'Lancer la partie';
     } else {
       btn.style.display = 'none';
       wait.style.display = 'block';
       obstacleSection.style.display = 'none';
+      turnDurSection.style.display  = 'none';
     }
   }
 
@@ -698,6 +745,14 @@
     slider.style.setProperty('--val', obstacleCount);
   });
 
+  Socket.on('onTurnDurationUpdated', ({ turnDurationMs }) => {
+    const seconds = turnDurationMs / 1000;
+    document.getElementById('turn-duration-value').textContent = seconds + 's';
+    const slider = document.getElementById('turn-duration-slider');
+    slider.value = seconds;
+    slider.style.setProperty('--val', seconds);
+  });
+
   // Rejoin modal cancel button
   document.getElementById('btn-rejoin-cancel').addEventListener('click', () => {
     document.getElementById('rejoin-modal').classList.add('hidden');
@@ -707,6 +762,7 @@
   setupLobbyHandlers();
   setupRoomHandlers();
   setupObstacleSlider();
+  setupTurnDurationSlider();
   setupCharacterHandler();
   setupReplayHandler();
   setupMainMenuHandler();

@@ -199,6 +199,14 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('set-turn-duration', ({ seconds }) => {
+    const room = getRoomBySocket(socket.id);
+    if (!room || room.status !== 'waiting' || socket.id !== room.hostId) return;
+    if (room.setTurnDuration(seconds)) {
+      io.to(room.code).emit('turn-duration-updated', { turnDurationMs: room.turnDurationMs });
+    }
+  });
+
   socket.on('set-name', ({ name }) => {
     const room = getRoomBySocket(socket.id);
     if (!room || room.status !== 'waiting') return;

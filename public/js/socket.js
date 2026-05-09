@@ -85,6 +85,10 @@ const Socket = (() => {
       if (handlers.onObstacleCountUpdated) handlers.onObstacleCountUpdated(data);
     });
 
+    socket.on('turn-duration-updated', (data) => {
+      if (handlers.onTurnDurationUpdated) handlers.onTurnDurationUpdated(data);
+    });
+
     socket.on('game-in-progress', (data) => {
       if (handlers.onGameInProgress) handlers.onGameInProgress(data);
     });

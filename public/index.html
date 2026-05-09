@@ -116,6 +116,15 @@
         <div class="obstacle-labels"><span>Peu</span><span>Normal</span><span>Beaucoup</span></div>
       </div>
 
+      <div id="turn-duration-section" class="obstacle-section" style="display:none">
+        <div class="obstacle-header">
+          <span>Durée d'un tour</span>
+          <span id="turn-duration-value" class="obstacle-value">60s</span>
+        </div>
+        <input type="range" id="turn-duration-slider" min="30" max="120" value="60" step="5" class="obstacle-slider">
+        <div class="obstacle-labels"><span>30s</span><span>75s</span><span>120s</span></div>
+      </div>
+
       <button id="btn-start" class="btn btn-primary" style="display:none">Lancer la partie</button>
       <p id="waiting-msg" class="waiting-msg">En attente du lancement...</p>
     </div>

@@ -18,7 +18,8 @@ class Room {
     this.code = code;
     this.name = (name || '').trim() || 'Partie sans nom';
     this.isPublic = isPublic !== false; // default true
-    this.obstacleCount = 30; // default obstacle count
+    this.obstacleCount = 30;   // default obstacle count
+    this.turnDurationMs = 60000; // default turn time: 60 s
     this.players = new Map();
     this.disconnectedPlayers = new Map(); // originalSocketId → player data (during active game)
     this.hostId = null;
@@ -115,6 +116,13 @@ class Room {
     const n = Math.round(Number(count));
     if (isNaN(n) || n < 0 || n > 90) return false;
     this.obstacleCount = n;
+    return true;
+  }
+
+  setTurnDuration(seconds) {
+    const s = Math.round(Number(seconds));
+    if (isNaN(s) || s < 30 || s > 120) return false;
+    this.turnDurationMs = s * 1000;
     return true;
   }
 
