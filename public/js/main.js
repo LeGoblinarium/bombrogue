@@ -208,6 +208,16 @@
     });
   }
 
+  function setupLeaveRoomHandler() {
+    document.getElementById('btn-leave-room').addEventListener('click', () => {
+      Socket.emit('leave-room');
+      myId = null; myRoomCode = ''; hostId = null;
+      pa = 10; pm = 2; myCharacter = 'player';
+      UI.showScreen('screen-lobby');
+      Socket.emit('list-rooms');
+    });
+  }
+
   function setupReplayHandler() {
     document.getElementById('btn-replay').addEventListener('click', () => {
       const btn = document.getElementById('btn-replay');
@@ -761,6 +771,7 @@
 
   setupLobbyHandlers();
   setupRoomHandlers();
+  setupLeaveRoomHandler();
   setupObstacleSlider();
   setupTurnDurationSlider();
   setupCharacterHandler();

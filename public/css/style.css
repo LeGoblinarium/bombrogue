@@ -606,6 +606,12 @@ input[type="text"]:focus {
   font-size: 0.9rem;
 }
 
+.btn-leave {
+  margin-top: 18px;
+  opacity: 0.75;
+  font-size: 0.85rem;
+}
+
 /* GAME */
 #screen-game {
   flex-direction: column;
