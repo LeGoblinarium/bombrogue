@@ -13,7 +13,7 @@ const SPELLS = [
   },
   {
     id: 'repulseur', name: 'Répuls.', cost: 2, type: 'pa', cd: 1,
-    desc: 'Repousse bombes et joueurs autour de la case ciblée (rayon 3). À 1 case → 3 poussées, 2 → 2, 3 → 1. Utilisable 1×/tour.',
+    desc: 'Repousse les bombes autour de la case ciblée (rayon 3) : à 1 case → 3 poussées, 2 → 2, 3 → 1. Les joueurs ne sont repoussés que de 1 case. Utilisable 1×/tour.',
   },
   {
     id: 'aimant', name: 'Aimant', cost: 2, type: 'pa', cd: 0,

@@ -73,7 +73,8 @@ function castRepulseur(caster, targetX, targetY, bombs, players, gridMap) {
 
   const movements = [];
   for (const t of targets) {
-    const pushDist = C.REPULSEUR_PUSH[t.dist];
+    const isPlayer = t.entity.hp !== undefined;
+    const pushDist = isPlayer ? 1 : C.REPULSEUR_PUSH[t.dist];
     if (!pushDist) continue;
     const dirX = Math.sign(t.dx);
     const dirY = Math.sign(t.dy);
