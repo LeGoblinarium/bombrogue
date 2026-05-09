@@ -108,7 +108,9 @@
     document.getElementById('btn-register').addEventListener('click', async () => {
       const username = document.getElementById('register-username').value.trim();
       const password = document.getElementById('register-password').value;
-      if (!username || !password) { showError(errReg, 'Remplis tous les champs'); return; }
+      const confirm  = document.getElementById('register-password-confirm').value;
+      if (!username || !password || !confirm) { showError(errReg, 'Remplis tous les champs'); return; }
+      if (password !== confirm) { showError(errReg, 'Les mots de passe ne correspondent pas'); return; }
       try {
         await Auth.register(username, password);
         modal.classList.add('hidden');
@@ -121,8 +123,11 @@
     document.getElementById('login-password').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('btn-login').click();
     });
-    document.getElementById('register-password').addEventListener('keydown', (e) => {
+    document.getElementById('register-password-confirm').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') document.getElementById('btn-register').click();
+    });
+    document.getElementById('register-password').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('register-password-confirm').focus();
     });
   }
 
