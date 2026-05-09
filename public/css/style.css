@@ -563,6 +563,13 @@ input[type="text"]:focus {
   cursor: pointer;
 }
 
+/* Turn-duration slider: range 30–120, so fill = (val-30)/90 */
+#turn-duration-slider {
+  background: linear-gradient(to right,
+    #ff6b35 calc((var(--val) - 30) / 90 * 100%),
+    #2d4059 calc((var(--val) - 30) / 90 * 100%));
+}
+
 .obstacle-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
