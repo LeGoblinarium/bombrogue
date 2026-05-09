@@ -1771,3 +1771,197 @@ input[type="password"]:focus {
   opacity: 0.7;
   margin-left: 4px;
 }
+
+/* ── Écran profil ────────────────────────────────────────────────────────── */
+#screen-profile {
+  background-image: url('/images/bg-menu.jpg');
+  background-size: cover;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.profile-container {
+  width: min(480px, 94vw);
+  padding: 24px 0 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+/* Header */
+.profile-header {
+  background: rgba(14, 22, 36, 0.93);
+  border: 1px solid #3a4a5a;
+  border-radius: 14px;
+  padding: 20px 22px 16px;
+  text-align: center;
+}
+
+.profile-username {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 14px;
+}
+
+.profile-rank-section { display: flex; flex-direction: column; gap: 5px; }
+
+.profile-rank-label { font-size: 0.85rem; color: #aaa; }
+.profile-rank-label strong { color: #ff8c00; font-size: 1rem; }
+
+.profile-rank-bar {
+  background: #1e2d3e;
+  border-radius: 6px;
+  height: 9px;
+  overflow: hidden;
+}
+.profile-rank-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b00, #ffaa00);
+  border-radius: 6px;
+  transition: width 0.5s ease;
+  min-width: 3px;
+}
+.profile-rank-pts {
+  font-size: 0.72rem;
+  color: #777;
+}
+
+/* Tabs */
+.profile-tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(14, 22, 36, 0.88);
+  border-radius: 10px;
+  padding: 6px;
+}
+.profile-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  padding: 9px 6px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: background 0.15s, color 0.15s;
+}
+.profile-tab.active { background: #ff6b00; color: #fff; font-weight: 600; }
+
+/* Tab content */
+.profile-tab-content {
+  background: rgba(14, 22, 36, 0.93);
+  border: 1px solid #3a4a5a;
+  border-radius: 14px;
+  padding: 16px;
+  min-height: 200px;
+}
+.profile-tab-content.hidden { display: none; }
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #2e3e50;
+  border-radius: 10px;
+  padding: 14px 10px;
+  text-align: center;
+}
+.stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ff8c00;
+}
+.stat-label {
+  font-size: 0.72rem;
+  color: #999;
+  margin-top: 3px;
+}
+.stat-sub {
+  font-size: 0.65rem;
+  color: #666;
+  margin-top: 1px;
+}
+
+/* History */
+.history-list { display: flex; flex-direction: column; gap: 8px; }
+
+.history-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #253444;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.history-entry.result-win {
+  border-color: rgba(255, 140, 0, 0.55);
+  background: rgba(255, 140, 0, 0.07);
+}
+.history-entry.result-last { opacity: 0.55; }
+
+.history-rank { font-size: 1.5rem; min-width: 34px; text-align: center; }
+
+.history-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.history-char { font-size: 0.88rem; font-weight: 600; color: #e0e0e0; }
+.history-players { font-size: 0.72rem; color: #888; }
+
+.history-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.72rem;
+  color: #aaa;
+  text-align: right;
+}
+.history-date { font-size: 0.68rem; color: #666; min-width: 46px; text-align: right; }
+
+/* Footer */
+.profile-footer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.profile-footer .btn { flex: 1; }
+
+.btn-danger-small {
+  background: rgba(180, 40, 40, 0.28);
+  border: 1px solid rgba(200, 60, 60, 0.45);
+  color: #f99;
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+  font-size: 0.84rem;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn-danger-small:hover { background: rgba(180, 40, 40, 0.5); }
+
+.profile-loading, .profile-empty {
+  text-align: center;
+  color: #777;
+  padding: 28px;
+  font-size: 0.9rem;
+}
+.profile-error {
+  text-align: center;
+  color: #f88;
+  padding: 28px;
+  font-size: 0.9rem;
+}

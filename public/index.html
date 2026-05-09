@@ -176,6 +176,43 @@
     </div>
   </div>
 
+  <!-- PROFILE SCREEN -->
+  <div id="screen-profile" class="screen">
+    <div class="profile-container">
+
+      <div class="profile-header">
+        <div class="profile-username">
+          <span id="profile-username-text"></span>
+          <span id="profile-rank-badge" class="rank-badge"></span>
+        </div>
+        <div class="profile-rank-section">
+          <div class="profile-rank-label">Rang <strong id="profile-rank">0</strong></div>
+          <div class="profile-rank-bar"><div id="profile-rank-fill" class="profile-rank-fill"></div></div>
+          <div class="profile-rank-pts" id="profile-rank-pts"></div>
+        </div>
+      </div>
+
+      <div class="profile-tabs">
+        <button class="profile-tab active" data-tab="stats">📊 Stats</button>
+        <button class="profile-tab" data-tab="history">📋 Historique</button>
+      </div>
+
+      <div id="profile-tab-stats" class="profile-tab-content">
+        <div class="stats-grid" id="stats-grid"></div>
+      </div>
+
+      <div id="profile-tab-history" class="profile-tab-content hidden">
+        <div class="history-list" id="history-list"></div>
+      </div>
+
+      <div class="profile-footer">
+        <button id="btn-profile-back" class="btn btn-secondary">← Menu principal</button>
+        <button id="btn-profile-logout" class="btn-danger-small">Déconnexion</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- GAME SCREEN -->
   <div id="screen-game" class="screen">
     <div id="hud-top">
@@ -456,6 +493,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/constants.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/profile.js"></script>
   <script src="/js/audio.js"></script>
   <script src="/js/socket.js"></script>
   <script src="/js/camera.js"></script>

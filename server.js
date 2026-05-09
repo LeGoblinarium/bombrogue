@@ -5,8 +5,9 @@ const { Server } = require('socket.io');
 const path = require('path');
 const { Room, generateCode } = require('./server/Room');
 const { verifyToken } = require('./server/auth');
-const authRoutes = require('./server/routes/auth');
-const { saveGame } = require('./server/ranks');
+const authRoutes    = require('./server/routes/auth');
+const profileRoutes = require('./server/routes/profile');
+const { saveGame }  = require('./server/ranks');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,7 +15,8 @@ const io = new Server(server);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/api/auth', authRoutes);
+app.use('/api/auth',    authRoutes);
+app.use('/api/profile', profileRoutes);
 
 const rooms = new Map();
 // Map userId → socketId for live rank-up notifications

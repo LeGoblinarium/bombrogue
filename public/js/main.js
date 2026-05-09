@@ -67,12 +67,7 @@
 
     btnAuth.addEventListener('click', () => {
       if (Auth.isLoggedIn()) {
-        // Already logged in → show logout option via quick toast for now
-        if (confirm(`Déconnexion de ${Auth.getUser().username} ?`)) {
-          Auth.logout();
-          updateAuthButton();
-          UI.showToast('Déconnecté');
-        }
+        Profile.show(Auth.getUser().username);
         return;
       }
       clearErrors();
@@ -913,6 +908,7 @@
     pendingRejoinCode = null;
   });
 
+  Profile.init();
   setupAuthHandler();
   setupLobbyHandlers();
   setupRoomHandlers();
