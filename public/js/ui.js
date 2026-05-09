@@ -109,13 +109,16 @@ const UI = (() => {
     container.innerHTML = '';
     players.forEach(p => {
       const card = document.createElement('div');
-      card.className = `player-card pborder-${p.colorIndex}`;
+      const isMe = p.id === myId;
+      // Registered players (have a username) who aren't me are clickable
+      card.className = `player-card pborder-${p.colorIndex}${!isMe && p.username ? ' player-card-addable' : ''}`;
+      if (!isMe && p.username) card.dataset.username = p.username;
       const charNames = { player: 'Bob', merlin: 'Merlin', kael: 'Kael', borin: 'Borin', alaric: 'Alaric', mordek: 'Mordek' };
       const charName = charNames[p.character] || 'Bob';
       card.innerHTML = `
         <img class="player-char-icon" src="/images/${escapeHtml(p.character || 'player')}.png" alt="${charName}">
         <div class="player-info">
-          <div class="player-name">${escapeHtml(p.name)}${p.rank ? `<span class="rank-badge">[${p.rank}]</span>` : ''}${p.id === myId ? ' (toi)' : ''}</div>
+          <div class="player-name">${escapeHtml(p.name)}${p.rank ? `<span class="rank-badge">[${p.rank}]</span>` : ''}${isMe ? ' (toi)' : ''}</div>
           <div class="player-stats">${charName} · PA:${p.pa} PM:${p.pm}</div>
         </div>
         ${p.id === hostId ? '<span class="host-badge">HOST</span>' : ''}

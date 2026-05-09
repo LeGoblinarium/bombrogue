@@ -146,7 +146,7 @@ io.on('connection', (socket) => {
 
     const code = generateCode(new Set(rooms.keys()));
     const room = new Room(code, roomName, isPublic);
-    room.addPlayer(socket.id, playerName.trim(), socket.userId || null, socket.userRank || 0);
+    room.addPlayer(socket.id, playerName.trim(), socket.userId || null, socket.userRank || 0, socket.username || null);
     rooms.set(code, room);
     socket.leave('_lobby');
     socket.join(code);
@@ -194,7 +194,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (!room.addPlayer(socket.id, playerName.trim(), socket.userId || null, socket.userRank || 0)) {
+    if (!room.addPlayer(socket.id, playerName.trim(), socket.userId || null, socket.userRank || 0, socket.username || null)) {
       socket.emit('error', { message: 'Room pleine' });
       return;
     }

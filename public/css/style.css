@@ -371,6 +371,11 @@ input[type="password"]:focus {
   border-radius: 8px;
   border-left: 4px solid;
 }
+.player-card-addable {
+  cursor: pointer;
+  transition: background .15s;
+}
+.player-card-addable:hover { background: #1e2d44; }
 
 .player-card .player-char-icon {
   width: 38px;

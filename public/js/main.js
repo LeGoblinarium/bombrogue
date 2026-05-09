@@ -897,6 +897,51 @@
     slider.style.setProperty('--val', seconds);
   });
 
+  // ── Player action modal (click player card in room → add friend) ─────────
+
+  function setupPlayerActionModal() {
+    const modal   = document.getElementById('player-action-modal');
+    const nameEl  = document.getElementById('player-action-name');
+    const addBtn  = document.getElementById('btn-player-add-friend');
+    const closeBtn = document.getElementById('player-action-close');
+
+    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+
+    // Event delegation on the players list
+    document.getElementById('players-list').addEventListener('click', e => {
+      const card = e.target.closest('.player-card-addable');
+      if (!card || !Auth.isLoggedIn()) return;
+      const username = card.dataset.username;
+      if (!username) return;
+      nameEl.textContent = username;
+      addBtn.disabled = false;
+      addBtn.textContent = '👥 Envoyer une demande d\'ami';
+      modal.classList.remove('hidden');
+
+      addBtn.onclick = async () => {
+        addBtn.disabled = true;
+        addBtn.textContent = 'Envoi…';
+        try {
+          const res = await fetch('/api/friends/request', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Auth.getToken()}`,
+            },
+            body: JSON.stringify({ username }),
+          });
+          const data = await res.json();
+          modal.classList.add('hidden');
+          UI.showToast(data.error ? `❌ ${data.error}` : `✅ ${data.message}`);
+        } catch {
+          modal.classList.add('hidden');
+          UI.showToast('❌ Erreur réseau');
+        }
+      };
+    });
+  }
+
   // ── Friends & invites ────────────────────────────────────────────────────
 
   Socket.on('onFriendsStatus', (list) => {
@@ -1000,6 +1045,7 @@
 
   Profile.init();
   setupInviteModal();
+  setupPlayerActionModal();
   setupAuthHandler();
   setupLobbyHandlers();
   setupRoomHandlers();
