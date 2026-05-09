@@ -965,6 +965,57 @@ const Bubbles = (() => {
       ],
     ],
 
+    'bob-bob': [
+      [
+        { speaker: 'bob', text: "Ah toi non plus t'as pas encore débloqué les autres persos ?" },
+        { speaker: 'bob', text: "Non, il faut que je monte de rang..." },
+      ],
+      [
+        { speaker: 'bob', text: "J'aimerais trop débloquer Mordek." },
+        { speaker: 'bob', text: "Il paraît que son pouvoir fait disparaître les pubs." },
+      ],
+      [
+        { speaker: 'bob', text: "T'as essayé Merlin ?" },
+        { speaker: 'bob', text: "Non, faut rang 2. Moi j'en suis à... 0." },
+      ],
+      [
+        { speaker: 'bob', text: "C'est quoi ton rang ?" },
+        { speaker: 'bob', text: "Je préfère pas en parler." },
+      ],
+      [
+        { speaker: 'bob', text: "Sympa comme miroir." },
+        { speaker: 'bob', text: "Ouais bah t'es pas mieux." },
+      ],
+      [
+        { speaker: 'bob', text: "Alaric ça a l'air cool non ?" },
+        { speaker: 'bob', text: "Rang 30. On a encore du chemin..." },
+      ],
+      [
+        { speaker: 'bob', text: "Mordek c'est 2€ il paraît." },
+        { speaker: 'bob', text: "Et en échange plus de pubs pour toute la room. Plutôt honnête." },
+      ],
+      [
+        { speaker: 'bob', text: "Tu joues souvent ?" },
+        { speaker: 'bob', text: "Ouais. Mais j'ai du mal à monter de rang." },
+      ],
+      [
+        { speaker: 'bob', text: "T'as vu Kael ? Il court super vite." },
+        { speaker: 'bob', text: "Rang 5. On y est presque... enfin." },
+      ],
+      [
+        { speaker: 'bob', text: "On est les deux seuls Bob de la partie." },
+        { speaker: 'bob', text: "C'est soit touchant soit déprimant." },
+      ],
+      [
+        { speaker: 'bob', text: "Fais gaffe, je connais exactement tes sorts." },
+        { speaker: 'bob', text: "Pareil. C'est nul comme avantage tactique." },
+      ],
+      [
+        { speaker: 'bob', text: "On se ressemble trop pour se détester vraiment." },
+        { speaker: 'bob', text: "T'inquiète, je vais trouver un moyen." },
+      ],
+    ],
+
   };
 
   // Solo lines per character (when no suitable pair is nearby)
@@ -1202,9 +1253,18 @@ const Bubbles = (() => {
 
       const [lineA, lineB] = dialogue;
 
-      // Resolve which live player plays each speaker
-      const speakerA = alive.find(p => normChar(p.character) === lineA.speaker);
-      const speakerB = alive.find(p => normChar(p.character) === lineB.speaker);
+      // Resolve which live player plays each speaker.
+      // For same-character pairs (e.g. bob-bob) both speakers share the same
+      // character id, so we pin them to the two players from the proximity pair
+      // rather than searching by character (which would return the same player twice).
+      let speakerA, speakerB;
+      if (charA === charB) {
+        speakerA = pa;
+        speakerB = pb;
+      } else {
+        speakerA = alive.find(p => normChar(p.character) === lineA.speaker);
+        speakerB = alive.find(p => normChar(p.character) === lineB.speaker);
+      }
       if (!speakerA || !speakerB) continue;
 
       _spawn(speakerA.id, lineA.speaker, lineA.text);
