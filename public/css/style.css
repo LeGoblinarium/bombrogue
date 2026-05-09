@@ -1778,9 +1778,9 @@ input[type="password"]:focus {
   background-size: cover;
   background-position: 50% 50%;
   background-repeat: no-repeat;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  /* override .screen.active justify-content so the container starts at top */
+  justify-content: flex-start;
+  align-items: center;
   overflow-y: auto;
 }
 
