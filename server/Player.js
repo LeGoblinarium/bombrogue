@@ -16,9 +16,9 @@ class Player {
     this.alive = true;
     this.cooldowns = {
       repulseur: 0,
-      entourloupe: 0,
-      stratageme: 0,
-      liberation: 0,
+      substitution: 0,
+      rappel: 0,
+      expulsion: 0,
     };
     this.usedThisTurn = {
       repulseur: false,
@@ -85,9 +85,9 @@ class Player {
   }
 
   setCooldown(spellId) {
-    if (spellId === 'entourloupe') this.cooldowns.entourloupe = C.CD_ENTOURLOUPE;
-    else if (spellId === 'stratageme') this.cooldowns.stratageme = C.CD_STRATAGEME;
-    else if (spellId === 'liberation') this.cooldowns.liberation = C.CD_LIBERATION;
+    if (spellId === 'substitution') this.cooldowns.substitution = C.CD_SUBSTITUTION;
+    else if (spellId === 'rappel') this.cooldowns.rappel = C.CD_RAPPEL;
+    else if (spellId === 'expulsion') this.cooldowns.expulsion = C.CD_EXPULSION;
   }
 
   serialize() {

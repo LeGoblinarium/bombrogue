@@ -226,13 +226,13 @@ class Game {
     'repulseur':   { fn: (g, p, a) => Spells.castRepulseur(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
                      mutatesBombs: true,
                      omit: { obstacles: true, bonuses: true } },
-    'entourloupe': { fn: (g, p, a) => Spells.castEntourloupe(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
+    'substitution': { fn: (g, p, a) => Spells.castSubstitution(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
                      mutatesBombs: true,
                      omit: { obstacles: true, bonuses: true } },
-    'stratageme':  { fn: (g, p, a) => Spells.castStratageme(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
+    'rappel':      { fn: (g, p, a) => Spells.castRappel(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
                      mutatesBombs: true,
                      omit: { obstacles: true, bonuses: true } },
-    'liberation':  { fn: (g, p, a) => Spells.castLiberation(p, g.state.bombs, g.state.players, g.state.gridMap),
+    'expulsion':   { fn: (g, p, a) => Spells.castExpulsion(p, g.state.bombs, g.state.players, g.state.gridMap),
                      mutatesBombs: true,
                      omit: { obstacles: true, bonuses: true } },
     'aimant':      { fn: (g, p, a) => Spells.castAimant(p, a.x, a.y, g.state.bombs, g.state.players, g.state.gridMap),
@@ -277,7 +277,7 @@ class Game {
     }
 
     // Pick up any bonus at the final position of each player moved by a spell
-    // (teleport like Entourloupe, or push like Repulseur/Libération)
+    // (teleport like Substitution, or push like Repulseur/Expulsion)
     if (result.movements && action.type !== 'move') {
       for (const m of result.movements) {
         if (m.type !== 'player') continue;

@@ -102,9 +102,9 @@ const Audio = (() => {
       case 'place-bomb':   play('Bombe'); break;
       case 'repulseur':    play('Repulsion'); break;
       case 'aimant':       play('Aimant'); break;
-      case 'entourloupe':  play('Entourloupe'); break;
-      case 'stratageme':   play('Stratageme'); break;
-      case 'liberation':   play('Liberation'); break;
+      case 'substitution': play('Entourloupe'); break;
+      case 'rappel':       play('Stratageme'); break;
+      case 'expulsion':    play('Liberation'); break;
     }
     if (wallsCreated) play('Mur_bombe');
   }

@@ -112,18 +112,18 @@ const Input = (() => {
     } else if (mode === 'repulseur') {
       valid = canCastRepulseur(cell, me, state);
       if (valid) aoe = computeRepulseurAoe(cell);
-    } else if (mode === 'entourloupe') {
-      valid = canCastEntourloupe(cell, me, state);
-    } else if (mode === 'stratageme') {
-      valid = canCastStratageme(cell, me, state);
+    } else if (mode === 'substitution') {
+      valid = canCastSubstitution(cell, me, state);
+    } else if (mode === 'rappel') {
+      valid = canCastRappel(cell, me, state);
     } else if (mode === 'aimant') {
       valid = canCastAimant(cell, me, state);
       aoe = computeAimantAoe(cell);
     } else if (mode === 'detonate') {
       valid = canCastDetonate(cell, me, state);
       if (valid) aoe = computeDetonationAoe(cell.x, cell.y, me, state);
-    } else if (mode === 'liberation') {
-      valid = canCastLiberation(cell, me);
+    } else if (mode === 'expulsion') {
+      valid = canCastExpulsion(cell, me);
     }
 
     highlights = [];
@@ -185,21 +185,21 @@ const Input = (() => {
     } else if (mode === 'repulseur') {
       valid = canCastRepulseur(cell, me, state);
       if (valid) action = { type: 'repulseur', x: cell.x, y: cell.y };
-    } else if (mode === 'entourloupe') {
-      valid = canCastEntourloupe(cell, me, state);
-      if (valid) action = { type: 'entourloupe', x: cell.x, y: cell.y };
-    } else if (mode === 'stratageme') {
-      valid = canCastStratageme(cell, me, state);
-      if (valid) action = { type: 'stratageme', x: cell.x, y: cell.y };
+    } else if (mode === 'substitution') {
+      valid = canCastSubstitution(cell, me, state);
+      if (valid) action = { type: 'substitution', x: cell.x, y: cell.y };
+    } else if (mode === 'rappel') {
+      valid = canCastRappel(cell, me, state);
+      if (valid) action = { type: 'rappel', x: cell.x, y: cell.y };
     } else if (mode === 'aimant') {
       valid = canCastAimant(cell, me, state);
       if (valid) action = { type: 'aimant', x: cell.x, y: cell.y };
     } else if (mode === 'detonate') {
       valid = canCastDetonate(cell, me, state);
       if (valid) action = { type: 'detonate', x: cell.x, y: cell.y };
-    } else if (mode === 'liberation') {
-      valid = canCastLiberation(cell, me);
-      if (valid) action = { type: 'liberation' };
+    } else if (mode === 'expulsion') {
+      valid = canCastExpulsion(cell, me);
+      if (valid) action = { type: 'expulsion' };
     }
 
     if (valid && action) {
@@ -273,11 +273,11 @@ const Input = (() => {
           highlights.push({ x: bomb.x, y: bomb.y, type: 'range-active' });
         }
       }
-    } else if (mode === 'liberation') {
+    } else if (mode === 'expulsion') {
       highlights.push({ x: me.x, y: me.y, type: 'range' });
-    } else if (['repulseur', 'entourloupe', 'stratageme', 'aimant'].includes(mode)) {
+    } else if (['repulseur', 'substitution', 'rappel', 'aimant'].includes(mode)) {
       const rb = me.rangeBonus || 0;
-      const ranges = { repulseur: 6 + rb, entourloupe: 8 + rb, stratageme: 6 + rb, aimant: 6 + rb };
+      const ranges = { repulseur: 6 + rb, substitution: 8 + rb, rappel: 6 + rb, aimant: 6 + rb };
       const r = ranges[mode];
       const casterCrossOnly = mode === 'repulseur';
       for (let dx = -r; dx <= r; dx++) {
@@ -288,7 +288,7 @@ const Input = (() => {
           if (md > r) continue;
           const x = me.x + dx, y = me.y + dy;
           if (x >= 0 && x < GRID_W && y >= 0 && y < GRID_H
-              && (mode === 'entourloupe' || clientHasLoS(me.x, me.y, x, y, state, me.id))) {
+              && (mode === 'substitution' || clientHasLoS(me.x, me.y, x, y, state, me.id))) {
             highlights.push({ x, y, type: 'range' });
           }
         }
@@ -355,20 +355,20 @@ const Input = (() => {
     return true;
   }
 
-  function canCastEntourloupe(cell, me, state) {
+  function canCastSubstitution(cell, me, state) {
     if (me.paLeft < 3) return false;
-    if (me.cooldowns && me.cooldowns.entourloupe > 0) return false;
+    if (me.cooldowns && me.cooldowns.substitution > 0) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md < 1 || md > 8 + (me.rangeBonus || 0)) return false;
     const bomb = state.bombs.find(b => b.x === cell.x && b.y === cell.y && b.ownerId === me.id);
     if (!bomb) return false;
-    // No line-of-sight required: Entourloupe can be cast through obstacles and entities.
+    // No line-of-sight required: Substitution can be cast through obstacles and entities.
     return true;
   }
 
-  function canCastStratageme(cell, me, state) {
+  function canCastRappel(cell, me, state) {
     if (me.paLeft < 1) return false;
-    if (me.cooldowns && me.cooldowns.stratageme > 0) return false;
+    if (me.cooldowns && me.cooldowns.rappel > 0) return false;
     const md = Math.abs(cell.x - me.x) + Math.abs(cell.y - me.y);
     if (md < 1 || md > 6 + (me.rangeBonus || 0)) return false;
     const bomb = state.bombs.find(b => b.x === cell.x && b.y === cell.y);
@@ -378,8 +378,8 @@ const Input = (() => {
     if (state.obstacles.some(o => o.x === prev.x && o.y === prev.y)) return false;
     if (state.bombs.some(b => b.x === prev.x && b.y === prev.y && b.id !== bomb.id)) return false;
     if (state.players.some(p => p.alive && p.x === prev.x && p.y === prev.y)) return false;
-    const otherBombsStrat = state.bombs.filter(b => b.id !== bomb.id);
-    if (!clientHasLoS(me.x, me.y, cell.x, cell.y, { ...state, bombs: otherBombsStrat }, me.id)) return false;
+    const otherBombsRappel = state.bombs.filter(b => b.id !== bomb.id);
+    if (!clientHasLoS(me.x, me.y, cell.x, cell.y, { ...state, bombs: otherBombsRappel }, me.id)) return false;
     return true;
   }
 
@@ -396,7 +396,7 @@ const Input = (() => {
     return true;
   }
 
-  function canCastLiberation(cell, me) {
+  function canCastExpulsion(cell, me) {
     return cell.x === me.x && cell.y === me.y;
   }
 

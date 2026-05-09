@@ -20,15 +20,15 @@ const SPELLS = [
     desc: 'Attire les bombes de 3 cases et les joueurs de 1 case vers la case ciblée (axes cardinaux, jusqu\'à 8 cases de portée).',
   },
   {
-    id: 'entourloupe', name: 'Entour.', cost: 3, type: 'pa', cd: 5,
+    id: 'substitution', name: 'Substit.', cost: 3, type: 'pa', cd: 5,
     desc: 'Échange ta position avec une de tes propres bombes. Portée 1–8 cases. CD 5 tours.',
   },
   {
-    id: 'stratageme', name: 'Strata.', cost: 1, type: 'pa', cd: 3,
+    id: 'rappel', name: 'Rappel', cost: 1, type: 'pa', cd: 3,
     desc: 'Téléporte une bombe (alliée ou ennemie) à sa position précédente. La bombe doit avoir bougé au moins une fois. CD 3 tours.',
   },
   {
-    id: 'liberation', name: 'Libér.', cost: 3, type: 'pa', cd: 10,
+    id: 'expulsion', name: 'Expuls.', cost: 3, type: 'pa', cd: 10,
     desc: 'Repousse toutes les bombes et joueurs adjacents de 5 cases dans leur direction. Tape sur ton personnage pour confirmer. CD 10 tours.',
   },
   {

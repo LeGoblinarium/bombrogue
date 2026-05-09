@@ -93,16 +93,16 @@ function castRepulseur(caster, targetX, targetY, bombs, players, gridMap) {
   return { ok: true, movements };
 }
 
-// Entourloupe : swap caster's position with one of caster's bombs
-function castEntourloupe(caster, targetX, targetY, bombs, players, gridMap) {
-  if (caster.paLeft < C.COST_ENTOURLOUPE) return { ok: false, error: 'PA insuffisant' };
-  if (caster.cooldowns.entourloupe > 0) return { ok: false, error: 'En cooldown' };
+// Substitution : swap caster's position with one of caster's bombs
+function castSubstitution(caster, targetX, targetY, bombs, players, gridMap) {
+  if (caster.paLeft < C.COST_SUBSTITUTION) return { ok: false, error: 'PA insuffisant' };
+  if (caster.cooldowns.substitution > 0) return { ok: false, error: 'En cooldown' };
   const md = Math.abs(targetX - caster.x) + Math.abs(targetY - caster.y);
-  if (md < 1 || md > C.ENTOURLOUPE_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
+  if (md < 1 || md > C.SUBSTITUTION_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
 
   const bomb = bombs.find(b => b.x === targetX && b.y === targetY && b.ownerId === caster.id);
   if (!bomb) return { ok: false, error: 'Pas de bombe à toi sur cette case' };
-  // No line-of-sight required: Entourloupe can be cast through obstacles and entities.
+  // No line-of-sight required: Substitution can be cast through obstacles and entities.
 
   const casterFrom = { x: caster.x, y: caster.y };
   const bombFrom = { x: bomb.x, y: bomb.y };
@@ -113,8 +113,8 @@ function castEntourloupe(caster, targetX, targetY, bombs, players, gridMap) {
   bomb.x = casterFrom.x;
   bomb.y = casterFrom.y;
 
-  caster.paLeft -= C.COST_ENTOURLOUPE;
-  caster.cooldowns.entourloupe = C.CD_ENTOURLOUPE;
+  caster.paLeft -= C.COST_SUBSTITUTION;
+  caster.cooldowns.substitution = C.CD_SUBSTITUTION;
 
   return { ok: true, movements: [
     { id: caster.id, type: 'player', path: [casterFrom, { x: caster.x, y: caster.y }] },
@@ -122,18 +122,18 @@ function castEntourloupe(caster, targetX, targetY, bombs, players, gridMap) {
   ]};
 }
 
-// Stratagème : teleport bomb to its previous position
-function castStratageme(caster, targetX, targetY, bombs, players, gridMap) {
-  if (caster.paLeft < C.COST_STRATAGEME) return { ok: false, error: 'PA insuffisant' };
-  if (caster.cooldowns.stratageme > 0) return { ok: false, error: 'En cooldown' };
+// Rappel : teleport bomb to its previous position
+function castRappel(caster, targetX, targetY, bombs, players, gridMap) {
+  if (caster.paLeft < C.COST_RAPPEL) return { ok: false, error: 'PA insuffisant' };
+  if (caster.cooldowns.rappel > 0) return { ok: false, error: 'En cooldown' };
   const md = Math.abs(targetX - caster.x) + Math.abs(targetY - caster.y);
-  if (md < 1 || md > C.STRATAGEME_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
+  if (md < 1 || md > C.RAPPEL_RANGE + (caster.rangeBonus || 0)) return { ok: false, error: 'Hors portée' };
 
   const bomb = bombs.find(b => b.x === targetX && b.y === targetY);
   if (!bomb) return { ok: false, error: 'Pas de bombe ici' };
   if (!bomb.previousPosition) return { ok: false, error: 'Pas de position précédente' };
-  const otherBombsStrat = bombs.filter(b => b.id !== bomb.id);
-  if (!gridMap.hasLineOfSight(caster.x, caster.y, targetX, targetY, otherBombsStrat, players, caster.id)) return { ok: false, error: 'Ligne de vue bloquée' };
+  const otherBombsRappel = bombs.filter(b => b.id !== bomb.id);
+  if (!gridMap.hasLineOfSight(caster.x, caster.y, targetX, targetY, otherBombsRappel, players, caster.id)) return { ok: false, error: 'Ligne de vue bloquée' };
   const prev = bomb.previousPosition;
   if (isCellOccupied(prev.x, prev.y, bombs, players, bomb.id, gridMap)) {
     return { ok: false, error: 'Position précédente occupée' };
@@ -144,18 +144,18 @@ function castStratageme(caster, targetX, targetY, bombs, players, gridMap) {
   bomb.x = prev.x;
   bomb.y = prev.y;
 
-  caster.paLeft -= C.COST_STRATAGEME;
-  caster.cooldowns.stratageme = C.CD_STRATAGEME;
+  caster.paLeft -= C.COST_RAPPEL;
+  caster.cooldowns.rappel = C.CD_RAPPEL;
 
   return { ok: true, movements: [
     { id: bomb.id, type: 'bomb', path: [bombFrom, { x: bomb.x, y: bomb.y }] },
   ]};
 }
 
-// Libération : push all adjacent (CàC) bombs and entities 3 cells away from caster, on self only
-function castLiberation(caster, bombs, players, gridMap) {
-  if (caster.paLeft < C.COST_LIBERATION) return { ok: false, error: 'PA insuffisant' };
-  if (caster.cooldowns.liberation > 0) return { ok: false, error: 'En cooldown' };
+// Expulsion : push all adjacent (CàC) bombs and entities 5 cells away from caster, on self only
+function castExpulsion(caster, bombs, players, gridMap) {
+  if (caster.paLeft < C.COST_EXPULSION) return { ok: false, error: 'PA insuffisant' };
+  if (caster.cooldowns.expulsion > 0) return { ok: false, error: 'En cooldown' };
 
   const dirs = [[0,-1],[0,1],[-1,0],[1,0]];
   const movements = [];
@@ -165,19 +165,19 @@ function castLiberation(caster, bombs, players, gridMap) {
     const ny = caster.y + dy;
     const bomb = bombs.find(b => b.x === nx && b.y === ny);
     if (bomb) {
-      const result = pushEntityInDirection(bomb, dx, dy, C.LIBERATION_PUSH, bombs, players, gridMap);
+      const result = pushEntityInDirection(bomb, dx, dy, C.EXPULSION_PUSH, bombs, players, gridMap);
       if (result.moved) movements.push({ id: bomb.id, type: 'bomb', path: result.path });
       continue;
     }
     const player = players.find(p => p.alive && p.id !== caster.id && p.x === nx && p.y === ny);
     if (player) {
-      const result = pushEntityInDirection(player, dx, dy, C.LIBERATION_PUSH, bombs, players, gridMap);
+      const result = pushEntityInDirection(player, dx, dy, C.EXPULSION_PUSH, bombs, players, gridMap);
       if (result.moved) movements.push({ id: player.id, type: 'player', path: result.path });
     }
   }
 
-  caster.paLeft -= C.COST_LIBERATION;
-  caster.cooldowns.liberation = C.CD_LIBERATION;
+  caster.paLeft -= C.COST_EXPULSION;
+  caster.cooldowns.expulsion = C.CD_EXPULSION;
   return { ok: true, movements };
 }
 
@@ -239,8 +239,8 @@ function castAimant(caster, targetX, targetY, bombs, players, gridMap) {
 
 module.exports = {
   castRepulseur,
-  castEntourloupe,
-  castStratageme,
-  castLiberation,
+  castSubstitution,
+  castRappel,
+  castExpulsion,
   castAimant,
 };
