@@ -112,6 +112,10 @@ const Socket = (() => {
     socket.on('turn-skipped', (data) => {
       if (handlers.onTurnSkipped) handlers.onTurnSkipped(data);
     });
+
+    socket.on('player-emote', (data) => {
+      if (handlers.onPlayerEmote) handlers.onPlayerEmote(data);
+    });
   }
 
   function emit(event, data) {

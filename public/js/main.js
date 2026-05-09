@@ -11,6 +11,7 @@
 
   Audio.init();
   Bubbles.init();
+  Emotes.init();
   Socket.connect();
 
   // Start music on first user interaction (browser autoplay policy)
@@ -200,6 +201,7 @@
   function setupMainMenuHandler() {
     document.getElementById('btn-main-menu').addEventListener('click', () => {
       Bubbles.clear();
+      Emotes.clear();
       // Leave current room
       Socket.emit('leave-room');
       // Reset local state
@@ -319,6 +321,7 @@
       if (state) {
         Renderer.render(state, Input.getHighlights());
         Bubbles.tick(state);
+        Emotes.tick(state);
       }
       requestAnimationFrame(loop);
     }
@@ -395,6 +398,7 @@
     resetGameOverOverlay();
     Animations.resetDeadIds();
     Bubbles.clear();
+    Emotes.clear();
     GameClient.init(data.state, myId);
     UI.showScreen('screen-game');
 
@@ -553,6 +557,7 @@
 
   Socket.on('onGameOver', (data) => {
     Bubbles.clear();
+    Emotes.clear();
     // Trigger death animations for players who just died
     const state = GameClient.getState();
     if (state) {
@@ -592,6 +597,10 @@
 
   Socket.on('onRoomsUpdated', (rooms) => {
     renderRoomList(rooms);
+  });
+
+  Socket.on('onPlayerEmote', ({ playerId, emoji }) => {
+    Emotes.show(playerId, emoji, GameClient.getState());
   });
 
   // --- Reconnection / disconnect handlers ---

@@ -12,6 +12,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const rooms = new Map();
 
+const VALID_EMOTES = new Set(['😂','👍','👎','😮','😡','🎉','💀','💣','🤔','😎','❤️','👋']);
+
 function getRoomBySocket(socketId) {
   for (const room of rooms.values()) {
     if (room.players.has(socketId)) return room;
@@ -276,6 +278,14 @@ io.on('connection', (socket) => {
         hostId: room.hostId,
       });
     }
+  });
+
+  socket.on('emote', ({ emoji }) => {
+    const room = getRoomBySocket(socket.id);
+    if (!room || room.status !== 'playing') return;
+    if (!VALID_EMOTES.has(emoji)) return;
+    const effectiveId = getEffectivePlayerId(room, socket.id);
+    io.to(room.code).emit('player-emote', { playerId: effectiveId, emoji });
   });
 
   socket.on('disconnect', () => {
