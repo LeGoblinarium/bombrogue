@@ -13,9 +13,13 @@
   Bubbles.init();
   Emotes.init();
 
-  // Init auth before socket so token is ready for handshake
-  Auth.init().then(updateAuthButton);
-  Socket.connect();
+  // Init auth BEFORE connecting socket — Auth.init() refreshes the stored
+  // token (which now includes the current rank), so the socket handshake
+  // sends the up-to-date token and socket.userRank is correct from the start.
+  Auth.init().then(user => {
+    updateAuthButton(user);
+    Socket.connect();
+  });
 
   // Start music on first user interaction (browser autoplay policy)
   document.addEventListener('pointerdown', () => Audio.startMusic(), { once: true, passive: true });
