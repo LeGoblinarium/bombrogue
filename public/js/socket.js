@@ -3,7 +3,8 @@ const Socket = (() => {
   let handlers = {};
 
   function connect() {
-    socket = io();
+    const token = Auth.getToken();
+    socket = io({ auth: token ? { token } : {} });
 
     socket.on('connect', () => {
       console.log('Connected:', socket.id);

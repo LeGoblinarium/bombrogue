@@ -45,6 +45,47 @@
       </div>
 
       <div id="error-msg" class="error-msg"></div>
+
+      <button id="btn-auth" class="btn-auth-lobby">👤 Connexion</button>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="modal-overlay hidden">
+    <div class="modal-panel auth-modal-panel">
+      <button class="modal-close" id="auth-modal-close">✕</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Connexion</button>
+        <button class="auth-tab" data-tab="register">Inscription</button>
+      </div>
+
+      <!-- Login -->
+      <div class="auth-form" id="auth-form-login">
+        <div class="form-group">
+          <label>Pseudo</label>
+          <input type="text" id="login-username" maxlength="16" placeholder="Ton pseudo" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="login-password" maxlength="64" placeholder="••••••" autocomplete="current-password">
+        </div>
+        <div id="auth-error" class="auth-error hidden"></div>
+        <button class="btn btn-primary" id="btn-login">Se connecter</button>
+      </div>
+
+      <!-- Register -->
+      <div class="auth-form hidden" id="auth-form-register">
+        <div class="form-group">
+          <label>Pseudo <small>(3–16 car., lettres/chiffres/_)</small></label>
+          <input type="text" id="register-username" maxlength="16" placeholder="Ton pseudo" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Mot de passe <small>(6 car. min.)</small></label>
+          <input type="password" id="register-password" maxlength="64" placeholder="••••••" autocomplete="new-password">
+        </div>
+        <div id="auth-error-reg" class="auth-error hidden"></div>
+        <button class="btn btn-primary" id="btn-register">Créer mon compte</button>
+      </div>
     </div>
   </div>
 
@@ -410,6 +451,7 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/constants.js"></script>
+  <script src="/js/auth.js"></script>
   <script src="/js/audio.js"></script>
   <script src="/js/socket.js"></script>
   <script src="/js/camera.js"></script>

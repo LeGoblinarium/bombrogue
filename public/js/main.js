@@ -12,6 +12,9 @@
   Audio.init();
   Bubbles.init();
   Emotes.init();
+
+  // Init auth before socket so token is ready for handshake
+  Auth.init().then(updateAuthButton);
   Socket.connect();
 
   // Start music on first user interaction (browser autoplay policy)
@@ -28,6 +31,99 @@
     }
     hasCustomName = false;
     return CHAR_NAMES[myCharacter] || 'Bob';
+  }
+
+  function updateAuthButton() {
+    const btn = document.getElementById('btn-auth');
+    const user = Auth.getUser();
+    if (user) {
+      btn.textContent = `👤 ${user.username} [${user.rank}]`;
+      btn.classList.add('logged-in');
+      // Pre-fill player name with account username if not already customised
+      const nameInput = document.getElementById('player-name');
+      if (!hasCustomName && nameInput && !nameInput.value) nameInput.value = user.username;
+    } else {
+      btn.textContent = '👤 Connexion';
+      btn.classList.remove('logged-in');
+    }
+  }
+
+  function setupAuthHandler() {
+    const modal   = document.getElementById('auth-modal');
+    const btnAuth = document.getElementById('btn-auth');
+    const btnClose = document.getElementById('auth-modal-close');
+    const tabs    = document.querySelectorAll('.auth-tab');
+    const formLogin = document.getElementById('auth-form-login');
+    const formReg   = document.getElementById('auth-form-register');
+    const errLogin  = document.getElementById('auth-error');
+    const errReg    = document.getElementById('auth-error-reg');
+
+    function showError(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+    function clearErrors() { errLogin.classList.add('hidden'); errReg.classList.add('hidden'); }
+
+    btnAuth.addEventListener('click', () => {
+      if (Auth.isLoggedIn()) {
+        // Already logged in → show logout option via quick toast for now
+        if (confirm(`Déconnexion de ${Auth.getUser().username} ?`)) {
+          Auth.logout();
+          updateAuthButton();
+          UI.showToast('Déconnecté');
+        }
+        return;
+      }
+      clearErrors();
+      modal.classList.remove('hidden');
+    });
+
+    btnClose.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        clearErrors();
+        if (tab.dataset.tab === 'login') {
+          formLogin.classList.remove('hidden');
+          formReg.classList.add('hidden');
+        } else {
+          formReg.classList.remove('hidden');
+          formLogin.classList.add('hidden');
+        }
+      });
+    });
+
+    document.getElementById('btn-login').addEventListener('click', async () => {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      if (!username || !password) { showError(errLogin, 'Remplis tous les champs'); return; }
+      try {
+        await Auth.login(username, password);
+        modal.classList.add('hidden');
+        updateAuthButton();
+        UI.showToast(`Connecté en tant que ${Auth.getUser().username}`);
+      } catch (e) { showError(errLogin, e.message); }
+    });
+
+    document.getElementById('btn-register').addEventListener('click', async () => {
+      const username = document.getElementById('register-username').value.trim();
+      const password = document.getElementById('register-password').value;
+      if (!username || !password) { showError(errReg, 'Remplis tous les champs'); return; }
+      try {
+        await Auth.register(username, password);
+        modal.classList.add('hidden');
+        updateAuthButton();
+        UI.showToast(`Compte créé ! Bienvenue ${Auth.getUser().username}`);
+      } catch (e) { showError(errReg, e.message); }
+    });
+
+    // Enter key support
+    document.getElementById('login-password').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btn-login').click();
+    });
+    document.getElementById('register-password').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('btn-register').click();
+    });
   }
 
   function setupLobbyHandlers() {
@@ -769,6 +865,7 @@
     pendingRejoinCode = null;
   });
 
+  setupAuthHandler();
   setupLobbyHandlers();
   setupRoomHandlers();
   setupLeaveRoomHandler();

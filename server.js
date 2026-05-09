@@ -1,14 +1,19 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 const { Room, generateCode } = require('./server/Room');
+const { verifyToken } = require('./server/auth');
+const authRoutes = require('./server/routes/auth');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/auth', authRoutes);
 
 const rooms = new Map();
 
@@ -46,8 +51,23 @@ function broadcastRoomsList() {
   io.to('_lobby').emit('rooms-updated', getPublicRoomsList());
 }
 
+// Socket.io JWT middleware — attaches userId/username/rank/hasMordek if token valid
+io.use((socket, next) => {
+  const token = socket.handshake.auth && socket.handshake.auth.token;
+  if (token) {
+    try {
+      const p = verifyToken(token);
+      socket.userId    = p.userId;
+      socket.username  = p.username;
+      socket.userRank  = p.rank || 0;
+      socket.hasMordek = p.hasMordek || false;
+    } catch (_) { /* token invalide → invité */ }
+  }
+  next();
+});
+
 io.on('connection', (socket) => {
-  console.log(`Connected: ${socket.id}`);
+  console.log(`Connected: ${socket.id}${socket.userId ? ` (${socket.username})` : ' (guest)'}`);
   socket.join('_lobby'); // All clients start in the lobby channel
 
   socket.on('list-rooms', () => {
