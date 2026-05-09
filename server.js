@@ -19,13 +19,15 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth',    authRoutes);
 app.use('/api/profile', profileRoutes);
-app.use('/api/friends', makeFriendsRouter({ socketByUserId, userStatus, io }));
 
 const rooms = new Map();
 // Map userId → socketId for live notifications
 const socketByUserId = new Map();
 // Map userId → 'lobby'|'room'|'playing' for online status
 const userStatus = new Map();
+
+// Friends routes need access to the live Maps — mount after they're declared
+app.use('/api/friends', makeFriendsRouter({ socketByUserId, userStatus, io }));
 
 const VALID_EMOTES = new Set(['😂','👍','👎','😮','😡','🎉','💀','💣','🤔','😎','❤️','👋']);
 
