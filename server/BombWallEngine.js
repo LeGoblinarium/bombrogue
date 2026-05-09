@@ -78,6 +78,9 @@ function computeWalls(bombs, gridMap) {
 }
 
 function checkWallPair(a, b, gridMap) {
+  // Walls form through obstacles: obstacle cells are simply skipped in the
+  // damage-cell list (players can never stand on them anyway).
+
   // Same row?
   if (a.y === b.y) {
     const minX = Math.min(a.x, b.x);
@@ -86,11 +89,11 @@ function checkWallPair(a, b, gridMap) {
     if (gap < 1 || gap > C.WALL_MAX_GAP) return null;
     const cells = [];
     for (let x = minX + 1; x < maxX; x++) {
-      if (gridMap.isObstacle(x, a.y)) return null;
-      cells.push({ x, y: a.y });
+      if (!gridMap.isObstacle(x, a.y)) cells.push({ x, y: a.y });
     }
     return cells;
   }
+  // Same column?
   if (a.x === b.x) {
     const minY = Math.min(a.y, b.y);
     const maxY = Math.max(a.y, b.y);
@@ -98,8 +101,7 @@ function checkWallPair(a, b, gridMap) {
     if (gap < 1 || gap > C.WALL_MAX_GAP) return null;
     const cells = [];
     for (let y = minY + 1; y < maxY; y++) {
-      if (gridMap.isObstacle(a.x, y)) return null;
-      cells.push({ x: a.x, y });
+      if (!gridMap.isObstacle(a.x, y)) cells.push({ x: a.x, y });
     }
     return cells;
   }
