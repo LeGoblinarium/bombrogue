@@ -115,7 +115,7 @@ const UI = (() => {
       card.innerHTML = `
         <img class="player-char-icon" src="/images/${escapeHtml(p.character || 'player')}.png" alt="${charName}">
         <div class="player-info">
-          <div class="player-name">${escapeHtml(p.name)}${p.id === myId ? ' (toi)' : ''}</div>
+          <div class="player-name">${escapeHtml(p.name)}${p.rank ? `<span class="rank-badge">[${p.rank}]</span>` : ''}${p.id === myId ? ' (toi)' : ''}</div>
           <div class="player-stats">${charName} · PA:${p.pa} PM:${p.pm}</div>
         </div>
         ${p.id === hostId ? '<span class="host-badge">HOST</span>' : ''}

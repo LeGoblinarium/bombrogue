@@ -106,6 +106,10 @@ const Socket = (() => {
       if (handlers.onPlayerReconnected) handlers.onPlayerReconnected(data);
     });
 
+    socket.on('rank-updated', (data) => {
+      if (handlers.onRankUpdated) handlers.onRankUpdated(data);
+    });
+
     socket.on('game-paused', () => {
       if (handlers.onGamePaused) handlers.onGamePaused();
     });

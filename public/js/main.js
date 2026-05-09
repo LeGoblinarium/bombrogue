@@ -864,6 +864,16 @@
     slider.style.setProperty('--val', seconds);
   });
 
+  Socket.on('onRankUpdated', ({ newRank }) => {
+    UI.showToast(`🎉 Rang ${newRank} !`);
+    // Update local auth user so button reflects new rank
+    const user = Auth.getUser();
+    if (user) {
+      user.rank = newRank;
+      updateAuthButton();
+    }
+  });
+
   // Rejoin modal cancel button
   document.getElementById('btn-rejoin-cancel').addEventListener('click', () => {
     document.getElementById('rejoin-modal').classList.add('hidden');

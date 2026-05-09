@@ -40,7 +40,7 @@ class Room {
     };
   }
 
-  addPlayer(socketId, name) {
+  addPlayer(socketId, name, userId = null, userRank = 0) {
     if (this.players.size >= C.MAX_PLAYERS) return false;
     if (this.status !== 'waiting') return false;
 
@@ -60,6 +60,8 @@ class Room {
       ready: false,
       colorIndex,
       character: 'player',
+      userId,
+      rank: userRank,
     });
 
     if (!this.hostId) this.hostId = socketId;
@@ -151,6 +153,7 @@ class Room {
       pm: p.pm,
       colorIndex: p.colorIndex,
       character: p.character || 'player',
+      rank: p.rank || 0,
     }));
   }
 

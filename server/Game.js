@@ -4,11 +4,13 @@ const Bomb = require('./Bomb');
 const Bonus = require('./Bonus');
 const Spells = require('./SpellEngine');
 const { resolveDetonation } = require('./DetonationEngine');
+const { saveGame } = require('./ranks');
 
 class Game {
-  constructor(room, io) {
+  constructor(room, io, socketByUserId = new Map()) {
     this.room = room;
     this.io = io;
+    this.socketByUserId = socketByUserId;
     this.state = new GameState(Array.from(room.players.values()), room.obstacleCount);
     // Randomise turn order so the host doesn't always go first
     this.turnOrder = this.state.players.map(p => p.id);
@@ -191,17 +193,20 @@ class Game {
     if (alive.length <= 1) {
       this.gameOver = true;
       const winner = alive[0] || null;
+      const stats = this.state.players.map(p => ({
+        id: p.id,
+        name: p.name,
+        colorIndex: p.colorIndex,
+        hp: p.hp,
+        alive: p.alive,
+        stats: { ...p.stats },
+      }));
       this.io.to(this.room.code).emit('game-over', {
         winner: winner ? { id: winner.id, name: winner.name, colorIndex: winner.colorIndex } : null,
-        stats: this.state.players.map(p => ({
-          id: p.id,
-          name: p.name,
-          colorIndex: p.colorIndex,
-          hp: p.hp,
-          alive: p.alive,
-          stats: { ...p.stats },
-        })),
+        stats,
       });
+      // Save game to DB asynchronously (non-blocking)
+      saveGame(this.room, stats, winner ? winner.id : null, this.io, this.socketByUserId);
       this.cleanup();
       return true;
     }

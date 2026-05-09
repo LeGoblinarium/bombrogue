@@ -6,6 +6,7 @@ const path = require('path');
 const { Room, generateCode } = require('./server/Room');
 const { verifyToken } = require('./server/auth');
 const authRoutes = require('./server/routes/auth');
+const { saveGame } = require('./server/ranks');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,6 +17,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', authRoutes);
 
 const rooms = new Map();
+// Map userId → socketId for live rank-up notifications
+const socketByUserId = new Map();
 
 const VALID_EMOTES = new Set(['😂','👍','👎','😮','😡','🎉','💀','💣','🤔','😎','❤️','👋']);
 
@@ -68,6 +71,7 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   console.log(`Connected: ${socket.id}${socket.userId ? ` (${socket.username})` : ' (guest)'}`);
+  if (socket.userId) socketByUserId.set(socket.userId, socket.id);
   socket.join('_lobby'); // All clients start in the lobby channel
 
   socket.on('list-rooms', () => {
@@ -88,7 +92,7 @@ io.on('connection', (socket) => {
 
     const code = generateCode(new Set(rooms.keys()));
     const room = new Room(code, roomName, isPublic);
-    room.addPlayer(socket.id, playerName.trim());
+    room.addPlayer(socket.id, playerName.trim(), socket.userId || null, socket.userRank || 0);
     rooms.set(code, room);
     socket.leave('_lobby');
     socket.join(code);
@@ -132,7 +136,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if (!room.addPlayer(socket.id, playerName.trim())) {
+    if (!room.addPlayer(socket.id, playerName.trim(), socket.userId || null, socket.userRank || 0)) {
       socket.emit('error', { message: 'Room pleine' });
       return;
     }
@@ -270,7 +274,7 @@ io.on('connection', (socket) => {
     room.status = 'playing';
 
     const Game = require('./server/Game');
-    room.game = new Game(room, io);
+    room.game = new Game(room, io, socketByUserId);
     room.game.start();
     broadcastRoomsList(); // Room is no longer available in browser
   });
@@ -318,6 +322,9 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`Disconnected: ${socket.id}`);
+    if (socket.userId && socketByUserId.get(socket.userId) === socket.id) {
+      socketByUserId.delete(socket.userId);
+    }
     const room = getRoomBySocket(socket.id);
     if (!room) return;
 
