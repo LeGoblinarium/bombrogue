@@ -321,7 +321,16 @@ const Tutorial = (() => {
         }
         break;
       }
-      case 5:  if (action === 'aimant')       _advance(); break;
+      case 5: { // Aimant
+        if (action === 'aimant') {
+          const bombMoved = (delta.movements || []).some(
+            m => m.type === 'bomb' && m.path && m.path.length > 1
+          );
+          if (bombMoved) _advance();
+          else _showHint('La bombe n\'a pas bougé ! Cible une case <b>entre toi et la bombe</b> pour l\'attirer vers toi — pas directement sur la bombe.');
+        }
+        break;
+      }
       case 6:  if (action === 'rappel')       _advance(); break;
       case 7:  if (action === 'substitution') _advance(); break;
       case 8:  if (action === 'expulsion')    _advance(); break;
