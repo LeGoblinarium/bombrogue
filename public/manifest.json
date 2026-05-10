@@ -1,7 +1,7 @@
 {
   "name": "BombRogue",
   "short_name": "BombRogue",
-  "description": "Jeu tactique de bombes multijoueur — 2 à 4 joueurs",
+  "description": "Jeu tactique de bombes multijoueur — 2 à 8 joueurs",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

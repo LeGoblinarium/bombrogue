@@ -1,7 +1,14 @@
 const C = {
   GRID_W: 20,
   GRID_H: 20,
-  MAX_PLAYERS: 4,
+  MAX_PLAYERS: 8,
+
+  // Grid size (square) by player count
+  GRID_SIZE_BY_PLAYERS: { 2: 10, 3: 15, 4: 15, 5: 20, 6: 20, 7: 25, 8: 25 },
+
+  // Minimum Manhattan distance between spawns, keyed by grid size
+  SPAWN_MIN_DIST_BY_GRID: { 10: 5, 15: 7, 20: 10, 25: 12 },
+
   START_HP: 100,
   TOTAL_POINTS: 12,
   MIN_PM: 2,

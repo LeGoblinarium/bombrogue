@@ -66,7 +66,9 @@ class Game {
   isInZone(x, y) {
     const depth = this.getZoneDepth();
     if (depth === 0) return false;
-    return Math.min(x, C.GRID_W - 1 - x, y, C.GRID_H - 1 - y) < depth;
+    const gw = this.state.gridMap.width;
+    const gh = this.state.gridMap.height;
+    return Math.min(x, gw - 1 - x, y, gh - 1 - y) < depth;
   }
 
   beginTurn() {

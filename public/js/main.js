@@ -663,6 +663,9 @@
     Animations.resetDeadIds();
     Bubbles.clear();
     Emotes.clear();
+    // Update global grid dimensions so camera, renderer and input use correct bounds
+    GRID_W = data.state.grid.width;
+    GRID_H = data.state.grid.height;
     GameClient.init(data.state, myId);
     UI.showScreen('screen-game');
 

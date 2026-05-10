@@ -4,14 +4,20 @@ const C = require('./constants');
 const OBSTACLE_COUNT_DEFAULT = 30;
 
 class GridMap {
-  constructor(obstacleCount) {
-    this.width  = C.GRID_W;
-    this.height = C.GRID_H;
+  constructor(obstacleCount, playerCount = 4) {
+    const gridSize = C.GRID_SIZE_BY_PLAYERS[playerCount] ?? C.GRID_W;
+    this.width  = gridSize;
+    this.height = gridSize;
 
-    const count = (obstacleCount != null) ? obstacleCount : OBSTACLE_COUNT_DEFAULT;
+    // Cap obstacle count to 25% of grid area so small grids stay playable
+    const maxObstacles = Math.floor(this.width * this.height * 0.25);
+    const requested = (obstacleCount != null) ? obstacleCount : OBSTACLE_COUNT_DEFAULT;
+    const count = Math.min(requested, maxObstacles);
 
-    // 1. Generate 4 random spawn points, each at least 12 Manhattan distance apart
-    this._spawns = this._generateSpawns(4, 12);
+    const minDist = C.SPAWN_MIN_DIST_BY_GRID[gridSize] ?? 10;
+
+    // 1. Generate spawn points (one per player), well spread out
+    this._spawns = this._generateSpawns(playerCount, minDist);
 
     // 2. Generate obstacles, none within 3 cells (Manhattan) of any spawn
     const obstacleList = this._generateObstacles(count, 3);
@@ -42,10 +48,20 @@ class GridMap {
       }
 
       if (!placed) {
-        // Fallback: corners (should only happen if minDist is too large for the grid)
+        // Fallback: corners then edge midpoints, all relative to grid size
+        const w = this.width - 2;
+        const h = this.height - 2;
+        const mw = Math.floor(this.width / 2);
+        const mh = Math.floor(this.height / 2);
         const fallbacks = [
-          { x: 1, y: 1 }, { x: 18, y: 18 },
-          { x: 18, y: 1 }, { x: 1,  y: 18 },
+          { x: 1,  y: 1  },  // top-left
+          { x: w,  y: h  },  // bottom-right
+          { x: w,  y: 1  },  // top-right
+          { x: 1,  y: h  },  // bottom-left
+          { x: mw, y: 1  },  // top-center
+          { x: mw, y: h  },  // bottom-center
+          { x: 1,  y: mh },  // left-center
+          { x: w,  y: mh },  // right-center
         ];
         spawns.push(fallbacks[i] || { x: 1, y: 1 });
       }

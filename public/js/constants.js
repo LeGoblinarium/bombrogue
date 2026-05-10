@@ -1,6 +1,15 @@
-const COLORS = ['#4ECDC4', '#FF6B6B', '#FFE66D', '#A78BFA'];
-const GRID_W = 20;
-const GRID_H = 20;
+const COLORS = [
+  '#4ECDC4', // 0 teal
+  '#FF6B6B', // 1 red
+  '#FFE66D', // 2 yellow
+  '#A78BFA', // 3 violet
+  '#FB923C', // 4 orange
+  '#34D399', // 5 emerald
+  '#F472B6', // 6 pink
+  '#60A5FA', // 7 blue
+];
+let GRID_W = 20;
+let GRID_H = 20;
 const TOTAL_POINTS = 12;
 const MIN_PM = 2;
 const MAX_PM = 6;
