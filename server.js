@@ -390,6 +390,7 @@ io.on('connection', (socket) => {
     const name = (playerName || '').trim() || 'Joueur';
     const code = generateCode(new Set(rooms.keys()));
     const room = new Room(code, 'Tutoriel', false, true);
+    room.obstacleCount = 0; // no obstacles so movement is unobstructed
     room.addPlayer(socket.id, name, socket.userId || null, socket.userRank || 0, socket.username || null);
     rooms.set(code, room);
     socket.leave('_lobby');

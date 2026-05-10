@@ -1180,6 +1180,12 @@ input[type="password"]:focus {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  pointer-events: none; /* let canvas clicks pass through */
+}
+/* Re-enable clicks only on interactive elements inside the tooltip */
+#tutorial-tooltip button,
+#tutorial-tooltip a {
+  pointer-events: auto;
 }
 #tutorial-tooltip.hidden { display: none; }
 
