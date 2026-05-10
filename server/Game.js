@@ -39,6 +39,7 @@ class Game {
     // Send initial game-start
     this.io.to(this.room.code).emit('game-start', {
       state: this.state.serializeFull(this.buildCurrentTurn()),
+      isTutorial: this.room.isTutorial || false,
     });
 
     this.beginTurn();
@@ -207,8 +208,10 @@ class Game {
         winner: winner ? { id: winner.id, name: winner.name, colorIndex: winner.colorIndex } : null,
         stats,
       });
-      // Save game to DB asynchronously (non-blocking)
-      saveGame(this.room, stats, winner ? winner.id : null, this.io, this.socketByUserId);
+      // Skip DB save for tutorial sessions
+      if (!this.room.isTutorial) {
+        saveGame(this.room, stats, winner ? winner.id : null, this.io, this.socketByUserId);
+      }
       this.cleanup();
       return true;
     }

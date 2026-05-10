@@ -35,6 +35,7 @@
             <button class="vis-btn" id="vis-private">🔒 Privé</button>
           </div>
           <button id="btn-create" class="btn btn-primary">Créer une partie</button>
+          <button id="btn-tutorial" class="btn btn-tutorial">🎓 Tutoriel</button>
         </div>
         <div class="separator">ou rejoindre</div>
         <div class="join-row">
@@ -336,6 +337,13 @@
     </div>
   </div>
 
+  <!-- TUTORIAL TOOLTIP -->
+  <div id="tutorial-tooltip" class="hidden" aria-live="polite">
+    <div id="tut-step-label"></div>
+    <p id="tut-message"></p>
+    <button id="tut-skip">Passer le tutoriel</button>
+  </div>
+
   <!-- SPELL TOOLTIP (shared, repositioned by JS) -->
   <div id="spell-tooltip" aria-hidden="true">
     <div class="tt-title"></div>
@@ -567,6 +575,7 @@
   <script src="/js/animations.js"></script>
   <script src="/js/renderer.js"></script>
   <script src="/js/input.js"></script>
+  <script src="/js/tutorial.js"></script>
   <script src="/js/ui.js"></script>
   <script src="/js/gameClient.js"></script>
   <script src="/js/bubbles.js"></script>

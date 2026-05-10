@@ -146,6 +146,12 @@ input[type="password"]:focus {
   color: #e0e0e0;
 }
 
+.btn-tutorial {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #fff;
+  margin-top: 4px;
+}
+
 .lobby-buttons {
   display: flex;
   flex-direction: column;
@@ -1159,6 +1165,89 @@ input[type="password"]:focus {
 .pborder-5 { border-color: #34D399; }
 .pborder-6 { border-color: #F472B6; }
 .pborder-7 { border-color: #60A5FA; }
+
+/* ── TUTORIAL TOOLTIP ──────────────────────────────────────────────────── */
+#tutorial-tooltip {
+  position: fixed;
+  z-index: 1100;
+  max-width: 300px;
+  width: max-content;
+  background: rgba(10, 10, 26, 0.97);
+  border: 2px solid #a78bfa;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 32px rgba(0, 0, 0, .8);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#tutorial-tooltip.hidden { display: none; }
+
+/* Arrow pointing down (tooltip is above the anchor) */
+#tutorial-tooltip[data-arrow="bottom"]::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-bottom: 0;
+  border-top-color: #a78bfa;
+}
+
+/* Arrow pointing up (tooltip is below the anchor) */
+#tutorial-tooltip[data-arrow="top"]::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-top: 0;
+  border-bottom-color: #a78bfa;
+}
+
+#tut-step-label {
+  font-size: .72rem;
+  color: #a78bfa;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+#tut-message {
+  font-size: .92rem;
+  color: #e0e0e0;
+  line-height: 1.5;
+  margin: 0;
+}
+
+#tut-skip {
+  background: none;
+  border: 1px solid #444;
+  color: #888;
+  font-size: .75rem;
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+#tut-skip:hover { border-color: #888; color: #bbb; }
+#tut-skip.hidden { display: none; }
+
+.tut-finish-btn {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #fff;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.tut-finish-btn:hover { filter: brightness(1.1); }
 
 /* MUSIC BUTTON */
 #btn-music {

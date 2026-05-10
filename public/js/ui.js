@@ -192,6 +192,7 @@ const UI = (() => {
     SPELLS.forEach(spell => {
       const btn = document.createElement('button');
       btn.className = 'spell-btn';
+      btn.dataset.spellId = spell.id;
       const cd = me.cooldowns ? (me.cooldowns[spell.id] || 0) : 0;
       const usedThisTurn = me.usedThisTurn ? me.usedThisTurn[spell.id] : false;
 

@@ -162,6 +162,12 @@
       document.getElementById('vis-public').classList.remove('active');
     });
 
+    document.getElementById('btn-tutorial').addEventListener('click', () => {
+      const name = resolvePlayerName();
+      myName = name;
+      Socket.emit('start-tutorial', { playerName: name });
+    });
+
     // Room browser
     document.getElementById('btn-refresh-rooms').addEventListener('click', () => {
       Socket.emit('list-rooms');
@@ -691,6 +697,8 @@
     UI.renderSpellBar(data.state, isMine);
     UI.updateTimer(data.state.currentTurn.timeLeft);
     Input.refreshHighlights();
+
+    if (data.isTutorial) Tutorial.start(GameClient.getState());
   });
 
   function detectAndAnimateDeaths(newPlayers) {
@@ -734,6 +742,7 @@
     Input.setMode('move');
     UI.updateSpellSelection(null);
     Input.refreshHighlights();
+    if (Tutorial.isActive()) Tutorial.onTurnStart(data);
     if (isMine) {
       Audio.play('Turn_start');
       // Flash the border with my player color to signal it's my turn
@@ -817,14 +826,18 @@
     const isMine = state.currentTurn && state.currentTurn.playerId === myId;
     UI.renderSpellBar(state, isMine);
     Input.refreshHighlights();
+    if (Tutorial.isActive()) Tutorial.onStateUpdate(delta);
   });
 
   Socket.on('onDetonationResult', (data) => {
     Animations.addExplosionSequence(data.sequence);
     Audio.play('Explosion');
+    if (Tutorial.isActive()) Tutorial.onDetonationResult();
   });
 
   Socket.on('onGameOver', (data) => {
+    // Tutorial manages its own end — skip the normal game-over flow
+    if (Tutorial.isActive()) return;
     Bubbles.clear();
     Emotes.clear();
     // Trigger death animations for players who just died

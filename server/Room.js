@@ -14,12 +14,13 @@ function generateCode(existingCodes) {
 }
 
 class Room {
-  constructor(code, name, isPublic) {
+  constructor(code, name, isPublic, isTutorial = false) {
     this.code = code;
     this.name = (name || '').trim() || 'Partie sans nom';
     this.isPublic = isPublic !== false; // default true
+    this.isTutorial = isTutorial;
     this.obstacleCount = 30;   // default obstacle count
-    this.turnDurationMs = 60000; // default turn time: 60 s
+    this.turnDurationMs = isTutorial ? 300_000 : 60000; // 5 min for tutorial, 60 s default
     this.players = new Map();
     this.disconnectedPlayers = new Map(); // originalSocketId → player data (during active game)
     this.hostId = null;
@@ -123,6 +124,7 @@ class Room {
   }
 
   setTurnDuration(seconds) {
+    if (this.isTutorial) return false; // fixed 5-min duration for tutorial
     const s = Math.round(Number(seconds));
     if (isNaN(s) || s < 30 || s > 120) return false;
     this.turnDurationMs = s * 1000;
@@ -175,6 +177,7 @@ class Room {
   }
 
   canStart() {
+    if (this.isTutorial) return this.players.size >= 1 && this.status === 'waiting';
     return this.players.size >= 2 && this.status === 'waiting';
   }
 }

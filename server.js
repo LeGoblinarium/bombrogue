@@ -385,6 +385,25 @@ io.on('connection', (socket) => {
     broadcastRoomsList(); // Room is no longer available in browser
   });
 
+  socket.on('start-tutorial', ({ playerName } = {}) => {
+    if (getRoomBySocket(socket.id)) return socket.emit('error', { message: 'Déjà dans une room' });
+    const name = (playerName || '').trim() || 'Joueur';
+    const code = generateCode(new Set(rooms.keys()));
+    const room = new Room(code, 'Tutoriel', false, true);
+    room.addPlayer(socket.id, name, socket.userId || null, socket.userRank || 0, socket.username || null);
+    rooms.set(code, room);
+    socket.leave('_lobby');
+    socket.join(code);
+    if (socket.userId) {
+      userStatus.set(socket.userId, 'playing');
+      notifyFriendStatusChange(socket.userId, socket.username, 'playing');
+    }
+    room.status = 'playing';
+    const Game = require('./server/Game');
+    room.game = new Game(room, io, socketByUserId);
+    room.game.start();
+  });
+
   socket.on('action', (data) => {
     const room = getRoomBySocket(socket.id);
     if (!room || !room.game) return;
