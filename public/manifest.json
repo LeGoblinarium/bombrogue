@@ -38,6 +38,14 @@
       "purpose": "any maskable"
     }
   ],
+  "id": "/",
   "categories": ["games"],
-  "screenshots": []
+  "screenshots": [
+    {
+      "src": "/images/icon-logo-1254px.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "label": "BombRogue — Jeu tactique de bombes multijoueur"
+    }
+  ]
 }
