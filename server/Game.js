@@ -257,12 +257,24 @@ class Game {
                      omit: { obstacles: true, bonuses: true } },
   };
 
+  _dbg(socketId, msg) {
+    if (!this.room.isTutorial) return;
+    const s = this.io.sockets.sockets.get(socketId);
+    if (s) s.emit('error', { message: `[DBG] ${msg}` });
+  }
+
   handleAction(socketId, action) {
     if (this.gameOver) return;
     const currentPid = this.turnOrder[this.currentTurnIndex];
-    if (socketId !== currentPid) return;
+    if (socketId !== currentPid) {
+      this._dbg(socketId, `Not your turn. socketId=${socketId} currentPid=${currentPid}`);
+      return;
+    }
     const player = this.state.players.find(p => p.id === socketId);
-    if (!player || !player.alive) return;
+    if (!player || !player.alive) {
+      this._dbg(socketId, `Player not found or dead. found=${!!player}`);
+      return;
+    }
 
     if (action.type === 'end-turn') {
       this.endTurn(true);
@@ -270,10 +282,16 @@ class Game {
     }
 
     const handler = Game.ACTION_HANDLERS[action.type];
-    if (!handler) return;
+    if (!handler) {
+      this._dbg(socketId, `Unknown action type: ${action.type}`);
+      return;
+    }
 
     const result = handler.fn(this, player, action);
-    if (!result || !result.ok) return;
+    if (!result || !result.ok) {
+      this._dbg(socketId, `Action rejected: type=${action.type} x=${action.x} y=${action.y} px=${player.x} py=${player.y} pmLeft=${player.pmLeft} paLeft=${player.paLeft}`);
+      return;
+    }
 
     this.actedThisTurn = true;
     if (action.type !== 'move') player.stats.spellsUsed++;
