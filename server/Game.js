@@ -200,10 +200,19 @@ class Game {
 
   checkGameOver() {
     const alive = this.state.players.filter(p => p.alive);
-    // Tutorial has 1 player: only end if they die (0 alive).
+    // Tutorial has 1 player: revive instead of ending.
     // In normal games, end when ≤ 1 survivor remains.
-    const minSurvivors = this.room.isTutorial ? 0 : 1;
-    if (alive.length <= minSurvivors) {
+    if (this.room.isTutorial && alive.length === 0) {
+      const player = this.state.players[0];
+      if (player) {
+        player.hp = C.START_HP;
+        player.alive = true;
+        const s = this.io.sockets.sockets.get(player.id);
+        if (s) s.emit('error', { message: '💀 Tu es mort ! Tes PV sont restaurés — continue le tutoriel.' });
+      }
+      return false;
+    }
+    if (alive.length <= 1) {
       this.gameOver = true;
       const winner = alive[0] || null;
       const stats = this.state.players.map(p => ({

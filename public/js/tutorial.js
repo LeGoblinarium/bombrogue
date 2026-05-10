@@ -1,76 +1,85 @@
 /**
  * Tutorial — state machine for the interactive solo tutorial.
  *
- * 6 steps:
+ * 8 steps:
  *   1. Move to a blue cell
  *   2. Select Bomb and place a bomb
  *   3. End your turn
  *   4. Detonate the bomb
  *   5. Use Répulseur and make a bomb move (path.length > 1)
- *   6. Zone info + Finish button
+ *   6. Create a bomb wall (place bombs aligned within 6 cells)
+ *   7. Trigger a chain detonation (detonate a wall-connected bomb)
+ *   8. Final congratulations
  *
  * Public API:
  *   Tutorial.start(initialState)
  *   Tutorial.isActive()
+ *   Tutorial.hasEnded()
  *   Tutorial.onStateUpdate(delta)
  *   Tutorial.onTurnStart(data)
- *   Tutorial.onDetonationResult()
+ *   Tutorial.onDetonationResult(data)
  */
 const Tutorial = (() => {
   let _active = false;
-  let _step = 0;           // 0-based index into STEPS
+  let _ended  = false;  // stays true after _endTutorial() to suppress game-over screen
+  let _step = 0;        // 0-based index into STEPS
   let _hintTimer = null;
   let _resizeListener = null;
 
-  // Spell IDs allowed at each step (null = all blocked; undefined = none blocked)
-  // Values: Set of allowed spell IDs, or null to block all.
+  // Spell IDs allowed at each step (null = all unblocked)
   const STEPS = [
     {
-      label: 'Étape 1 / 7 — Déplacement',
+      label: 'Étape 1 / 8 — Déplacement',
       msg: '🔵 Les cases bleues sont accessibles. <b>Clique une case bleue</b> pour la sélectionner (le chemin s\'affiche), puis <b>reclique la même case</b> pour confirmer.',
       allowedSpells: new Set(), // block all spells, movement only
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 2 / 7 — Poser une bombe',
+      label: 'Étape 2 / 8 — Poser une bombe',
       msg: 'Clique <b>💣 Bombe</b> ci-dessous, puis <b>clique une case</b> à portée pour la sélectionner, et <b>reclique-la</b> pour poser la bombe.',
       allowedSpells: new Set(['place-bomb']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 3 / 7 — Fin de tour',
+      label: 'Étape 3 / 8 — Fin de tour',
       msg: 'Clique <b>⏭ Fin tour</b> pour passer au tour suivant.',
       allowedSpells: new Set(['end-turn']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 4 / 7 — Détonation',
+      label: 'Étape 4 / 8 — Détonation',
       msg: 'Clique <b>💥 Détoner</b>, puis <b>clique la bombe</b> pour la sélectionner, et <b>reclique-la</b> pour l\'exploser.',
       allowedSpells: new Set(['detonate']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 5 / 7 — Répulseur',
+      label: 'Étape 5 / 8 — Répulseur',
       msg: 'Pose d\'abord une bombe (💣). Puis clique <b>↔ Répulseur</b> et vise <b>une case à côté de la bombe</b> (pas la bombe elle-même !) pour la pousser.',
       allowedSpells: new Set(['place-bomb', 'repulseur', 'end-turn']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 6 / 7 — Murs de bombes',
-      msg: '💥 Deux bombes <b>alignées</b> (H ou V) avec moins de 6 cases d\'écart créent un <b>mur de dégâts</b> entre elles : <b>15 dmg</b> pour 2 bombes, <b>25 dmg</b> pour 3+.<br><br>⏳ Les bombes <b>vieillissent</b> à chaque cycle (+20 % de dégâts par cycle, jusqu\'à ×1,8). Un mur de vieilles bombes est bien plus dangereux !',
-      allowedSpells: null,
+      label: 'Étape 6 / 8 — Murs de bombes',
+      msg: '💥 Deux bombes <b>alignées</b> (H ou V) à moins de 6 cases d\'écart créent un <b>mur de dégâts</b> : 15 dmg pour 2 bombes, 25 dmg pour 3+.<br><br>⏳ Les bombes <b>vieillissent</b> chaque cycle (+20 % de dégâts, jusqu\'à ×1,8).<br><br>Pose des bombes alignées pour <b>créer un mur</b> !',
+      allowedSpells: new Set(['place-bomb', 'detonate', 'end-turn']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
-      isInfo: true,
     },
     {
-      label: 'Étape 7 / 7 — Réaction en chaîne',
-      msg: '🔗 Détoner une bombe fait <b>exploser toutes les bombes connectées</b> à elle via un mur. Enchaîne les explosions pour maximiser les dégâts !<br><br>Tu connais maintenant les bases. Bonne partie !',
+      label: 'Étape 7 / 8 — Réaction en chaîne',
+      msg: '🔗 Quand des bombes sont reliées par un mur, <b>détoner l\'une d\'elles</b> fait exploser toutes les autres !<br><br>Les bombes de l\'étape précédente sont toujours là. <b>Détone-en une</b> pour déclencher la réaction en chaîne !',
+      allowedSpells: new Set(['place-bomb', 'detonate', 'end-turn']),
+      anchor: 'spell-bar',
+      arrowSide: 'bottom',
+    },
+    {
+      label: 'Étape 8 / 8',
+      msg: '🎉 Parfait ! Tu maîtrises maintenant toutes les mécaniques du jeu.<br><br>Bonne partie !',
       allowedSpells: null,
       anchor: 'spell-bar',
       arrowSide: 'bottom',
@@ -163,14 +172,6 @@ const Tutorial = (() => {
       finishBtn.textContent = '🎉 Terminer le tutoriel';
       finishBtn.addEventListener('click', _endTutorial);
       tt.appendChild(finishBtn);
-    } else if (step.isInfo) {
-      // Info-only step: show a "Next" button to advance manually
-      skip.classList.add('hidden');
-      const nextBtn = document.createElement('button');
-      nextBtn.className = 'tut-next-btn btn';
-      nextBtn.textContent = 'Suivant →';
-      nextBtn.addEventListener('click', _advance);
-      tt.appendChild(nextBtn);
     } else {
       skip.classList.remove('hidden');
     }
@@ -235,6 +236,7 @@ const Tutorial = (() => {
 
   function start(/* initialState */) {
     _active = true;
+    _ended  = false;
     _step   = 0;
 
     const skip = _skipBtn();
@@ -249,6 +251,10 @@ const Tutorial = (() => {
 
   function isActive() {
     return _active;
+  }
+
+  function hasEnded() {
+    return _ended;
   }
 
   function onStateUpdate(delta) {
@@ -287,6 +293,16 @@ const Tutorial = (() => {
         }
         break;
       }
+
+      case 5: {
+        // Bomb wall step: advance when placing a bomb creates new wall cells
+        if (action === 'place-bomb' && delta.wallsCreated) {
+          _advance();
+        }
+        break;
+      }
+
+      // Step 6 (chain detonation) is handled in onDetonationResult
     }
   }
 
@@ -299,10 +315,24 @@ const Tutorial = (() => {
     if (_step === 2) _advance();
   }
 
-  function onDetonationResult() {
+  function onDetonationResult(data) {
     if (!_active) return;
-    // Step 3: detonation confirmed
-    if (_step === 3) _advance();
+
+    if (_step === 3) {
+      // Step 4: any detonation advances
+      _advance();
+      return;
+    }
+
+    if (_step === 6) {
+      // Step 7: must be a chain (sequence has events at step 1+)
+      const isChain = data && Array.isArray(data.sequence) && data.sequence.length > 1;
+      if (isChain) {
+        _advance();
+      } else {
+        _showHint('Pas de réaction en chaîne ! Les bombes doivent être <b>reliées par un mur</b> — place-en deux alignées, puis détone l\'une d\'elles.');
+      }
+    }
   }
 
   // ── Cleanup ──────────────────────────────────────────────────────────────────
@@ -310,6 +340,7 @@ const Tutorial = (() => {
   function _endTutorial() {
     if (!_active) return;
     _active = false;
+    _ended  = true;
 
     clearTimeout(_hintTimer);
     if (_resizeListener) {
@@ -334,5 +365,5 @@ const Tutorial = (() => {
     Socket.emit('list-rooms');
   }
 
-  return { start, isActive, onStateUpdate, onTurnStart, onDetonationResult };
+  return { start, isActive, hasEnded, onStateUpdate, onTurnStart, onDetonationResult };
 })();

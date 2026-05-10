@@ -834,12 +834,12 @@
   Socket.on('onDetonationResult', (data) => {
     Animations.addExplosionSequence(data.sequence);
     Audio.play('Explosion');
-    if (Tutorial.isActive()) Tutorial.onDetonationResult();
+    if (Tutorial.isActive()) Tutorial.onDetonationResult(data);
   });
 
   Socket.on('onGameOver', (data) => {
-    // Tutorial manages its own end — skip the normal game-over flow
-    if (Tutorial.isActive()) return;
+    // Tutorial manages its own end — skip game-over while active or just after ending
+    if (Tutorial.isActive() || Tutorial.hasEnded()) return;
     Bubbles.clear();
     Emotes.clear();
     // Trigger death animations for players who just died
