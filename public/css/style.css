@@ -1268,6 +1268,40 @@ input[type="password"]:focus {
 }
 .tut-next-btn:hover { filter: brightness(1.15); }
 
+/* Hide/show eye button */
+#tut-hide {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+#tut-hide:hover { color: #a78bfa; background: rgba(167,139,250,.12); }
+
+/* Mini badge shown when tooltip is collapsed */
+#tutorial-mini {
+  position: fixed;
+  z-index: 1100;
+  background: rgba(10, 10, 26, 0.92);
+  border: 1px solid #a78bfa;
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #a78bfa;
+  font-size: .8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  pointer-events: auto;
+  box-shadow: 0 2px 12px rgba(0,0,0,.6);
+}
+#tutorial-mini.hidden { display: none; }
+#tutorial-mini:hover { background: rgba(167,139,250,.15); }
+
 /* MUSIC BUTTON */
 #btn-music {
   position: fixed;

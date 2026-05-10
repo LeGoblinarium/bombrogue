@@ -20,9 +20,10 @@
  *   Tutorial.onDetonationResult(data)
  */
 const Tutorial = (() => {
-  let _active = false;
-  let _ended  = false;  // stays true after _endTutorial() to suppress game-over screen
-  let _step = 0;        // 0-based index into STEPS
+  let _active    = false;
+  let _ended     = false;   // stays true after _endTutorial() to suppress game-over screen
+  let _collapsed = false;   // tooltip hidden by user; mini badge shown instead
+  let _step      = 0;       // 0-based index into STEPS
   let _hintTimer = null;
   let _resizeListener = null;
 
@@ -89,10 +90,52 @@ const Tutorial = (() => {
 
   // ── DOM helpers ──────────────────────────────────────────────────────────────
 
-  function _tooltip()   { return document.getElementById('tutorial-tooltip'); }
-  function _labelEl()   { return document.getElementById('tut-step-label'); }
-  function _msgEl()     { return document.getElementById('tut-message'); }
-  function _skipBtn()   { return document.getElementById('tut-skip'); }
+  function _tooltip()  { return document.getElementById('tutorial-tooltip'); }
+  function _labelEl()  { return document.getElementById('tut-step-label'); }
+  function _msgEl()    { return document.getElementById('tut-message'); }
+  function _skipBtn()  { return document.getElementById('tut-skip'); }
+  function _hideBtn()  { return document.getElementById('tut-hide'); }
+  function _miniEl()   { return document.getElementById('tutorial-mini'); }
+
+  // ── Collapse / expand ────────────────────────────────────────────────────────
+
+  function _positionMini() {
+    const mini = _miniEl();
+    const anchor = document.getElementById(STEPS[_step].anchor);
+    if (!mini || !anchor) return;
+
+    // Measure with visibility hidden so layout is correct
+    mini.style.visibility = 'hidden';
+    mini.classList.remove('hidden');
+
+    const aRect = anchor.getBoundingClientRect();
+    const mW = mini.offsetWidth;
+    const mH = mini.offsetHeight;
+    const GAP = 8;
+
+    let left = aRect.left + aRect.width / 2 - mW / 2;
+    left = Math.max(8, Math.min(window.innerWidth - mW - 8, left));
+    const top = Math.max(8, aRect.top - mH - GAP);
+
+    mini.style.left = left + 'px';
+    mini.style.top  = top  + 'px';
+    mini.style.visibility = 'visible';
+  }
+
+  function _setCollapsed(val) {
+    _collapsed = val;
+    const tt   = _tooltip();
+    const mini = _miniEl();
+    if (val) {
+      if (tt)   tt.classList.add('hidden');
+      _positionMini();
+    } else {
+      if (mini) mini.classList.add('hidden');
+      _positionTooltip(); // removes 'hidden' and repositions
+    }
+  }
+
+  // ── Tooltip positioning ──────────────────────────────────────────────────────
 
   function _positionTooltip() {
     const step = STEPS[_step];
@@ -120,17 +163,14 @@ const Tutorial = (() => {
 
     let top, arrowSide;
     if (step.arrowSide === 'bottom') {
-      // Tooltip above the anchor → arrow points down
       top = aRect.top - ttH - GAP;
       if (top < 8) {
-        // Flip below
         top = aRect.bottom + GAP;
         arrowSide = 'top';
       } else {
         arrowSide = 'bottom';
       }
     } else {
-      // Tooltip below the anchor → arrow points up
       top = aRect.bottom + GAP;
       if (top + ttH > window.innerHeight - 8) {
         top = aRect.top - ttH - GAP;
@@ -140,7 +180,6 @@ const Tutorial = (() => {
       }
     }
 
-    // Clamp to viewport so tooltip never goes off-screen
     top  = Math.max(8, Math.min(window.innerHeight - ttH - 8, top));
     left = Math.max(8, Math.min(window.innerWidth  - ttW - 8, left));
 
@@ -149,6 +188,8 @@ const Tutorial = (() => {
     tt.dataset.arrow = arrowSide;
     tt.style.visibility = 'visible';
   }
+
+  // ── Step rendering ───────────────────────────────────────────────────────────
 
   function _renderStep() {
     const step = STEPS[_step];
@@ -176,6 +217,9 @@ const Tutorial = (() => {
       skip.classList.remove('hidden');
     }
 
+    // Always un-collapse when a new step is rendered
+    const mini = _miniEl();
+    if (mini) mini.classList.add('hidden');
     _positionTooltip();
     _applySpellBlocking();
   }
@@ -197,7 +241,6 @@ const Tutorial = (() => {
   function _applySpellBlocking() {
     const step = STEPS[_step];
     if (step.allowedSpells === null) {
-      // Final step — unblock everything
       document.querySelectorAll('[data-spell-id]').forEach(btn => {
         btn.classList.remove('tut-blocked');
         btn.style.removeProperty('pointer-events');
@@ -216,7 +259,6 @@ const Tutorial = (() => {
   }
 
   function _reapplyBlockingAfterRender() {
-    // renderSpellBar destroys buttons — re-apply on next frame
     requestAnimationFrame(_applySpellBlocking);
   }
 
@@ -224,6 +266,7 @@ const Tutorial = (() => {
 
   function _advance() {
     if (!_active) return;
+    _collapsed = false; // auto-show tooltip on new step
     _step++;
     if (_step >= STEPS.length) {
       _endTutorial();
@@ -235,27 +278,36 @@ const Tutorial = (() => {
   // ── Public API ───────────────────────────────────────────────────────────────
 
   function start(/* initialState */) {
-    _active = true;
-    _ended  = false;
-    _step   = 0;
+    _active    = true;
+    _ended     = false;
+    _collapsed = false;
+    _step      = 0;
 
+    // Wire "skip" button (added once; listener survives across steps)
     const skip = _skipBtn();
     if (skip) skip.addEventListener('click', _endTutorial);
 
+    // Wire "hide" (eye) button
+    const hideBtn = _hideBtn();
+    if (hideBtn) hideBtn.addEventListener('click', () => _setCollapsed(true));
+
+    // Wire mini badge
+    const mini = _miniEl();
+    if (mini) mini.addEventListener('click', () => _setCollapsed(false));
+
     // Reposition on resize
-    _resizeListener = () => { if (_active) _positionTooltip(); };
+    _resizeListener = () => {
+      if (!_active) return;
+      if (_collapsed) _positionMini();
+      else _positionTooltip();
+    };
     window.addEventListener('resize', _resizeListener);
 
     _renderStep();
   }
 
-  function isActive() {
-    return _active;
-  }
-
-  function hasEnded() {
-    return _ended;
-  }
+  function isActive() { return _active; }
+  function hasEnded() { return _ended; }
 
   function onStateUpdate(delta) {
     if (!_active) return;
@@ -272,15 +324,13 @@ const Tutorial = (() => {
         if (action === 'place-bomb') _advance();
         break;
 
-      // Step 2 (end-turn) is handled in onTurnStart — server sends turn-start
-      // after the turn ends, which is our signal that end-turn succeeded.
+      // Step 2 (end-turn) handled in onTurnStart
 
       case 3:
-        // Detonate step — handled in onDetonationResult
+        // Detonate step handled in onDetonationResult
         break;
 
       case 4: {
-        // Répulseur step: verify a bomb actually moved
         if (action === 'repulseur') {
           const bombMoved = (delta.movements || []).some(
             m => m.type === 'bomb' && m.path && m.path.length > 1
@@ -294,24 +344,17 @@ const Tutorial = (() => {
         break;
       }
 
-      case 5: {
-        // Bomb wall step: advance when placing a bomb creates new wall cells
-        if (action === 'place-bomb' && delta.wallsCreated) {
-          _advance();
-        }
+      case 5:
+        if (action === 'place-bomb' && delta.wallsCreated) _advance();
         break;
-      }
 
-      // Step 6 (chain detonation) is handled in onDetonationResult
+      // Step 6 (chain detonation) handled in onDetonationResult
     }
   }
 
   function onTurnStart(/* data */) {
     if (!_active) return;
     _reapplyBlockingAfterRender();
-
-    // Step 2: waiting for the player to press "End turn".
-    // A turn-start event means the server started a new turn → our end-turn worked.
     if (_step === 2) _advance();
   }
 
@@ -319,19 +362,16 @@ const Tutorial = (() => {
     if (!_active) return;
 
     if (_step === 3) {
-      // Step 4: any detonation advances
       _advance();
       return;
     }
 
     if (_step === 6) {
-      // Step 7: wall-connected bombs all fire at step 0 together, so detect
-      // a chain by counting total explosion events across all steps (> 1 = chain).
+      // Wall-connected bombs all fire at step 0 together → count total blast events
       const totalBlasts = data && Array.isArray(data.sequence)
         ? data.sequence.reduce((s, group) => s + group.length, 0)
         : 0;
-      const isChain = totalBlasts > 1;
-      if (isChain) {
+      if (totalBlasts > 1) {
         _advance();
       } else {
         _showHint('Pas de réaction en chaîne ! Les bombes doivent être <b>reliées par un mur</b> — place-en deux alignées, puis détone l\'une d\'elles.');
@@ -352,18 +392,17 @@ const Tutorial = (() => {
       _resizeListener = null;
     }
 
-    // Unblock all spells
     document.querySelectorAll('[data-spell-id]').forEach(btn => {
       btn.classList.remove('tut-blocked');
       btn.style.removeProperty('pointer-events');
       btn.style.removeProperty('opacity');
     });
 
-    // Hide the tooltip
-    const tt = _tooltip();
-    if (tt) tt.classList.add('hidden');
+    const tt   = _tooltip();
+    const mini = _miniEl();
+    if (tt)   tt.classList.add('hidden');
+    if (mini) mini.classList.add('hidden');
 
-    // Leave the tutorial room and return to lobby
     Socket.emit('leave-room');
     UI.showScreen('screen-lobby');
     Socket.emit('list-rooms');
