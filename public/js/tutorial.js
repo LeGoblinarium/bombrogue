@@ -29,8 +29,8 @@ const Tutorial = (() => {
       label: 'Étape 1 / 6',
       msg: 'Déplace-toi sur une case en cliquant dessus (case bleue).',
       allowedSpells: new Set(), // block all spells, movement only
-      anchor: 'game-canvas',
-      arrowSide: 'top',
+      anchor: 'spell-bar',
+      arrowSide: 'bottom',
     },
     {
       label: 'Étape 2 / 6',
@@ -122,6 +122,10 @@ const Tutorial = (() => {
         arrowSide = 'top';
       }
     }
+
+    // Clamp to viewport so tooltip never goes off-screen
+    top  = Math.max(8, Math.min(window.innerHeight - ttH - 8, top));
+    left = Math.max(8, Math.min(window.innerWidth  - ttW - 8, left));
 
     tt.style.left = left + 'px';
     tt.style.top  = top  + 'px';
