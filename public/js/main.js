@@ -404,13 +404,14 @@
     }
     syncMusicBtn();
 
-    // Restore saved position or default to top-right
+    // Restore saved position, clamped to current viewport to avoid off-screen on orientation change
     const saved = JSON.parse(localStorage.getItem('musicBtnPos') || 'null');
     if (saved) {
+      const x = Math.max(0, Math.min(window.innerWidth  - btn.offsetWidth,  saved.x));
+      const y = Math.max(0, Math.min(window.innerHeight - btn.offsetHeight, saved.y));
       btn.style.right = 'auto';
-      btn.style.top   = 'auto';
-      btn.style.left  = saved.x + 'px';
-      btn.style.top   = saved.y + 'px';
+      btn.style.left  = x + 'px';
+      btn.style.top   = y + 'px';
     }
 
     // Draggable — same pattern as the help button
@@ -469,11 +470,13 @@
     const btn = document.getElementById('btn-help');
     const overlay = document.getElementById('help-overlay');
 
-    // Restore saved position or default to bottom-right
+    // Restore saved position, clamped to current viewport to avoid off-screen on orientation change
     const saved = JSON.parse(localStorage.getItem('helpBtnPos') || 'null');
     if (saved) {
-      btn.style.left = saved.x + 'px';
-      btn.style.top  = saved.y + 'px';
+      const x = Math.max(0, Math.min(window.innerWidth  - btn.offsetWidth,  saved.x));
+      const y = Math.max(0, Math.min(window.innerHeight - btn.offsetHeight, saved.y));
+      btn.style.left = x + 'px';
+      btn.style.top  = y + 'px';
     } else {
       btn.style.right  = '12px';
       btn.style.bottom = '80px';
