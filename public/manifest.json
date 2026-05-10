@@ -42,10 +42,19 @@
   "categories": ["games"],
   "screenshots": [
     {
-      "src": "/images/icon-logo-1254px.png",
-      "sizes": "1254x1254",
+      "src": "/images/Screenshot_Bombrogue_01.png",
       "type": "image/png",
-      "label": "BombRogue — Jeu tactique de bombes multijoueur"
+      "label": "BombRogue — Partie en cours"
+    },
+    {
+      "src": "/images/Screenshot_Bombrogue_02.jpg",
+      "type": "image/jpeg",
+      "label": "BombRogue — Grille de jeu"
+    },
+    {
+      "src": "/images/Screenshot_Bombrogue_03.jpg",
+      "type": "image/jpeg",
+      "label": "BombRogue — Combat tactique"
     }
   ]
 }
