@@ -209,8 +209,6 @@ class Game {
         if (player) {
           player.hp = C.START_HP;
           player.alive = true;
-          const s = this.io.sockets.sockets.get(player.id);
-          if (s) s.emit('error', { message: '💀 Tu es mort ! Tes PV sont restaurés — continue le tutoriel.' });
         }
         return false;
       }
