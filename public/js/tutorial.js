@@ -325,8 +325,12 @@ const Tutorial = (() => {
     }
 
     if (_step === 6) {
-      // Step 7: must be a chain (sequence has events at step 1+)
-      const isChain = data && Array.isArray(data.sequence) && data.sequence.length > 1;
+      // Step 7: wall-connected bombs all fire at step 0 together, so detect
+      // a chain by counting total explosion events across all steps (> 1 = chain).
+      const totalBlasts = data && Array.isArray(data.sequence)
+        ? data.sequence.reduce((s, group) => s + group.length, 0)
+        : 0;
+      const isChain = totalBlasts > 1;
       if (isChain) {
         _advance();
       } else {
