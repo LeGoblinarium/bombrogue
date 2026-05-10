@@ -26,36 +26,36 @@ const Tutorial = (() => {
   // Values: Set of allowed spell IDs, or null to block all.
   const STEPS = [
     {
-      label: 'Étape 1 / 6',
-      msg: 'Clique sur une case de la grille pour te déplacer. Les cases accessibles s\'affichent en bleu.',
+      label: 'Étape 1 / 6 — Déplacement',
+      msg: '🔵 Les cases bleues sont accessibles. <b>Clique une case bleue</b> pour la sélectionner (le chemin s\'affiche), puis <b>reclique la même case</b> pour confirmer.',
       allowedSpells: new Set(), // block all spells, movement only
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 2 / 6',
-      msg: 'Sélectionne <b>💣 Bombe</b> dans la barre du bas, puis clique une case libre à portée pour la poser.',
+      label: 'Étape 2 / 6 — Poser une bombe',
+      msg: 'Clique <b>💣 Bombe</b> ci-dessous, puis <b>clique une case</b> à portée pour la sélectionner, et <b>reclique-la</b> pour poser la bombe.',
       allowedSpells: new Set(['place-bomb']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 3 / 6',
-      msg: 'Clique sur <b>⏭ Fin tour</b> pour terminer ton tour.',
+      label: 'Étape 3 / 6 — Fin de tour',
+      msg: 'Clique <b>⏭ Fin tour</b> pour passer au tour suivant.',
       allowedSpells: new Set(['end-turn']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 4 / 6',
-      msg: 'Sélectionne <b>💥 Détoner</b>, puis clique sur la bombe pour la faire exploser.',
+      label: 'Étape 4 / 6 — Détonation',
+      msg: 'Clique <b>💥 Détoner</b>, puis <b>clique la bombe</b> pour la sélectionner, et <b>reclique-la</b> pour l\'exploser.',
       allowedSpells: new Set(['detonate']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 5 / 6',
-      msg: 'Pose une nouvelle bombe, puis sélectionne <b>↔ Répulseur</b> et clique sur <b>une case à côté de la bombe</b> pour la pousser. Ne clique pas sur la bombe elle-même !',
+      label: 'Étape 5 / 6 — Répulseur',
+      msg: 'Pose d\'abord une bombe (💣). Puis clique <b>↔ Répulseur</b> et vise <b>une case à côté de la bombe</b> (pas la bombe elle-même !) pour la pousser.',
       allowedSpells: new Set(['place-bomb', 'repulseur', 'end-turn']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
