@@ -4,7 +4,7 @@
   "description": "Jeu tactique de bombes multijoueur — 2 à 4 joueurs",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "landscape",
+  "orientation": "portrait",
   "background_color": "#1a1a2e",
   "theme_color": "#1a1a2e",
   "lang": "fr",
