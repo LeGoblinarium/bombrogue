@@ -133,6 +133,7 @@ io.on('connection', (socket) => {
     notifyFriendStatusChange(socket.userId, socket.username, 'lobby');
   }
   socket.join('_lobby'); // All clients start in the lobby channel
+  socket.emit('rooms-updated', getPublicRoomsList()); // Push list immediately on connect
 
   socket.on('list-rooms', () => {
     socket.emit('rooms-updated', getPublicRoomsList());
