@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.bombrogue.twa",
+    "sha256_cert_fingerprints": ["1F:05:07:09:D2:97:3D:E2:82:59:ED:5E:74:AF:D7:B6:07:DA:E9:2D:94:27:0E:EB:1F:FE:BB:77:A2:41:A8:6C"]
+  }
+}]
