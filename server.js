@@ -512,11 +512,13 @@ io.on('connection', (socket) => {
 
 setInterval(() => {
   const now = Date.now();
+  let changed = false;
   for (const [code, room] of rooms) {
     // Remove empty waiting rooms older than 30 minutes
     if (room.isEmpty() && now - room.createdAt > 30 * 60 * 1000) {
       if (room.game) room.game.cleanup();
       rooms.delete(code);
+      changed = true;
       continue;
     }
     // Safety net: remove paused games still around after 30 s (setTimeout should handle it faster)
@@ -525,9 +527,10 @@ setInterval(() => {
       console.log(`Cleaning up abandoned paused game (safety net): ${code}`);
       room.game.cleanup();
       rooms.delete(code);
-      broadcastRoomsList();
+      changed = true;
     }
   }
+  if (changed) broadcastRoomsList();
 }, 5 * 60 * 1000);
 
 const PORT = process.env.PORT || 3000;

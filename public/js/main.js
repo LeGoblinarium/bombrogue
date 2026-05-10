@@ -394,6 +394,14 @@
     });
   }
 
+  // Clamp {x,y} so an element stays fully inside the viewport (accounts for orientation changes)
+  function clampToViewport(el, x, y) {
+    return {
+      x: Math.max(0, Math.min(window.innerWidth  - el.offsetWidth,  x)),
+      y: Math.max(0, Math.min(window.innerHeight - el.offsetHeight, y)),
+    };
+  }
+
   function setupMusicHandler() {
     const btn = document.getElementById('btn-music');
 
@@ -407,8 +415,7 @@
     // Restore saved position, clamped to current viewport to avoid off-screen on orientation change
     const saved = JSON.parse(localStorage.getItem('musicBtnPos') || 'null');
     if (saved) {
-      const x = Math.max(0, Math.min(window.innerWidth  - btn.offsetWidth,  saved.x));
-      const y = Math.max(0, Math.min(window.innerHeight - btn.offsetHeight, saved.y));
+      const { x, y } = clampToViewport(btn, saved.x, saved.y);
       btn.style.right = 'auto';
       btn.style.left  = x + 'px';
       btn.style.top   = y + 'px';
@@ -442,9 +449,7 @@
         btn.classList.add('dragging');
       }
       if (!dragged) return;
-      const W = window.innerWidth, H = window.innerHeight;
-      const x = Math.max(0, Math.min(W - btn.offsetWidth,  startLeft + dx));
-      const y = Math.max(0, Math.min(H - btn.offsetHeight, startTop  + dy));
+      const { x, y } = clampToViewport(btn, startLeft + dx, startTop + dy);
       btn.style.left = x + 'px';
       btn.style.top  = y + 'px';
     });
@@ -473,8 +478,7 @@
     // Restore saved position, clamped to current viewport to avoid off-screen on orientation change
     const saved = JSON.parse(localStorage.getItem('helpBtnPos') || 'null');
     if (saved) {
-      const x = Math.max(0, Math.min(window.innerWidth  - btn.offsetWidth,  saved.x));
-      const y = Math.max(0, Math.min(window.innerHeight - btn.offsetHeight, saved.y));
+      const { x, y } = clampToViewport(btn, saved.x, saved.y);
       btn.style.left = x + 'px';
       btn.style.top  = y + 'px';
     } else {
@@ -513,9 +517,7 @@
       }
       if (!dragged) return;
 
-      const W = window.innerWidth, H = window.innerHeight;
-      const x = Math.max(0, Math.min(W - btn.offsetWidth,  startLeft + dx));
-      const y = Math.max(0, Math.min(H - btn.offsetHeight, startTop  + dy));
+      const { x, y } = clampToViewport(btn, startLeft + dx, startTop + dy);
       btn.style.left = x + 'px';
       btn.style.top  = y + 'px';
     });
