@@ -1255,6 +1255,19 @@ input[type="password"]:focus {
 }
 .tut-finish-btn:hover { filter: brightness(1.1); }
 
+.tut-next-btn {
+  background: linear-gradient(135deg, #1e3a5f, #3b82f6);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: .85rem;
+  padding: 8px 16px;
+  width: 100%;
+  margin-top: 10px;
+}
+.tut-next-btn:hover { filter: brightness(1.15); }
+
 /* MUSIC BUTTON */
 #btn-music {
   position: fixed;

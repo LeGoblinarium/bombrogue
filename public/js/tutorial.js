@@ -26,44 +26,52 @@ const Tutorial = (() => {
   // Values: Set of allowed spell IDs, or null to block all.
   const STEPS = [
     {
-      label: 'Étape 1 / 6 — Déplacement',
+      label: 'Étape 1 / 7 — Déplacement',
       msg: '🔵 Les cases bleues sont accessibles. <b>Clique une case bleue</b> pour la sélectionner (le chemin s\'affiche), puis <b>reclique la même case</b> pour confirmer.',
       allowedSpells: new Set(), // block all spells, movement only
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 2 / 6 — Poser une bombe',
+      label: 'Étape 2 / 7 — Poser une bombe',
       msg: 'Clique <b>💣 Bombe</b> ci-dessous, puis <b>clique une case</b> à portée pour la sélectionner, et <b>reclique-la</b> pour poser la bombe.',
       allowedSpells: new Set(['place-bomb']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 3 / 6 — Fin de tour',
+      label: 'Étape 3 / 7 — Fin de tour',
       msg: 'Clique <b>⏭ Fin tour</b> pour passer au tour suivant.',
       allowedSpells: new Set(['end-turn']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 4 / 6 — Détonation',
+      label: 'Étape 4 / 7 — Détonation',
       msg: 'Clique <b>💥 Détoner</b>, puis <b>clique la bombe</b> pour la sélectionner, et <b>reclique-la</b> pour l\'exploser.',
       allowedSpells: new Set(['detonate']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 5 / 6 — Répulseur',
+      label: 'Étape 5 / 7 — Répulseur',
       msg: 'Pose d\'abord une bombe (💣). Puis clique <b>↔ Répulseur</b> et vise <b>une case à côté de la bombe</b> (pas la bombe elle-même !) pour la pousser.',
       allowedSpells: new Set(['place-bomb', 'repulseur', 'end-turn']),
       anchor: 'spell-bar',
       arrowSide: 'bottom',
     },
     {
-      label: 'Étape 6 / 6',
-      msg: 'La <b>zone de danger</b> rétrécit la grille toutes les 2 cycles. Les cases hors zone infligent des dégâts. Tu connais maintenant les bases !',
-      allowedSpells: null, // no blocking at final step
+      label: 'Étape 6 / 7 — Murs de bombes',
+      msg: '💥 Deux bombes <b>alignées</b> (H ou V) avec moins de 6 cases d\'écart créent un <b>mur de dégâts</b> entre elles : <b>15 dmg</b> pour 2 bombes, <b>25 dmg</b> pour 3+.<br><br>⏳ Les bombes <b>vieillissent</b> à chaque cycle (+20 % de dégâts par cycle, jusqu\'à ×1,8). Un mur de vieilles bombes est bien plus dangereux !',
+      allowedSpells: null,
+      anchor: 'spell-bar',
+      arrowSide: 'bottom',
+      isInfo: true,
+    },
+    {
+      label: 'Étape 7 / 7 — Réaction en chaîne',
+      msg: '🔗 Détoner une bombe fait <b>exploser toutes les bombes connectées</b> à elle via un mur. Enchaîne les explosions pour maximiser les dégâts !<br><br>Tu connais maintenant les bases. Bonne partie !',
+      allowedSpells: null,
       anchor: 'spell-bar',
       arrowSide: 'bottom',
       isFinal: true,
@@ -145,9 +153,8 @@ const Tutorial = (() => {
     label.textContent = step.label;
     msg.innerHTML     = step.msg;
 
-    // Remove any previous finish button
-    const prevFinish = tt.querySelector('.tut-finish-btn');
-    if (prevFinish) prevFinish.remove();
+    // Remove any previous action buttons
+    tt.querySelectorAll('.tut-finish-btn, .tut-next-btn').forEach(b => b.remove());
 
     if (step.isFinal) {
       skip.classList.add('hidden');
@@ -156,6 +163,14 @@ const Tutorial = (() => {
       finishBtn.textContent = '🎉 Terminer le tutoriel';
       finishBtn.addEventListener('click', _endTutorial);
       tt.appendChild(finishBtn);
+    } else if (step.isInfo) {
+      // Info-only step: show a "Next" button to advance manually
+      skip.classList.add('hidden');
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'tut-next-btn btn';
+      nextBtn.textContent = 'Suivant →';
+      nextBtn.addEventListener('click', _advance);
+      tt.appendChild(nextBtn);
     } else {
       skip.classList.remove('hidden');
     }
