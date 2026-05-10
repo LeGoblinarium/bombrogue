@@ -200,7 +200,10 @@ class Game {
 
   checkGameOver() {
     const alive = this.state.players.filter(p => p.alive);
-    if (alive.length <= 1) {
+    // Tutorial has 1 player: only end if they die (0 alive).
+    // In normal games, end when ≤ 1 survivor remains.
+    const minSurvivors = this.room.isTutorial ? 0 : 1;
+    if (alive.length <= minSurvivors) {
       this.gameOver = true;
       const winner = alive[0] || null;
       const stats = this.state.players.map(p => ({
