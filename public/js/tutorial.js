@@ -62,7 +62,7 @@ const Tutorial = (() => {
     },
     /* 5 */ {
       label: 'Étape 6 / 12 — Aimant',
-      msg: '🧲 L\'<b>Aimant</b> attire les bombes et les joueurs vers la case ciblée sur les axes cardinaux.<br><br>Pose une bombe (💣) si ce n\'est pas déjà fait, puis clique <b>🧲 Aimant</b> et cible une case pour attirer la bombe vers toi.',
+      msg: '🧲 L\'<b>Aimant</b> attire bombes et joueurs vers la case ciblée (axes cardinaux, jusqu\'à 8 cases). La cible doit être une <b>bombe ou un joueur</b>.<br><br>Pose une bombe (💣), puis clique <b>🧲 Aimant</b> et <b>cible ton propre personnage</b> pour attirer la bombe vers toi.',
       allowedSpells: new Set(['place-bomb', 'aimant', 'end-turn']),
       anchor: 'spell-bar', arrowSide: 'bottom',
     },
@@ -327,7 +327,7 @@ const Tutorial = (() => {
             m => m.type === 'bomb' && m.path && m.path.length > 1
           );
           if (bombMoved) _advance();
-          else _showHint('La bombe n\'a pas bougé ! Cible une case <b>entre toi et la bombe</b> pour l\'attirer vers toi — pas directement sur la bombe.');
+          else _showHint('La bombe n\'a pas bougé ! Aimant ne peut cibler que des <b>bombes ou joueurs</b>. Cible <b>ton propre personnage</b> pour attirer la bombe vers toi !');
         }
         break;
       }
