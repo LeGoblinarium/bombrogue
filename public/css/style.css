@@ -1173,6 +1173,12 @@ input[type="password"]:focus {
 #btn-music:active {
   background: #0d2a2a;
 }
+#btn-music.dragging {
+  cursor: grabbing;
+  box-shadow: 0 4px 16px rgba(78,205,196,0.4);
+  background: #0d2a2a;
+  transition: none;
+}
 /* Muted state: dim the button and show a strikethrough overlay */
 #btn-music.muted {
   color: #666;

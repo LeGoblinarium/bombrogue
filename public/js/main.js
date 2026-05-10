@@ -404,11 +404,64 @@
     }
     syncMusicBtn();
 
-    btn.addEventListener('click', () => {
-      // Start music on first interaction (satisfies browser autoplay policy)
-      Audio.startMusic();
-      Audio.toggleMusic();
-      syncMusicBtn();
+    // Restore saved position or default to top-right
+    const saved = JSON.parse(localStorage.getItem('musicBtnPos') || 'null');
+    if (saved) {
+      btn.style.right = 'auto';
+      btn.style.top   = 'auto';
+      btn.style.left  = saved.x + 'px';
+      btn.style.top   = saved.y + 'px';
+    }
+
+    // Draggable — same pattern as the help button
+    let startX, startY, startLeft, startTop, dragged;
+    const DRAG_THRESHOLD = 6;
+
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      btn.setPointerCapture(e.pointerId);
+      dragged = false;
+      const rect = btn.getBoundingClientRect();
+      startX    = e.clientX;
+      startY    = e.clientY;
+      startLeft = rect.left;
+      startTop  = rect.top;
+      // Switch from right/top anchoring to left/top for free dragging
+      btn.style.right = 'auto';
+      btn.style.left  = startLeft + 'px';
+      btn.style.top   = startTop  + 'px';
+    });
+
+    btn.addEventListener('pointermove', (e) => {
+      if (!btn.hasPointerCapture(e.pointerId)) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      if (!dragged && Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+        dragged = true;
+        btn.classList.add('dragging');
+      }
+      if (!dragged) return;
+      const W = window.innerWidth, H = window.innerHeight;
+      const x = Math.max(0, Math.min(W - btn.offsetWidth,  startLeft + dx));
+      const y = Math.max(0, Math.min(H - btn.offsetHeight, startTop  + dy));
+      btn.style.left = x + 'px';
+      btn.style.top  = y + 'px';
+    });
+
+    btn.addEventListener('pointerup', () => {
+      btn.classList.remove('dragging');
+      if (!dragged) {
+        // Simple tap → toggle music
+        Audio.startMusic();
+        Audio.toggleMusic();
+        syncMusicBtn();
+      } else {
+        // Drag ended → save position
+        localStorage.setItem('musicBtnPos', JSON.stringify({
+          x: parseFloat(btn.style.left),
+          y: parseFloat(btn.style.top),
+        }));
+      }
     });
   }
 
