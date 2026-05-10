@@ -460,6 +460,19 @@ io.on('connection', (socket) => {
         hostId: room.hostId,
       });
 
+      // If the game just paused (all alive players are now disconnected),
+      // schedule deletion after 10 s — no point keeping the room alive longer.
+      if (room.game.gamePaused) {
+        setTimeout(() => {
+          if (rooms.has(room.code) && room.game && room.game.gamePaused) {
+            console.log(`Deleting abandoned paused game: ${room.code}`);
+            room.game.cleanup();
+            rooms.delete(room.code);
+            broadcastRoomsList();
+          }
+        }, 10_000);
+      }
+
       broadcastRoomsList(); // Room now appears in lobby with open slot
       return;
     }
@@ -506,10 +519,10 @@ setInterval(() => {
       rooms.delete(code);
       continue;
     }
-    // Remove paused games where all players have been gone for more than 15 minutes
+    // Safety net: remove paused games still around after 30 s (setTimeout should handle it faster)
     if (room.game && room.game.gamePaused && room.game.pausedAt &&
-        now - room.game.pausedAt > 15 * 60 * 1000) {
-      console.log(`Cleaning up abandoned paused game: ${code}`);
+        now - room.game.pausedAt > 30_000) {
+      console.log(`Cleaning up abandoned paused game (safety net): ${code}`);
       room.game.cleanup();
       rooms.delete(code);
       broadcastRoomsList();
