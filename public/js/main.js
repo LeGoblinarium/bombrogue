@@ -671,6 +671,8 @@
     Animations.resetDeadIds();
     Bubbles.clear();
     Emotes.clear();
+    // Tutorial skips room-joined so myId is never set — fix it here
+    if (data.yourPlayerId) myId = data.yourPlayerId;
     // Update global grid dimensions so camera, renderer and input use correct bounds
     GRID_W = data.state.grid.width;
     GRID_H = data.state.grid.height;

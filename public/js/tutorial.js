@@ -27,7 +27,7 @@ const Tutorial = (() => {
   const STEPS = [
     {
       label: 'Étape 1 / 6',
-      msg: 'Déplace-toi sur une case en cliquant dessus (case bleue).',
+      msg: 'Clique sur une case de la grille pour te déplacer. Les cases accessibles s\'affichent en bleu.',
       allowedSpells: new Set(), // block all spells, movement only
       anchor: 'spell-bar',
       arrowSide: 'bottom',

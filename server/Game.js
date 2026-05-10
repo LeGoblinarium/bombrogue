@@ -36,10 +36,17 @@ class Game {
     // Initial wall compute (none yet, but for consistency)
     this.state.recomputeWalls();
 
+    // For tutorial: room-joined is skipped, so include the player ID so the client
+    // can set myId correctly (otherwise highlights and turn detection break).
+    const tutorialPlayerId = this.room.isTutorial
+      ? (this.room.players.keys().next().value || null)
+      : null;
+
     // Send initial game-start
     this.io.to(this.room.code).emit('game-start', {
       state: this.state.serializeFull(this.buildCurrentTurn()),
       isTutorial: this.room.isTutorial || false,
+      yourPlayerId: tutorialPlayerId,
     });
 
     this.beginTurn();
