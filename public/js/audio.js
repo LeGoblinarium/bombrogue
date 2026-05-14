@@ -37,7 +37,9 @@ const Audio = (() => {
     _shuffle(order);
     for (const name of order) {
       const el = new window.Audio(`/sounds/${name}.mp3`);
-      el.preload = 'auto';
+      // 'none' avoids ~24 MB of preloaded music per visit; the file is only
+      // fetched when the user actually unmutes/starts the track.
+      el.preload = 'none';
       el.addEventListener('ended', () => {
         musicIndex = (musicIndex + 1) % musicTracks.length;
         // Re-shuffle when we complete a full cycle
@@ -82,7 +84,9 @@ const Audio = (() => {
   function init() {
     for (const name of FILES) {
       const el = new window.Audio(`/sounds/${name}.mp3`);
-      el.preload = 'auto';
+      // SFX are tiny (~25 KB) but still defer to first play to save bandwidth
+      // on lobby-only visits where no game is started.
+      el.preload = 'metadata';
       sounds[name] = el;
     }
     initMusic();

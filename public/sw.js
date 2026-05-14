@@ -8,8 +8,8 @@ const CACHE_NAME = 'bombrogue-v1';
 const PRECACHE = [
   '/',
   '/css/style.css',
-  '/images/icon-logo-192px.jpg',
-  '/images/icon-logo-512px.jpg',
+  '/images/icon-logo-192px.png',
+  '/images/icon-logo-512px.png',
 ];
 
 self.addEventListener('install', (event) => {

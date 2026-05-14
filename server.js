@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const compression = require('compression');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
@@ -16,12 +17,28 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// gzip text/json responses — ~70% smaller for JS/CSS/HTML/Socket.io polling
+app.use(compression());
+
 // express.json() for all routes except the Stripe webhook, which needs the raw body
 app.use((req, res, next) => {
   if (req.path === '/api/payments/webhook') return next(); // webhook uses its own body parser
   express.json()(req, res, next);
 });
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Static assets with HTTP cache (browser re-uses local copy for 7 days, then revalidates)
+// index.html/sw.js stay fresh because they're often re-fetched explicitly.
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: '7d',
+  etag: true,
+  lastModified: true,
+  setHeaders(res, filePath) {
+    // Never cache the entry HTML or service worker — must always be fresh
+    if (filePath.endsWith('index.html') || filePath.endsWith('sw.js')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
+  },
+}));
 app.use('/api/auth',    authRoutes);
 app.use('/api/profile', profileRoutes);
 
