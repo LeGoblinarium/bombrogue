@@ -31,19 +31,13 @@
       "type": "image/png",
       "purpose": "any maskable"
     },
-    {
-      "src": "/images/icon-logo-1254px.png",
-      "sizes": "1254x1254",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
   ],
   "id": "/",
   "categories": ["games"],
   "screenshots": [
     {
-      "src": "/images/Screenshot_Bombrogue_01.png",
-      "type": "image/png",
+      "src": "/images/Screenshot_Bombrogue_01.jpg",
+      "type": "image/jpeg",
       "label": "BombRogue — Partie en cours"
     },
     {
