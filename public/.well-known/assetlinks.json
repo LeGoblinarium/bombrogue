@@ -1,8 +1,12 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.bombrogue.twa",
-    "sha256_cert_fingerprints": ["5C:83:67:FF:A8:3E:19:68:00:FA:76:A0:C6:22:C0:CD:3C:0B:10:D9:E7:9D:37:B8:50:43:98:8D:41:74:6C:AE"]
+﻿[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.legoblinarium.bombrogue",
+      "sha256_cert_fingerprints": [
+        "71:0D:D1:78:37:83:51:DD:84:9D:8E:07:8E:33:4A:D1:40:19:E4:EB:4C:31:B7:2D:76:B0:5F:27:26:5D:6B:8F"
+      ]
+    }
   }
-}]
+]
